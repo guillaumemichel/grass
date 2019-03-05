@@ -1,11 +1,19 @@
+# Welcome to our .gitignore
 
-
+# ignoring everything except the following
 *
-!.gitignore
-!.cpp
-!.h
-!.conf
+
+# not ignoring the content of subdirectories
+!*/
+
+# not ignoring cpp files
+!*.cpp
+!*.h
+!*.c
+
+# not ignoring useful files
 !Makefile
-!.c
-!.md
+!.gitignore
+!*.conf
+!*.md
 
