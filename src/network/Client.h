@@ -6,6 +6,7 @@ class Client {
 public:
     /**
      * Read from the keyboard a command and returns it.
+     *
      * @return string
      */
     string readCommand();
@@ -14,7 +15,7 @@ public:
 
     int initiateConnection();
 
-    int getSock();
+    int getSocket();
 
     bool isSocketInitiated();
 

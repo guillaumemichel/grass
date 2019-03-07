@@ -88,7 +88,7 @@ string Client::readCommand() {
     return command;
 }
 
-int Client::getSock() {
+int Client::getSocket() {
     return this->sock;
 }
 
@@ -100,11 +100,11 @@ void Client::sendToServer(string toSend) {
     // Send the size of the data to the server
     // Thanks to that he can allocate the right amout of memory to read the string
     const size_t buf[1] = {toSend.size()};
-    if (-1 == send(this->getSock(), buf, 1, 0)) {
+    if (-1 == send(this->getSocket(), buf, 1, 0)) {
         cout << "Error : cannot send the size...";
     } else {
         // Then we send the actual command
-        if (-1 == send(this->getSock(), toSend.data(), toSend.size(), 0)) {
+        if (-1 == send(this->getSocket(), toSend.data(), toSend.size(), 0)) {
             cout << "Error : cannot send the data to the server..." << endl;
         }
     }
@@ -115,7 +115,7 @@ void Client::readFromServer() {
         char buffer[1024] = {0};
 
         // Read data from the server
-        ssize_t valRead = read(this->getSock(), buffer, 1024);
+        ssize_t valRead = read(this->getSocket(), buffer, 1024);
         if (-1 == valRead) {
             cout << "Error while reading data from server" << endl;
         } else {
