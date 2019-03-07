@@ -11,55 +11,124 @@ using namespace std;
 
 #include "Server.h"
 
-#define PORT 8080
-
 int main(int argc, char const *argv[]) {
-    int server_fd, new_socket;
-    ssize_t valread = 0;
-    struct sockaddr_in address;
-    int opt = 1;
-    int addrlen = sizeof(address);
+    // Create a server object
+    Server server;
 
-    //char *hello = "Hello from server";
-
-    // Creating socket file descriptor
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("socket failed");
-        exit(EXIT_FAILURE);
+    // Create the socket
+    if (-1 == server.initiateConnection()) {
+        cout << "aze";
+        return -1;
     }
 
-    // Forcefully attaching socket to the port 8080
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
-                   &opt, sizeof(opt))) {
-        perror("setsockopt");
-        exit(EXIT_FAILURE);
-    }
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    cout << "Server socket initiated" << endl;
+    cout << "Listening for incoming connections..." << endl;
 
-    // Forcefully attaching socket to the port 8080
-    if (bind(server_fd, (struct sockaddr *) &address,
-             sizeof(address)) < 0) {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
-    }
-    if (listen(server_fd, 3) < 0) {
-        perror("listen");
-        exit(EXIT_FAILURE);
-    }
-    if ((new_socket = accept(server_fd, (struct sockaddr *) &address,
+    // TODO : refactor this
+    int userSocket;
+    struct sockaddr_in caca;
+    int addrlen = sizeof(caca);
+    if ((userSocket = accept(server.getSocket(), (struct sockaddr *) &server.address,
                              (socklen_t *) &addrlen)) < 0) {
         perror("accept");
         exit(EXIT_FAILURE);
     }
+    // Accept a new user socket
+   /* int userSocket = server.acceptSocket();
 
+    if (-1 == userSocket) {
+        cout << "azeaze";
+        return -1;
+    }*/
+
+
+    cout << "A new user connected" << endl;
+
+    if (0 == server.readFromUserSocket(userSocket)) {
+        cout << "Safely exiting the server" << endl;
+    }
+
+    //send(new_socket, hello, strlen(hello), 0);
+
+    return 0;
+}
+
+int Server::initiateConnection() {
+    int opt = 1;
+
+    // Creating socket file descriptor
+    if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+        perror("socket");
+        return -1;
+    }
+
+    // Forcefully attaching socket to the port
+    if (setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
+        perror("setsockopt");
+        return -1;
+    }
+
+    // Setting up the socket
+    (this->address).sin_family = AF_INET;
+    (this->address).sin_addr.s_addr = INADDR_ANY;
+    (this->address).sin_port = htons(this->PORT);
+
+    // Forcefully attaching socket to the port provided by the user
+    if (bind(this->sock, (struct sockaddr *) &(this->address), sizeof(this->address)) < 0) {
+        perror("bind");
+        return -1;
+    }
+
+    // Prepare to lister for incoming connections.
+    if (listen(this->sock, 3) < 0) {
+        perror("listen");
+        return -1;
+    }
+
+    return 0;
+}
+
+int Server::getSocket() {
+    return this->sock;
+}
+
+bool Server::isSocketInitiated() {
+    return this->sock > 0;
+}
+
+// TODO : marche pas...
+int Server::acceptSocket() {
+    // Socket of a new connecting user
+    int userSocket;
+    struct sockaddr_in caca;
+    int addressLength = sizeof(caca);
+
+    // Check if the socket was properly created
+    if (!this->isSocketInitiated()) {
+        cout << "Error : cannot accept a new socket, the socket has not been created.";
+        return -1;
+    }
+
+    // Accepting the new socket
+    if ((userSocket = accept(this->sock, (struct sockaddr *) &(this->address),
+                            (socklen_t *) &addressLength) < 0)) {
+        perror("accept");
+        return -1;
+    }
+
+    cout << "Socket accepted" << endl;
+    cout << userSocket << endl;
+
+    return userSocket;
+}
+
+int Server::readFromUserSocket(int userSocket) {
     // Buffer to get the size of the command
     size_t sizeToRead[1] = {0};
     bool stopFlag = false;
 
     // Get the size of the command
-    while (!stopFlag && 0 < read(new_socket, sizeToRead, 1)) {
+    while (!stopFlag && 0 < read(userSocket, sizeToRead, 1)) {
         // Buffer where we'll store the data sent by the client
         char *buffer;
 
@@ -69,6 +138,8 @@ int main(int argc, char const *argv[]) {
         // Check if buffer was correctly allocated
         if (buffer == nullptr) {
             cout << "Error while allocating the buffer...";
+            // Exiting
+            return -1;
         } else {
             // Allocate the buffer with 0
             for (int i = 0; i < sizeToRead[0]; i++) {
@@ -77,10 +148,11 @@ int main(int argc, char const *argv[]) {
 
             // Now we can read the data
             // TODO : check if read does not return 0 or -1
-            if (0 < read(new_socket, buffer, sizeToRead[0])) {
+            if (0 < read(userSocket, buffer, sizeToRead[0])) {
                 cout << "Command received : " << buffer << endl;
 
                 if (0 == strcmp(buffer, "exit")) {
+                    cout << "Signal to shutdown the server was received..." << endl;
                     free(buffer);
                     stopFlag = true;
                 }
@@ -92,9 +164,6 @@ int main(int argc, char const *argv[]) {
 
         sizeToRead[0] = {0};
     }
-    //send(new_socket, hello, strlen(hello), 0);
-
-    cout << "Server has shut down" << endl;
 
     return 0;
 }
