@@ -123,6 +123,9 @@ int Server::acceptSocket() {
 }
 
 int Server::readFromUserSocket(int userSocket) {
+    // TODO : WHAT IF A USER SETS A BIIIIIG NUMBER AND THE COMMAND IS WAY SMALLER THAN THAT ?
+    // --> Maybe put a size limit or whatever ?
+
     // Buffer to get the size of the command
     size_t sizeToRead[1] = {0};
     bool stopFlag = false;
