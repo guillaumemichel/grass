@@ -9,6 +9,7 @@ LFLAGS   := -lm
 SRC      :=                      \
 	$(wildcard src/services/commands/*.cpp) \
 	$(wildcard src/grass.cpp)         \
+	$(wildcard src/error.cpp)					\
 
 OBJECTS := $(SRC:%.cpp=$(OBJDIR)/%.o)
 

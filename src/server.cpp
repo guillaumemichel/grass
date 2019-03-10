@@ -15,10 +15,11 @@ char port[7] = "31337";
 
 // Helper function to run commands in unix.
 int run_command(const char* command, int sock){
-  system(command);
-  int i = exec_command(command);
-  cout << i << endl;
-  return 0;
+  //manage socket
+  //manage control access
+  int permission_level = 2;
+  int i = exec_command(command, permission_level);
+  return i;
 }
 
 

@@ -3,10 +3,12 @@
 
 #include <ctype.h>
 #include <iostream>
+#include "error.h"
 
 using namespace std;
 
+int exec_command(const char*, int);
 
-int exec_command(const char* cmd);
+int return_error(int);
 
 #endif
