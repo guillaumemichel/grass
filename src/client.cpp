@@ -1,5 +1,9 @@
 #include <grass.h>
 #include <netinet/in.h>
+#include <iostream>
+
+using namespace std;
+
 
 /*
  * Send a file to the server as its own thread
@@ -37,4 +41,5 @@ int main(int argc, char **argv) {
     // TODO:
     // Make a short REPL to send commands to the server
     // Make sure to also handle the special cases of a get and put command
+    cout << "I am the client =D\n";
 }
