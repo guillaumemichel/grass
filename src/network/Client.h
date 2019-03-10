@@ -21,9 +21,12 @@ public:
 
     void readFromServer();
 
+    inline static const string EXIT_CMD = "exit";
+
+    void uploadFile();
+
 private:
     int sock = 0;
-
 };
 
 

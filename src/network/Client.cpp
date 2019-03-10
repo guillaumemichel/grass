@@ -30,14 +30,18 @@ int main() {
         return -1;
     }
 
-    // Read the command
-    string command = client.readCommand();
+    string command;
 
-    // Send the command to the server
-    client.sendToServer(command);
+    // Loop while command is not exit
+    do {
+        // Read the command
+        command = client.readCommand();
 
-    // Send the command to the server
-    client.sendToServer(client.readCommand());
+        // Send the command to the server
+        client.sendToServer(command);
+    } while(command != Client::EXIT_CMD);
+
+    cout << "Exiting the client" << endl;
 
     // Read the data sent by the server
     //client.readFromServer();
@@ -124,4 +128,8 @@ void Client::readFromServer() {
     } else {
         cout << "Cannot read from server, the socket was not initiated" << endl;
     }
+}
+
+void Client::uploadFile() {
+
 }
