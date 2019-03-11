@@ -14,7 +14,7 @@ static int numCmds;
 char port[7] = "31337";
 
 // Helper function to run commands in unix.
-int run_command(const char* command, int sock){
+int run_command(string command, int sock){
   //manage socket
   //manage control access
   int permission_level = 2;
@@ -70,9 +70,10 @@ int main() {
     //infinite loop: wait for Commands
     string cmd;
     int end = 0;
-    while(!(end)){
-        cin >> cmd;
-        end = run_command((cmd).c_str(), 0);
+    while(!end){
+        cout << ">>> ";
+        getline(cin, cmd);
+        end = run_command(cmd, 0);
     }
     //run commands and loop again
 }

@@ -12,6 +12,9 @@ const char * const ERR_MESSAGES[] = {
     "", // no error
     "Unknown error",
     "Login required to perform this operation",
+    "File not found",
+    "Invalid command",
+    "Invalid arguments"
 };
 
 
