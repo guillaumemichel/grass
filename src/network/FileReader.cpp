@@ -11,33 +11,6 @@ using namespace std;
 
 #include "FileReader.h"
 
-int main() {
-    FileReader reader("test.txt");
-
-    /*try {
-        char content;
-        reader.readFile(&content);
-
-        cout << content << endl;
-
-        // TODO : how to free it ?
-        //free(content);
-    } catch (exception const& e) {
-        cout << "Yo, erreur : " << e.what() << endl;
-    }*/
-
-    vector<string> vecOfStr;
-    reader.readFileVector(vecOfStr);
-
-
-    vector<string>::iterator it;
-    for (it = vecOfStr.begin(); it != vecOfStr.end(); ++it) {
-        cout << *it << endl;
-    }
-
-    return 0;
-}
-
 FileReader::FileReader(string filename) {
     // Check if file exists
     std::ifstream ifile(filename.c_str());
@@ -103,4 +76,19 @@ size_t FileReader::fileSize() {
     file.close();
 
     return (size_t) fsize;
+}
+
+string FileReader::fileToString() {
+    string str;
+
+    vector<string> vecOfStr;
+    this->readFileVector(vecOfStr);
+
+    vector<string>::iterator it;
+    for (it = vecOfStr.begin(); it != vecOfStr.end(); ++it) {
+        cout << *it << endl;
+        str += *it;
+    }
+
+    return str;
 }

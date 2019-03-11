@@ -10,6 +10,8 @@ public:
 
     void readFileVector(vector<string> & file);
 
+    string fileToString();
+
     size_t fileSize();
 
 private:

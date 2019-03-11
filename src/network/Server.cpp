@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <iostream>
+#include <thread>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ using namespace std;
 
 int main(int argc, char const *argv[]) {
     // Create a server object
-    Server server;
+    Server server(8080);
 
     // Create the socket
     if (-1 == server.initiateConnection()) {
@@ -26,21 +27,13 @@ int main(int argc, char const *argv[]) {
 
     // TODO : refactor this
     int userSocket;
-    struct sockaddr_in caca;
-    int addrlen = sizeof(caca);
+    struct sockaddr_in sockaddrIn;
+    int addrlen = sizeof(sockaddrIn);
     if ((userSocket = accept(server.getSocket(), (struct sockaddr *) &server.address,
                              (socklen_t *) &addrlen)) < 0) {
         perror("accept");
         exit(EXIT_FAILURE);
     }
-    // Accept a new user socket
-   /* int userSocket = server.acceptSocket();
-
-    if (-1 == userSocket) {
-        cout << "azeaze";
-        return -1;
-    }*/
-
 
     cout << "A new user connected" << endl;
 
@@ -48,9 +41,11 @@ int main(int argc, char const *argv[]) {
         cout << "Safely exiting the server" << endl;
     }
 
-    //send(new_socket, hello, strlen(hello), 0);
-
     return 0;
+}
+
+Server::Server(uint16_t port) {
+    this->port = port;
 }
 
 int Server::initiateConnection() {
@@ -71,7 +66,7 @@ int Server::initiateConnection() {
     // Setting up the socket
     (this->address).sin_family = AF_INET;
     (this->address).sin_addr.s_addr = INADDR_ANY;
-    (this->address).sin_port = htons(this->PORT);
+    (this->address).sin_port = htons(this->port);
 
     // Forcefully attaching socket to the port provided by the user
     if (bind(this->sock, (struct sockaddr *) &(this->address), sizeof(this->address)) < 0) {
@@ -96,32 +91,6 @@ bool Server::isSocketInitiated() {
     return this->sock > 0;
 }
 
-// TODO : marche pas...
-int Server::acceptSocket() {
-    // Socket of a new connecting user
-    int userSocket;
-    struct sockaddr_in caca;
-    int addressLength = sizeof(caca);
-
-    // Check if the socket was properly created
-    if (!this->isSocketInitiated()) {
-        cout << "Error : cannot accept a new socket, the socket has not been created.";
-        return -1;
-    }
-
-    // Accepting the new socket
-    if ((userSocket = accept(this->sock, (struct sockaddr *) &(this->address),
-                            (socklen_t *) &addressLength) < 0)) {
-        perror("accept");
-        return -1;
-    }
-
-    cout << "Socket accepted" << endl;
-    cout << userSocket << endl;
-
-    return userSocket;
-}
-
 int Server::readFromUserSocket(int userSocket) {
     // TODO : WHAT IF A USER SETS A BIIIIIG NUMBER AND THE COMMAND IS WAY SMALLER THAN THAT ?
     // --> Maybe put a size limit or whatever ?
@@ -129,6 +98,7 @@ int Server::readFromUserSocket(int userSocket) {
     // Buffer to get the size of the command
     size_t sizeToRead[1] = {0};
     bool stopFlag = false;
+
 
     // Get the size of the command
     while (!stopFlag && 0 < read(userSocket, sizeToRead, 1)) {
@@ -152,12 +122,24 @@ int Server::readFromUserSocket(int userSocket) {
             // Now we can read the data
             // TODO : check if read does not return 0 or -1
             if (0 < read(userSocket, buffer, sizeToRead[0])) {
-                cout << "Command received : " << buffer << endl;
-
                 if (0 == strcmp(buffer, "exit")) {
                     cout << "Signal to shutdown the server was received..." << endl;
                     free(buffer);
                     stopFlag = true;
+                } else if (0 == strcmp(buffer, "put")) {
+                    // On upload we have to start a new thread and a new socket
+
+                    // First we send to the client the port number
+                    string message = "put port: 9999";
+                    if (-1 == send(userSocket, message.c_str(), message.size(), 0)) {
+                        throw invalid_argument("Cannot send the port to the client");
+                    }
+
+                    // Then we start a new thread to receive it
+                    thread t1(Server::receiveFileUpload);
+                    t1.join();
+                } else {
+                    cout << "Command received : " << buffer << endl;
                 }
             }
 
@@ -169,4 +151,27 @@ int Server::readFromUserSocket(int userSocket) {
     }
 
     return 0;
+}
+
+void Server::receiveFileUpload() {
+    cout << "Starting a new thread for the receiving server" << endl;
+
+    Server receivingServer(9999);
+
+    if (-1 == receivingServer.initiateConnection()) {
+        throw invalid_argument("Cannot start the receiving server");
+    }
+
+    int userSocket;
+    struct sockaddr_in sockaddrIn;
+    int addrlen = sizeof(sockaddrIn);
+    if ((userSocket = accept(receivingServer.getSocket(), (struct sockaddr *) &receivingServer.address,
+                             (socklen_t *) &addrlen)) < 0) {
+        perror("accept");
+        throw invalid_argument("Cannot listen for sockets");
+    }
+
+    cout << "File transfer started" << endl;
+
+    receivingServer.readFromUserSocket(userSocket);
 }
