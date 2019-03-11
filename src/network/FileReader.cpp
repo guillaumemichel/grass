@@ -35,8 +35,6 @@ int main() {
         cout << *it << endl;
     }
 
-    vecOfStr.
-
     return 0;
 }
 
