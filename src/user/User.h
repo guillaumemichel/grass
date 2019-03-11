@@ -3,7 +3,9 @@ public:
     User();
     ~User();
 
-    bool authenticated;
     bool setAuthenticated(bool);
     bool isAuthenticated();
+
+private:
+    bool authenticated;
 };
