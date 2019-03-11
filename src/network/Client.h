@@ -15,7 +15,7 @@ public:
 
     void sendToServer(string toSend);
 
-    int initiateConnection();
+    void initiateConnection();
 
     int getSocket();
 

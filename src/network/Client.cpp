@@ -25,12 +25,22 @@ void ouba() {
     Client client(9999);
 
     // Loop while the server is ready
+
     int maxTries = 10;
-    while (-1 == client.initiateConnection() && maxTries > 0) {
-        cout << "Cannot connect to the server... Attempting again...";
-        maxTries--;
-        sleep(100);
+    bool connected = false;
+    while (maxTries > 0 && !connected) {
+        // Tries to connect
+        try {
+            client.initiateConnection();
+            connected = true;
+        } catch (exception &e) {
+            cout << "Cannot connect to the server... Attempting again...";
+            maxTries--;
+            sleep(100);
+        }
     }
+
+
 
     if (maxTries == 0) {
         throw invalid_argument("Cannot connect to the server");
@@ -42,22 +52,15 @@ void ouba() {
     }
 
     client.uploadFile();
+
+    cout << "Closing the upload thread" << endl;
 }
 
 int main() {
     // Instantiate a new client
     Client client(PORT);
 
-    if (-1 == client.initiateConnection()) {
-        cout << "Error while initiating the connection to the server. Exiting..." << endl;
-        return -1;
-    }
-
-    // Should be ok, but we just check if the sock was properly created
-    if (!client.isSocketInitiated()) {
-        cout << "The socket was not properly created. Exiting..." << endl;
-        return -1;
-    }
+    client.initiateConnection();
 
     string command;
 
@@ -84,20 +87,16 @@ int main() {
 
     cout << "Exiting the client" << endl;
 
-    // Read the data sent by the server
-    //client.readFromServer();
-
     return 0;
 }
 
-int Client::initiateConnection() {
+void Client::initiateConnection() {
     // Create the object in which we'll be storing the server address
     struct sockaddr_in serverAddress{};
 
     // Create the socket
     if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        cout << "Socket creation error" << endl;
-        return -1;
+        throw invalid_argument("Cannot create the socket");
     }
 
     // Set the serverAddress object to 0 as initial values;
@@ -109,17 +108,13 @@ int Client::initiateConnection() {
 
     // Convert IPv4 and IPv6 addresses from text to binary form
     if (inet_pton(AF_INET, "127.0.0.1", &serverAddress.sin_addr) <= 0) {
-        cout << "Invalid address/ Address not supported" << endl;
-        return -1;
+        throw invalid_argument("Invalid address");
     }
 
     // Tries to connect to the server
     if (connect(this->sock, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0) {
-        cout << "Connection Failed" << endl;
-        return -1;
+        throw invalid_argument("Connection to server failed");
     }
-
-    return 0;
 }
 
 string Client::readCommand() {
@@ -190,6 +185,8 @@ void Client::uploadFile() {
     for (it = vecOfStr.begin(); it != vecOfStr.end(); ++it) {
         this->sendToServer(*it);
     }
+
+    cout << "File uploaded!" << endl;
 }
 
 Client::Client(uint16_t dstPort) {
