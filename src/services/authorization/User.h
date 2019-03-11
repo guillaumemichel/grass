@@ -1,7 +1,5 @@
 class User{
-public: bool isAuthenticated();
-};
-
-bool User::isAuthenticated(){
+public: bool isAuthenticated() {
     return false;
 }
+};
