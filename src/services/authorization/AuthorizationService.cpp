@@ -3,7 +3,7 @@
 
 using namespace std;
 
-map<string, AuthorizationPolicy> init_policies(){
+map<string, AuthorizationPolicy> init_policies() {
     map<string, AuthorizationPolicy> m;
     m["login"] = anonymous;
     m["pass"] = anonymous;
@@ -33,8 +33,8 @@ AuthorizationService::~AuthorizationService() {
 
 map<string, AuthorizationPolicy> AuthorizationService::policies = init_policies();
 
-bool AuthorizationService::hasAccessTo(const string command){
-    if(policies.find(command) != policies.end()){
+bool AuthorizationService::hasAccessTo(const string command) {
+    if(policies.find(command) != policies.end()) {
         return policies.at(command) == anonymous || (policies.at(command) == AuthorizationPolicy::user && user->isAuthenticated());
     }
     return false;

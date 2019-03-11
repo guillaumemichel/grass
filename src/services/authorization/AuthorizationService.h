@@ -2,7 +2,7 @@
 #include <map>
 
 #include "AuthorizationPolicy.h"
-#include "User.h"
+#include "../../user/User.h"
 
 using namespace std;
 
