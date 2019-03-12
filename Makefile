@@ -17,7 +17,7 @@ SRC      :=                      \
 
 OBJECTS := $(SRC:%.cpp=$(OBJDIR)/%.o)
 
-all: build $(BINDIR)/server $(BINDIR)/client $(BINDIR)/test
+all: build $(BINDIR)/server $(BINDIR)/client
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
@@ -30,10 +30,6 @@ $(BINDIR)/server: $(OBJECTS)
 $(BINDIR)/client: $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/client $(SRCDIR)/client.cpp $(OBJECTS)
-
-$(BINDIR)/test: $(OBJECTS)
-	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/test $(SRCDIR)/test.cpp $(OBJECTS)
 
 
 .PHONY: all build clean debug release refresh
