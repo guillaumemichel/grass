@@ -1,5 +1,11 @@
 #include <grass.h>
 #include <ctype.h>
+#include <iostream>
+#include <string>
+#include "../include/commands.h"
+
+using namespace std;
+
 
 static struct User **userlist;
 static int numUsers;
@@ -8,7 +14,12 @@ static int numCmds;
 char port[7] = "31337";
 
 // Helper function to run commands in unix.
-void run_command(const char* command, int sock){
+int run_command(string command, int sock){
+  //manage socket
+  //manage control access
+  int permission_level = 2;
+  int i = exec_command(command, permission_level);
+  return i;
 }
 
 
@@ -54,4 +65,15 @@ int main() {
     // TODO:
     // Parse the rass.conf file
     // Listen to the port and handle each connection
+    cout << "I am the server =D\n\n";
+    //connect with client
+    //infinite loop: wait for Commands
+    string cmd;
+    int end = 0;
+    while(!end){
+        cout << ">>> ";
+        getline(cin, cmd);
+        end = run_command(cmd, 0);
+    }
+    //run commands and loop again
 }
