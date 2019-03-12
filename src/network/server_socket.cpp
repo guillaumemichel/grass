@@ -1,4 +1,3 @@
-#include "Server.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -10,9 +9,9 @@
 
 using namespace std;
 
-#include "Server.h"
+#include "../../include/server_socket.h"
 
-int main(int argc, char const *argv[]) {
+int main2(int argc, char const *argv[]) {
     // Create a server object
     Server server(8080);
 

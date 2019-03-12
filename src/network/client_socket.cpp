@@ -14,8 +14,8 @@
 
 using namespace std;
 
-#include "Client.h"
-#include "FileReader.h"
+#include "../../include/client_socket.h"
+#include "../../include/FileReader.h"
 
 
 #define PORT 8080
@@ -56,7 +56,7 @@ void ouba() {
     cout << "Closing the upload thread" << endl;
 }
 
-int main() {
+int main2() {
     // Instantiate a new client
     Client client(PORT);
 

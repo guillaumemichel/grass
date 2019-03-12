@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#include "FileReader.h"
+#include "../../include/FileReader.h"
 
 FileReader::FileReader(string filename) {
     // Check if file exists
