@@ -9,6 +9,7 @@ LFLAGS   := -lm
 SRC      :=                      \
 	$(wildcard src/services/authorization/*.cpp) \
 	$(wildcard src/services/commands/*.cpp) \
+	$(wildcard src/configuration/*.cpp) \
 	$(wildcard src/network/*.cpp)      \
 	$(wildcard src/user/*.cpp)				\
 	$(wildcard src/grass.cpp)         \
@@ -16,7 +17,7 @@ SRC      :=                      \
 
 OBJECTS := $(SRC:%.cpp=$(OBJDIR)/%.o)
 
-all: build $(BINDIR)/server $(BINDIR)/client
+all: build $(BINDIR)/server $(BINDIR)/client $(BINDIR)/test
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
@@ -30,8 +31,12 @@ $(BINDIR)/client: $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/client $(SRCDIR)/client.cpp $(OBJECTS)
 
+$(BINDIR)/test: $(OBJECTS)
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/test $(SRCDIR)/test.cpp $(OBJECTS)
 
-.PHONY: all build clean debug release
+
+.PHONY: all build clean debug release refresh
 
 build:
 	@mkdir -p $(BINDIR)
@@ -46,3 +51,5 @@ release: all
 clean:
 	-@rm -rvf $(OBJDIR)/*
 	-@rm -rvf $(BINDIR)/*
+
+refresh: clean all
