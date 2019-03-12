@@ -22,7 +22,7 @@ FileReader::FileReader(string filename) {
     this->filename = std::move(filename);
 }
 
-void FileReader::readFileVector(std::vector<std::string> &file) {
+void FileReader::readFileVector(std::vector<std::string> &file) const {
     // Open the file
     std::ifstream in(this->filename.c_str());
 
@@ -42,7 +42,7 @@ void FileReader::readFileVector(std::vector<std::string> &file) {
     in.close();
 }
 
-void FileReader::readFile(char *buffer) {
+void FileReader::readFile(char *buffer) const {
     // Malloc the buffer for the file
     size_t fileSize = this->fileSize();
     buffer = (char *) malloc(fileSize);
@@ -65,7 +65,7 @@ void FileReader::readFile(char *buffer) {
     }
 }
 
-size_t FileReader::fileSize() {
+size_t FileReader::fileSize() const {
     // File size
     streampos fsize = 0;
     ifstream file(filename, ios::binary);
@@ -78,7 +78,7 @@ size_t FileReader::fileSize() {
     return (size_t) fsize;
 }
 
-string FileReader::fileToString() {
+string FileReader::fileToString() const {
     string str;
 
     vector<string> vecOfStr;

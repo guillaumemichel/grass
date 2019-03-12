@@ -4,7 +4,7 @@ public:
     ~User();
 
     bool setAuthenticated(bool);
-    bool isAuthenticated();
+    bool isAuthenticated() const;
 
 private:
     bool authenticated;
