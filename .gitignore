@@ -1,4 +1,23 @@
-client_test.c
-server_test.c
+# Welcome to our .gitignore
+
+# ignoring everything except the following
+*
+
+# not ignoring the content of subdirectories
+!*/
+.build/
+
+# not ignoring cpp files
+!*.cpp
+!*.h
+!*.c
+
+# not ignoring useful files
+!Makefile
+!.gitignore
+!*.conf
+!*.md
+
+# IDE files
 cmake-build-debug/
 .idea/

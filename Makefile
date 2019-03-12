@@ -1,19 +1,45 @@
-SRCDIR   = src
-BINDIR   = bin
-INCLUDES = include
+SRCDIR   := src
+BINDIR   := bin
+INCLUDES := -Iinclude/
+OBJDIR   := .build
 
-CC=gcc
-CFLAGS=-Wall -Wextra -g -fno-stack-protector -z execstack -lpthread -std=gnu11 -I $(INCLUDES)/ -m32
-DEPS = $(wildcard $(INCLUDES)/%.h)
+CC       := g++
+CFLAGS   :=-Wall -Wextra -g -fno-stack-protector -z execstack -lpthread -std=gnu++11 $(INCLUDES) -m32
+LFLAGS   := -lm
+SRC      :=                      \
+	$(wildcard src/services/commands/*.cpp) \
+	$(wildcard src/grass.cpp)         \
+	$(wildcard src/error.cpp)					\
 
-all: $(BINDIR)/client $(BINDIR)/server $(DEPS)
+OBJECTS := $(SRC:%.cpp=$(OBJDIR)/%.o)
 
-$(BINDIR)/client: $(SRCDIR)/client.c
-	$(CC) $(CFLAGS) $< -o $@
+all: build $(BINDIR)/server $(BINDIR)/client
 
-$(BINDIR)/server: $(SRCDIR)/server.c
-	$(CC) $(CFLAGS) $< -o $@
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
-.PHONY: clean
+$(BINDIR)/server: $(OBJECTS)
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/server $(SRCDIR)/server.cpp $(OBJECTS)
+
+$(BINDIR)/client: $(OBJECTS)
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/client $(SRCDIR)/client.cpp $(OBJECTS)
+
+
+.PHONY: all build clean debug release
+
+build:
+	@mkdir -p $(BINDIR)
+	@mkdir -p $(OBJDIR)
+
+debug: CFLAGS += -DDEBUG -g
+debug: all
+
+release: CFLAGS += -O2
+release: all
+
 clean:
-	rm -f $(BINDIR)/client $(BINDIR)/server
+	-@rm -rvf $(OBJDIR)/*
+	-@rm -rvf $(BINDIR)/*
