@@ -1,7 +1,8 @@
 #include "../tests/ConfigurationTests.h"
+#include "../tests/AuthorizationServiceTests.h"
 
 int main(void) {
-    // Tests for configuration
+    // Tests for Configuration
     testGetBaseShouldReturnCorrectBaseOnStandardConfig();
     testGetBaseShouldReturnErrorOnMissingEntry();
     testGetBaseShouldReturnErrorOnMissingValue();
@@ -11,4 +12,8 @@ int main(void) {
     testGetUsersShouldReturnCorrectMapOnStandardConfig();
     testGetUsersShouldReturnEmptyMapOnMissingEntries();
     testGetUsersShouldIgnoreMalformedEntries();
+
+    // Tests for AuthorizationService
+    testsForAuthenticatedUser();
+    testsForUnauthenticatedUser();
 }

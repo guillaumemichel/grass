@@ -51,7 +51,7 @@ map<string, string> Configuration::getUsers() {
     for(auto const& u: filtered) {
         string userString = removeKeyInLine("user", u);
         size_t delimiterPos = userString.find(" ", 0);
-        if(delimiterPos != string::npos && delimiterPos < userString.size() - 1){
+        if(delimiterPos != string::npos && delimiterPos < userString.size() - 1) {
             users[userString.substr(0, delimiterPos)] = userString.substr(delimiterPos + 1);
         }
     }
