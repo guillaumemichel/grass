@@ -35,7 +35,7 @@ $(BINDIR)/client: $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/client $(SRCDIR)/client.cpp $(OBJECTS)
 
-$(BINDIR)/tests: $(OBJECTS)
+$(TESTDIR): $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/tests $(SRCDIR)/tests.cpp $(OBJECTS)
 
