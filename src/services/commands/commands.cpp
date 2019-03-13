@@ -78,8 +78,13 @@ Command commands[CMD_NB] = {
  * @return              0 for success, 1 for exit, <0 for failure
  */
 int exec_command(string cmd, int p){
-  int err = sanitize(cmd);
-  return err;
+  try{
+    return sanitize(cmd);
+  }
+  catch(Exception& e){
+    e.print_error();
+  }
+  return 0;
 }
 
 int sanitize(string full_cmd){
@@ -90,11 +95,10 @@ int sanitize(string full_cmd){
 
   for (int i=0; i < CMD_NB; ++i){
     if (!cmd.compare(commands[i].str)){
-      int err = commands[i].fct(full_cmd);
-      return err;
+      return commands[i].fct(full_cmd);;
     }
   }
-  return ERR_INVALID_CMD;
+  throw Exception(ERR_INVALID_CMD);
 }
 
 string tokenize_ip(string){
@@ -110,9 +114,10 @@ int cmd_pass(string cmd){
 }
 
 int cmd_ping(string cmd){
-  if (cmd.size() == str_ping.size()) return ERR_INVALID_ARGS;
-  string str = str_ping + " " + tokenize_ip(cmd.substr(str_ping.size() + 1));
-  cout << str << endl;
+  if (cmd.size() == str_ping.size()){
+    throw Exception(ERR_INVALID_ARGS);
+  }
+  string str = str_ping + " " + tokenize_ip(cmd.substr(str_ping.size() + 1)) + " -c1";
   system((str).c_str());
   return 0;
 }
@@ -148,6 +153,7 @@ int cmd_grep(string cmd){
 }
 
 int cmd_date(string cmd){
+  //TODO: update according to the login
   system((str_date).c_str());
   return 0;
 }
