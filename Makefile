@@ -2,6 +2,7 @@ SRCDIR   := src
 BINDIR   := bin
 INCLUDES := -Iinclude/
 OBJDIR   := .build
+TESTDIR  := $(BINDIR)/tests
 
 CC       := g++
 CFLAGS   :=-Wall -Wextra -g -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES) -m32
@@ -18,9 +19,9 @@ SRC      :=                      \
 
 OBJECTS := $(SRC:%.cpp=$(OBJDIR)/%.o)
 
-all: build $(BINDIR)/server $(BINDIR)/client $(BINDIR)/tests
+all: build $(BINDIR)/server $(BINDIR)/client $(TESTDIR)
 
-tests: refresh $(BINDIR)/tests
+tests: refresh $(TESTDIR)
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
