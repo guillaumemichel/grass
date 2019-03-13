@@ -2,11 +2,13 @@
 
 int main(void) {
     // Tests for configuration
-    testGetBaseShouldReturnDotOnStandardConfig();
+    testGetBaseShouldReturnCorrectBaseOnStandardConfig();
     testGetBaseShouldReturnErrorOnMissingEntry();
     testGetBaseShouldReturnErrorOnMissingValue();
     testGetPortShouldReturn8888OnStandardConfig();
     testGetPortShouldReturnErrorOnMissingEntry();
     testGetPortShouldReturnErrorOnMissingValue();
     testGetUsersShouldReturnCorrectMapOnStandardConfig();
+    testGetUsersShouldReturnEmptyMapOnMissingEntries();
+    testGetUsersShouldIgnoreMalformedEntries();
 }

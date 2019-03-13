@@ -1,9 +1,10 @@
 #include <assert.h>
 #include <map>
 #include <string>
+#include <iostream>
 #include "ConfigurationTests.h"
 
-void testGetBaseShouldReturnDotOnStandardConfig() {
+void testGetBaseShouldReturnCorrectBaseOnStandardConfig() {
     FileReader fr("tests/testables/grass.conf");
     Configuration conf(fr);
     assert(conf.getBase() == "my_super_base");
@@ -61,6 +62,25 @@ void testGetUsersShouldReturnCorrectMapOnStandardConfig() {
     map<string, string> users = conf.getUsers();
     map<string, string> usersTest = {
             {"XavierP", "TopSecretPasswd"},
+            {"GuillaumeMichel", "FreeGuissou"},
+            {"Alex", "ElFuego"}
+    };
+
+    assert(users.size() == usersTest.size());
+    assert(equal(users.begin(), users.end(), usersTest.begin()));
+}
+
+void testGetUsersShouldReturnEmptyMapOnMissingEntries() {
+    FileReader fr("tests/testables/no_users_grass.conf");
+    Configuration conf(fr);
+    assert(conf.getUsers().size() == 0);
+}
+
+void testGetUsersShouldIgnoreMalformedEntries() {
+    FileReader fr("tests/testables/malformed_users_grass.conf");
+    Configuration conf(fr);
+    map<string, string> users = conf.getUsers();
+    map<string, string> usersTest = {
             {"GuillaumeMichel", "FreeGuissou"},
             {"Alex", "ElFuego"}
     };

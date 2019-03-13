@@ -1,7 +1,6 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <iostream>
 #include "../../include/Configuration.h"
 #include "../../include/FileReader.h"
 
@@ -14,7 +13,7 @@ vector<string> Configuration::getEntriesWithKey(const string key) {
     fileReader.readFileVector(lines);
     vector<string> desiredLines;
     for(auto const& line: lines) {
-        if(line.rfind(key, 0) == 0)
+        if(line.rfind(key, 0) == 0 && line.size() > key.size() + 1 && line.find_first_of(" ") == key.size())
             desiredLines.push_back(line);
     }
     return desiredLines;
