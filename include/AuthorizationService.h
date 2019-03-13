@@ -10,12 +10,11 @@ map<string, AuthorizationPolicy> init_policies();
 
 class AuthorizationService {
     private:
-        User* user;
+        const User& user;
 
     public:
         // Constructor and destructor
-        AuthorizationService(User* user);
-        ~AuthorizationService();
+        AuthorizationService(const User&);
 
         // Static attributes
         static map<string, AuthorizationPolicy> policies;

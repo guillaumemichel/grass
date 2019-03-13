@@ -23,19 +23,13 @@ map<string, AuthorizationPolicy> init_policies() {
     return m;
 }
 
-AuthorizationService::AuthorizationService(User* user) {
-    this->user = user;
-}
-
-AuthorizationService::~AuthorizationService() {
-    delete user;
-}
+AuthorizationService::AuthorizationService(const User& user): user(user) {}
 
 map<string, AuthorizationPolicy> AuthorizationService::policies = init_policies();
 
 bool AuthorizationService::hasAccessTo(const string command) {
     if(policies.find(command) != policies.end()) {
-        return policies.at(command) == anonymous || (policies.at(command) == AuthorizationPolicy::user && user->isAuthenticated());
+        return policies.at(command) == anonymous || (policies.at(command) == AuthorizationPolicy::user && user.isAuthenticated());
     }
     return false;
 }

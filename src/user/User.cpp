@@ -10,6 +10,6 @@ bool User::setAuthenticated(bool status) {
     authenticated = status;
 }
 
-bool User::isAuthenticated() {
+bool User::isAuthenticated() const {
     return authenticated;
 }

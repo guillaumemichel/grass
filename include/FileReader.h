@@ -1,18 +1,21 @@
+#include <string>
+
 #ifndef ASS_ON_THE_GRASS_FILEREADER_H
 #define ASS_ON_THE_GRASS_FILEREADER_H
 
+using namespace std;
 
 class FileReader {
 public:
     explicit FileReader(string filename);
 
-    void readFile(char * buffer);
+    void readFile(char * buffer) const;
 
-    void readFileVector(vector<string> & file);
+    void readFileVector(vector<string> & file) const;
 
-    string fileToString();
+    string fileToString() const;
 
-    size_t fileSize();
+    size_t fileSize() const;
 
 private:
     string filename;
