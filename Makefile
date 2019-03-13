@@ -14,10 +14,13 @@ SRC      :=                      \
 	$(wildcard src/user/*.cpp)				\
 	$(wildcard src/grass.cpp)         \
 	$(wildcard src/error.cpp)					\
+	$(wildcard tests/*.cpp)
 
 OBJECTS := $(SRC:%.cpp=$(OBJDIR)/%.o)
 
-all: build $(BINDIR)/server $(BINDIR)/client
+all: build $(BINDIR)/server $(BINDIR)/client $(BINDIR)/tests
+
+tests: refresh $(BINDIR)/tests
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
@@ -31,8 +34,12 @@ $(BINDIR)/client: $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/client $(SRCDIR)/client.cpp $(OBJECTS)
 
+$(BINDIR)/tests: $(OBJECTS)
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/tests $(SRCDIR)/tests.cpp $(OBJECTS)
 
-.PHONY: all build clean debug release refresh
+
+.PHONY: all build clean debug release refresh tests
 
 build:
 	@mkdir -p $(BINDIR)
