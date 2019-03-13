@@ -8,4 +8,5 @@ int main(void) {
     testGetPortShouldReturn8888OnStandardConfig();
     testGetPortShouldReturnErrorOnMissingEntry();
     testGetPortShouldReturnErrorOnMissingValue();
+    testGetUsersShouldReturnCorrectMapOnStandardConfig();
 }

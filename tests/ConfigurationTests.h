@@ -9,5 +9,6 @@ void testGetBaseShouldReturnErrorOnMissingValue();
 void testGetPortShouldReturn8888OnStandardConfig();
 void testGetPortShouldReturnErrorOnMissingEntry();
 void testGetPortShouldReturnErrorOnMissingValue();
+void testGetUsersShouldReturnCorrectMapOnStandardConfig();
 
 #endif //ASS_ON_THE_GRASS_CONFIGURATIONTESTS_H
