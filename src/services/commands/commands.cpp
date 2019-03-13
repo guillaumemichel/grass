@@ -79,10 +79,6 @@ Command commands[CMD_NB] = {
  */
 int exec_command(string cmd, int p){
   int err = sanitize(cmd);
-  if (err<0){
-    print_error(err);
-    err = 0;
-  }
   return err;
 }
 

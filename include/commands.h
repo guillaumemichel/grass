@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <iostream>
 #include <string>
-#include "error.h"
+#include "exception.h"
 
 using namespace std;
 
