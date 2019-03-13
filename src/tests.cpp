@@ -3,5 +3,9 @@
 int main(void) {
     // Tests for configuration
     testGetBaseShouldReturnDotOnStandardConfig();
-    testGetPortShouldReturn1337OnStandardConfig();
+    testGetBaseShouldReturnErrorOnMissingEntry();
+    testGetBaseShouldReturnErrorOnMissingValue();
+    testGetPortShouldReturn8888OnStandardConfig();
+    testGetPortShouldReturnErrorOnMissingEntry();
+    testGetPortShouldReturnErrorOnMissingValue();
 }

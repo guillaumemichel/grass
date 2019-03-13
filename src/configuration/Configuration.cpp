@@ -16,17 +16,23 @@ vector<string> Configuration::getEntriesWithKey(const string key) {
     return desiredLines;
 }
 
-string Configuration::getBase() {
-    vector<string> filtered = getEntriesWithKey("base");
-    if(filtered.size() > 0 && filtered[0].rfind("base", 0) == 0 && filtered[0].find(" ", 0) == 4 && filtered[0].size() > 5)
-        return filtered[0].substr(5);
+string Configuration::extractStringValue(string key) {
+    vector<string> filtered = getEntriesWithKey(key);
+    if(filtered.size() > 0 && filtered[0].rfind(key, 0) == 0 && filtered[0].find(" ", 0) == key.size() && filtered[0].size() > key.size() + 1) {
+        return filtered[0].substr(key.size() + 1);
+    }
     return "NOT FOUND";
 }
 
+string Configuration::getBase() {
+    return extractStringValue("base");
+}
+
 unsigned int Configuration::getPort() {
-    vector<string> filtered = getEntriesWithKey("port");
-    if(filtered.size() > 0 && filtered[0].rfind("port", 0) == 0 && filtered[0].find(" ", 0) == 4 && filtered[0].size() > 5)
-        return stoul(filtered[0].substr(5), NULL, 10);
+    string value = extractStringValue("port");
+    if(value == "NOT FOUND")
+        return -1;
+    return stoul(value, NULL, 10);
 }
 
 //map<string, string> Configuration::getUsers() { map<string> m; return m; }

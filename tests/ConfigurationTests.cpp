@@ -2,13 +2,53 @@
 #include "ConfigurationTests.h"
 
 void testGetBaseShouldReturnDotOnStandardConfig() {
-    FileReader fr("grass.conf");
+    FileReader fr("tests/testables/grass.conf");
     Configuration conf(fr);
-    assert(conf.getBase() == ".");
+    assert(conf.getBase() == "my_super_base");
 }
 
-void testGetPortShouldReturn1337OnStandardConfig() {
-    FileReader fr("grass.conf");
+void testGetBaseShouldReturnErrorOnMissingEntry() {
+    FileReader fr("tests/testables/no_base_grass.conf");
     Configuration conf(fr);
-    assert(conf.getPort() == (unsigned int) 1337);
+    assert(conf.getBase() == "NOT FOUND");
+
+}
+
+void testGetBaseShouldReturnErrorOnMissingValue() {
+    FileReader fr1("tests/testables/malformed_base_grass_1.conf");
+    Configuration conf1(fr1);
+    assert(conf1.getBase() == "NOT FOUND");
+
+    FileReader fr2("tests/testables/malformed_base_grass_2.conf");
+    Configuration conf2(fr2);
+    assert(conf2.getBase() == "NOT FOUND");
+}
+
+void testGetPortShouldReturn8888OnStandardConfig() {
+    FileReader fr("tests/testables/grass.conf");
+    Configuration conf(fr);
+    assert(conf.getPort() == (unsigned int) 8888);
+}
+
+void testGetPortShouldReturnErrorOnMissingEntry() {
+    FileReader fr("tests/testables/no_port_grass.conf");
+    Configuration conf(fr);
+    assert(conf.getPort() == (unsigned int) -1);
+
+}
+
+void testGetPortShouldReturnErrorOnMissingValue() {
+    FileReader fr1("tests/testables/malformed_port_grass_1.conf");
+    Configuration conf1(fr1);
+    assert(conf1.getPort() == (unsigned int) -1);
+
+    FileReader fr2("tests/testables/malformed_port_grass_2.conf");
+    Configuration conf2(fr2);
+    assert(conf2.getPort() == (unsigned int) -1);
+
+    FileReader fr3("tests/testables/malformed_port_grass_3.conf");
+    Configuration conf3(fr3);
+    try { conf3.getPort(); }
+    catch(...) { return; }
+    assert(false);
 }

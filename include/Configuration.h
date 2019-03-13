@@ -12,6 +12,7 @@ class Configuration {
 private:
     const FileReader& fileReader;
     vector<string> getEntriesWithKey(const string key);
+    string extractStringValue(string);
 
 public:
     Configuration(const FileReader&);
