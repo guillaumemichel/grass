@@ -3,6 +3,7 @@
 #ifndef ASS_ON_THE_GRASS_CONFIGURATIONTESTS_H
 #define ASS_ON_THE_GRASS_CONFIGURATIONTESTS_H
 
-void testTest();
+void testGetBaseShouldReturnDotOnStandardConfig();
+void testGetPortShouldReturn1337OnStandardConfig();
 
 #endif //ASS_ON_THE_GRASS_CONFIGURATIONTESTS_H
