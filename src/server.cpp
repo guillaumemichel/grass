@@ -71,8 +71,9 @@ int main() {
     string cmd;
     int end = 0;
     while(!end){
-        cout << ">>> ";
+        cout << endl << ">>> ";
         getline(cin, cmd);
+        cout << endl;
         end = run_command(cmd, 0);
     }
     //run commands and loop again
