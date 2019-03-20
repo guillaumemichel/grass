@@ -17,79 +17,6 @@ using namespace std;
 #include "../../include/client_socket.h"
 #include "../../include/FileReader.h"
 
-
-#define PORT 8080
-
-void ouba() {
-    cout << "Starting new thread to send the file to the server" << endl;
-    Client client(9999);
-
-    // Loop while the server is ready
-
-    int maxTries = 10;
-    bool connected = false;
-    while (maxTries > 0 && !connected) {
-        // Tries to connect
-        try {
-            client.initiateConnection();
-            connected = true;
-        } catch (exception &e) {
-            cout << "Cannot connect to the server... Attempting again...";
-            maxTries--;
-            sleep(100);
-        }
-    }
-
-
-
-    if (maxTries == 0) {
-        throw invalid_argument("Cannot connect to the server");
-    }
-
-    // Should be ok, but we just check if the sock was properly created
-    if (!client.isSocketInitiated()) {
-        throw invalid_argument("The socket was not properly created");
-    }
-
-    client.uploadFile();
-
-    cout << "Closing the upload thread" << endl;
-}
-
-int main2() {
-    // Instantiate a new client
-    Client client(PORT);
-
-    client.initiateConnection();
-
-    string command;
-
-    // Loop while command is not exit
-    do {
-        // Read the command
-        command = client.readCommand();
-
-        if (command == "put") {
-            // Send the command to the server
-            client.sendToServer(command);
-
-            // Wait for the server answer
-            client.readFromServer();
-
-            // Upload the file
-            thread t1(ouba);
-            t1.join();
-        } else {
-            // Send the command to the server
-            client.sendToServer(command);
-        }
-    } while (command != Client::EXIT_CMD);
-
-    cout << "Exiting the client" << endl;
-
-    return 0;
-}
-
 void Client::initiateConnection() {
     // Create the object in which we'll be storing the server address
     struct sockaddr_in serverAddress{};
@@ -149,6 +76,13 @@ void Client::sendToServer(string toSend) {
     }
 }
 
+void Client::sendToServerWithoutSize(string toSend) {
+    // Same as above function but doesn't send the size as a preamble
+    if (-1 == send(this->getSocket(), toSend.data(), toSend.size(), 0)) {
+        cout << "Error : cannot send the data";
+    }
+}
+
 void Client::readFromServer() {
     if (this->isSocketInitiated()) {
 
@@ -169,7 +103,7 @@ void Client::readFromServer() {
 
 void Client::uploadFile() {
     // Upload dummy file for test purpose
-    FileReader fileReader("test.txt");
+    FileReader fileReader("/home/alex/Documents/EPFL/SoftSec/Project/ass_on_the_grass/test.txt");
 
     // We first read the file
     vector<string> vecOfStr;
@@ -178,7 +112,7 @@ void Client::uploadFile() {
     string nbrStrings = to_string(vecOfStr.size());
 
     // Send to the server the # of strings it has to read
-    this->sendToServer(nbrStrings);
+    this->sendToServerWithoutSize(nbrStrings);
 
     // Then we send the lines 1 by 1
     vector<string>::iterator it;

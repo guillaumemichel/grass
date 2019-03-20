@@ -1,8 +1,9 @@
-#include <grass.h>
 #include <ctype.h>
 #include <iostream>
 #include <string>
+#include "../include/grass.h"
 #include "../include/commands.h"
+#include "../include/server_socket.h"
 
 using namespace std;
 
@@ -14,12 +15,12 @@ static int numCmds;
 char port[7] = "31337";
 
 // Helper function to run commands in unix.
-int run_command(string command, int sock){
-  //manage socket
-  //manage control access
-  int permission_level = 2;
-  int i = exec_command(command, permission_level);
-  return i;
+int run_command(string command, int sock) {
+    //manage socket
+    //manage control access
+    int permission_level = 2;
+    int i = exec_command(command, permission_level);
+    return i;
 }
 
 
@@ -43,7 +44,7 @@ void recv_file(int fp, int sock, int size) {
 }
 
 // Server side REPL given a socket file descriptor
-void *connection_handler(void* sockfd) {
+void *connection_handler(void *sockfd) {
 }
 
 /*
@@ -63,18 +64,38 @@ void parse_grass() {
 
 int main() {
     // TODO:
-    // Parse the rass.conf file
+    // Parse the grass.conf file
     // Listen to the port and handle each connection
-    cout << "I am the server =D\n\n";
-    //connect with client
-    //infinite loop: wait for Commands
-    string cmd;
-    int end = 0;
-    while(!end){
-        cout << endl << ">>> ";
-        getline(cin, cmd);
-        cout << endl;
-        end = run_command(cmd, 0);
+
+    // Create a server object
+    Server server(8080);
+
+    // Create the socket
+    if (-1 == server.initiateConnection()) {
+        cout << "Cannot create a server...";
+        return -1;
     }
-    //run commands and loop again
+
+    cout << "Server socket initiated" << endl;
+    cout << "Listening for incoming connections..." << endl;
+
+    // TODO : refactor this
+    int userSocket;
+    struct sockaddr_in sockaddrIn;
+    int addrlen = sizeof(sockaddrIn);
+    if ((userSocket = accept(server.getSocket(), (struct sockaddr *) &server.address,
+                             (socklen_t *) &addrlen)) < 0) {
+        perror("accept");
+        exit(EXIT_FAILURE);
+    }
+
+    cout << "New client connected" << endl;
+
+    // Loop while the command exit has not been sent
+    // TODO : add try catch around to print error message in case of
+    server.readFromUserSocket(userSocket);
+
+    cout << "Safely exiting the server" << endl;
+
+    return 0;
 }

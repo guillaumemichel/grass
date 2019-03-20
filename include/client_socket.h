@@ -1,7 +1,17 @@
 #ifndef ASS_ON_THE_GRASS_CLIENT_H
 #define ASS_ON_THE_GRASS_CLIENT_H
 
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <iostream>
 #include <thread>
+#include "commands.h"
+
+using namespace std;
 
 class Client {
 public:
@@ -14,6 +24,8 @@ public:
     string readCommand();
 
     void sendToServer(string toSend);
+
+    void sendToServerWithoutSize(string toSend);
 
     void initiateConnection();
 

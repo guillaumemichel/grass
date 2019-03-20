@@ -12,7 +12,7 @@ using namespace std;
 #include "../../include/server_socket.h"
 
 int main2(int argc, char const *argv[]) {
-    // Create a server object
+  /*  // Create a server object
     Server server(8080);
 
     // Create the socket
@@ -40,7 +40,7 @@ int main2(int argc, char const *argv[]) {
         cout << "Safely exiting the server" << endl;
     }
 
-    return 0;
+    return 0;*/
 }
 
 Server::Server(uint16_t port) {
@@ -90,7 +90,7 @@ bool Server::isSocketInitiated() {
     return this->sock > 0;
 }
 
-int Server::readFromUserSocket(int userSocket) {
+void Server::readFromUserSocket(int userSocket) {
     // TODO : WHAT IF A USER SETS A BIIIIIG NUMBER AND THE COMMAND IS WAY SMALLER THAN THAT ?
     // --> Maybe put a size limit or whatever ?
 
@@ -109,9 +109,7 @@ int Server::readFromUserSocket(int userSocket) {
 
         // Check if buffer was correctly allocated
         if (buffer == nullptr) {
-            cout << "Error while allocating the buffer...";
-            // Exiting
-            return -1;
+            throw invalid_argument("Cannot allocate the buffer");
         } else {
             // Allocate the buffer with 0
             for (int i = 0; i < sizeToRead[0]; i++) {
@@ -121,6 +119,12 @@ int Server::readFromUserSocket(int userSocket) {
             // Now we can read the data
             // TODO : check if read does not return 0 or -1
             if (0 < read(userSocket, buffer, sizeToRead[0])) {
+                // TODO : later
+                //string command = str(buffer);
+                //int permission_level = 2;
+                //int i = exec_command(command, permission_level);
+
+                // My command interpreter
                 if (0 == strcmp(buffer, "exit")) {
                     cout << "Signal to shutdown the server was received..." << endl;
                     free(buffer);
@@ -142,14 +146,13 @@ int Server::readFromUserSocket(int userSocket) {
                 }
             }
 
-            // Finally we free the buffer
+            // Finally we clean and free the buffer
+            memset(buffer, 0, sizeToRead[0]);
             free(buffer);
         }
 
         sizeToRead[0] = {0};
     }
-
-    return 0;
 }
 
 void Server::receiveFileUpload() {
@@ -160,6 +163,8 @@ void Server::receiveFileUpload() {
     if (-1 == receivingServer.initiateConnection()) {
         throw invalid_argument("Cannot start the receiving server");
     }
+
+    cout << "New thread instantiated, waiting for the client to connect..." << endl;
 
     int userSocket;
     struct sockaddr_in sockaddrIn;
@@ -172,5 +177,55 @@ void Server::receiveFileUpload() {
 
     cout << "File transfer started" << endl;
 
-    receivingServer.readFromUserSocket(userSocket);
+    // ==== READ THE FILE ==== //
+
+    // Buffer to get the size the file and of each line
+    size_t sizeToRead[1] = {0};
+
+    // Read the # of lines
+    // TODO : check if read returns 0 or -1
+    read(userSocket, sizeToRead, 1);
+
+    // Converting from byte to int
+    int nbrLines = (int) sizeToRead[0] - '0';
+
+    // Reinitialise the buffer to read lines
+    sizeToRead[0] = {0};
+
+    // Read each line successively
+    for (int i = 0; i < nbrLines; i++) {
+        // Get the size of the line
+        read(userSocket, sizeToRead, 1);
+        cout << "Next line size : " << sizeToRead[0] << endl;
+
+        // Buffer where we'll store the data sent by the client
+        char *buffer;
+
+        // Allocating the memory to the buffer
+        buffer = (char *) malloc(sizeToRead[0]);
+
+        // Check if buffer was correctly allocated
+        if (buffer == nullptr) {
+            throw invalid_argument("Cannot allocate the buffer");
+        } else {
+            // Allocate the buffer with 0
+            for (int j = 0; j < sizeToRead[0]; j++) {
+                buffer[j] = 0;
+            }
+
+            // Now we can read the data
+            // TODO : check if read does not return 0 or -1
+            read(userSocket, buffer, sizeToRead[0]);
+
+            cout << "Line n°" << i << " received : " << buffer << endl;
+
+            // Finally we clean and free the buffer
+            memset(buffer, 0, sizeToRead[0]);
+            free(buffer);
+        }
+        sizeToRead[0] = {0};
+    }
+
+    cout << "File transfer finished" << endl;
 }
+

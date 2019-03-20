@@ -9,6 +9,7 @@
 #include <string.h>
 #include <iostream>
 #include <thread>
+#include "commands.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ public:
 
     struct sockaddr_in address;
 
-    int readFromUserSocket(int userSocket);
+    void readFromUserSocket(int userSocket);
 private:
     int sock = 0;
 

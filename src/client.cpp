@@ -1,6 +1,19 @@
-#include <grass.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <stdlib.h>
 #include <netinet/in.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 #include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <thread>
+
+#include "../include/grass.h"
+#include "../include/client_socket.h"
+#include "../include/FileReader.h"
 
 using namespace std;
 
@@ -37,9 +50,73 @@ void search(char *pattern) {
     // TODO
 }
 
+void ouba() {
+    cout << "Starting new thread to send the file to the server" << endl;
+    Client client(9999);
+
+    // Loop while the server is ready
+    int maxTries = 10;
+    bool connected = false;
+    while (maxTries > 0 && !connected) {
+        // Tries to connect
+        try {
+            client.initiateConnection();
+            connected = true;
+        } catch (exception &e) {
+            cout << "Cannot connect to the server... Attempting again...";
+            maxTries--;
+            usleep(100);
+        }
+    }
+
+
+    if (maxTries == 0) {
+        throw invalid_argument("Cannot connect to the server");
+    }
+
+    // Should be ok, but we just check if the sock was properly created
+    if (!client.isSocketInitiated()) {
+        throw invalid_argument("The socket was not properly created");
+    }
+
+    client.uploadFile();
+
+    cout << "Closing the upload thread" << endl;
+}
+
 int main(int argc, char **argv) {
     // TODO:
     // Make a short REPL to send commands to the server
     // Make sure to also handle the special cases of a get and put command
-    cout << "I am the client =D\n";
+    // Instantiate a new client
+    Client client(8080);
+
+    client.initiateConnection();
+
+    string command;
+
+    // Loop while command is not exit
+    do {
+        // Read the command
+        command = client.readCommand();
+
+        if (command == "put") {
+            // Send the command to the server
+            client.sendToServer(command);
+
+            // Wait for the server answer
+            client.readFromServer();
+
+            // Upload the file
+            thread t1(ouba);
+            t1.join();
+        } else {
+            // Send the command to the server
+            client.sendToServer(command);
+        }
+    } while (command != Client::EXIT_CMD);
+
+    cout << "Exiting the client" << endl;
+
+    return 0;
 }
