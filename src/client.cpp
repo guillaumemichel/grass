@@ -14,6 +14,7 @@
 #include "../include/grass.h"
 #include "../include/client_socket.h"
 #include "../include/FileReader.h"
+#include "../include/FileWriter.h"
 
 using namespace std;
 

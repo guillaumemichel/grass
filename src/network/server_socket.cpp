@@ -139,7 +139,7 @@ void Server::readFromUserSocket(int userSocket) {
                     }
 
                     // Then we start a new thread to receive it
-                    thread t1(Server::receiveFileUpload);
+                    thread t1(Server::receiveFileUpload, "dummy.txt");
                     t1.join();
                 } else {
                     cout << "Command received : " << buffer << endl;
@@ -155,7 +155,7 @@ void Server::readFromUserSocket(int userSocket) {
     }
 }
 
-void Server::receiveFileUpload() {
+void Server::receiveFileUpload(string filename) {
     cout << "Starting a new thread for the receiving server" << endl;
 
     Server receivingServer(9999);
@@ -178,6 +178,12 @@ void Server::receiveFileUpload() {
     cout << "File transfer started" << endl;
 
     // ==== READ THE FILE ==== //
+
+    // Create a file writer to write the file
+    FileWriter fw(filename);
+
+    // Clear the file in case of all data was there
+    fw.clearFile();
 
     // Buffer to get the size the file and of each line
     size_t sizeToRead[1] = {0};
@@ -208,16 +214,15 @@ void Server::receiveFileUpload() {
         if (buffer == nullptr) {
             throw invalid_argument("Cannot allocate the buffer");
         } else {
-            // Allocate the buffer with 0
-            for (int j = 0; j < sizeToRead[0]; j++) {
-                buffer[j] = 0;
-            }
-
             // Now we can read the data
             // TODO : check if read does not return 0 or -1
             read(userSocket, buffer, sizeToRead[0]);
 
-            cout << "Line n°" << i << " received : " << buffer << endl;
+            // Create the string and write it to the file
+            string line(buffer, sizeToRead[0]);
+            fw.writeLine(line);
+
+            cout << "Line n°" << i << " received : " << line << endl;
 
             // Finally we clean and free the buffer
             memset(buffer, 0, sizeToRead[0]);

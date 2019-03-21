@@ -10,6 +10,7 @@
 #include <iostream>
 #include <thread>
 #include "commands.h"
+#include "FileWriter.h"
 
 using namespace std;
 
@@ -31,7 +32,7 @@ private:
 
     uint16_t port;
 
-    static void receiveFileUpload();
+    static void receiveFileUpload(string filename);
 };
 
 

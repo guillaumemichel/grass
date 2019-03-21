@@ -65,19 +65,6 @@ void FileReader::readFile(char *buffer) const {
     }
 }
 
-size_t FileReader::fileSize() const {
-    // File size
-    streampos fsize = 0;
-    ifstream file(filename, ios::binary);
-
-    fsize = file.tellg();
-    file.seekg(0, ios::end);
-    fsize = file.tellg() - fsize;
-    file.close();
-
-    return (size_t) fsize;
-}
-
 string FileReader::fileToString() const {
     string str;
 
