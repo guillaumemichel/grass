@@ -46,7 +46,7 @@ void Client::initiateConnection() {
 
 string Client::readCommand() {
     // Read the command of the user
-    string command;
+    string command = "";
 
     cout << "Enter your command : ";
     getline(cin, command);
