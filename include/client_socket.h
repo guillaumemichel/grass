@@ -29,15 +29,17 @@ public:
 
     void initiateConnection();
 
+    void closeConnection();
+
     int getSocket();
 
     bool isSocketInitiated();
 
-    void readFromServer();
+    string readFromServer();
 
     inline static const string EXIT_CMD = "exit";
 
-    void uploadFile();
+    void uploadFile(string filename);
 
 private:
     int sock = 0;

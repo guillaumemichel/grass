@@ -83,27 +83,27 @@ void Client::sendToServerWithoutSize(string toSend) {
     }
 }
 
-void Client::readFromServer() {
+string Client::readFromServer() {
     if (this->isSocketInitiated()) {
-
-        char buffer[14] = {0};
+        // TODO : replace this by dynamic size
+        int size = 15;
+        char buffer[size] = {0};
 
         // Read data from the server
-        ssize_t valRead = read(this->getSocket(), buffer, 14);
+        ssize_t valRead = read(this->getSocket(), buffer, size);
         if (-1 == valRead) {
-            cout << "Error while reading data from server" << endl;
+            throw invalid_argument("Error while reading data from server");
         } else {
-            cout << "Received from server : " << buffer << endl;
+            return string(buffer, size);
         }
     } else {
-        cout << "Cannot read from server, the socket was not initiated" << endl;
+        throw invalid_argument("Cannot read from server, the socket was not initiated");
     }
 }
 
-
-void Client::uploadFile() {
+void Client::uploadFile(string filename) {
     // Upload dummy file for test purpose
-    FileReader fileReader("/home/alex/Documents/EPFL/SoftSec/Project/ass_on_the_grass/test.txt");
+    FileReader fileReader(filename);
 
     // We first read the file
     vector<string> vecOfStr;
@@ -125,4 +125,8 @@ void Client::uploadFile() {
 
 Client::Client(uint16_t dstPort) {
     this->port = dstPort;
+}
+
+void Client::closeConnection() {
+    close(this->sock);
 }

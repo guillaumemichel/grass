@@ -11,38 +11,6 @@ using namespace std;
 
 #include "../../include/server_socket.h"
 
-int main2(int argc, char const *argv[]) {
-  /*  // Create a server object
-    Server server(8080);
-
-    // Create the socket
-    if (-1 == server.initiateConnection()) {
-        cout << "aze";
-        return -1;
-    }
-
-    cout << "Server socket initiated" << endl;
-    cout << "Listening for incoming connections..." << endl;
-
-    // TODO : refactor this
-    int userSocket;
-    struct sockaddr_in sockaddrIn;
-    int addrlen = sizeof(sockaddrIn);
-    if ((userSocket = accept(server.getSocket(), (struct sockaddr *) &server.address,
-                             (socklen_t *) &addrlen)) < 0) {
-        perror("accept");
-        exit(EXIT_FAILURE);
-    }
-
-    cout << "A new user connected" << endl;
-
-    if (0 == server.readFromUserSocket(userSocket)) {
-        cout << "Safely exiting the server" << endl;
-    }
-
-    return 0;*/
-}
-
 Server::Server(uint16_t port) {
     this->port = port;
 }
@@ -129,17 +97,31 @@ void Server::readFromUserSocket(int userSocket) {
                     cout << "Signal to shutdown the server was received..." << endl;
                     free(buffer);
                     stopFlag = true;
-                } else if (0 == strcmp(buffer, "put")) {
+                } else if (0 == strncmp(buffer, "put", 3)) {
+                    // Convert the buffer to string
+                    string command(buffer, sizeToRead[0]);
+
+                    // Get the filename and the size
+                    string removePut = command.substr(command.find(" ") + 1);
+                    string filename = removePut.substr(0, removePut.find(" "));
+                    string size = removePut.substr(removePut.find(" ") + 1); // TODO : what to do with the size?
+
+                    // TODO : throw exception if expected values are not present
+
                     // On upload we have to start a new thread and a new socket
 
                     // First we send to the client the port number
-                    string message = "put port: 9999";
+                    // Generate random port
+                    // TODO : check if port is usable or nto
+                    int portNumber = 10000 + (std::rand() % (42420 - 10000 + 1));
+                    string message = "put port: " + to_string(portNumber);
+
                     if (-1 == send(userSocket, message.c_str(), message.size(), 0)) {
                         throw invalid_argument("Cannot send the port to the client");
                     }
 
                     // Then we start a new thread to receive it
-                    thread t1(Server::receiveFileUpload, "dummy.txt");
+                    thread t1(Server::receiveFileUpload, filename, portNumber);
                     t1.join();
                 } else {
                     cout << "Command received : " << buffer << endl;
@@ -155,10 +137,10 @@ void Server::readFromUserSocket(int userSocket) {
     }
 }
 
-void Server::receiveFileUpload(string filename) {
-    cout << "Starting a new thread for the receiving server" << endl;
+void Server::receiveFileUpload(string filename, int port) {
+    cout << "Starting a new thread for the receiving server on port " << port << endl;
 
-    Server receivingServer(9999);
+    Server receivingServer(port);
 
     if (-1 == receivingServer.initiateConnection()) {
         throw invalid_argument("Cannot start the receiving server");
@@ -170,7 +152,7 @@ void Server::receiveFileUpload(string filename) {
     struct sockaddr_in sockaddrIn;
     int addrlen = sizeof(sockaddrIn);
     if ((userSocket = accept(receivingServer.getSocket(), (struct sockaddr *) &receivingServer.address,
-                             (socklen_t *) &addrlen)) < 0) {
+                             (socklen_t * ) & addrlen)) < 0) {
         perror("accept");
         throw invalid_argument("Cannot listen for sockets");
     }
@@ -178,6 +160,9 @@ void Server::receiveFileUpload(string filename) {
     cout << "File transfer started" << endl;
 
     // ==== READ THE FILE ==== //
+
+    // Rewrite the filename to the "uploaded" directory
+    filename = "uploaded/" + filename;
 
     // Create a file writer to write the file
     FileWriter fw(filename);
@@ -202,7 +187,7 @@ void Server::receiveFileUpload(string filename) {
     for (int i = 0; i < nbrLines; i++) {
         // Get the size of the line
         read(userSocket, sizeToRead, 1);
-        cout << "Next line size : " << sizeToRead[0] << endl;
+        cout << " ~~~~~ Next line size : " << sizeToRead[0] << endl;
 
         // Buffer where we'll store the data sent by the client
         char *buffer;
@@ -222,7 +207,7 @@ void Server::receiveFileUpload(string filename) {
             string line(buffer, sizeToRead[0]);
             fw.writeLine(line);
 
-            cout << "Line n°" << i << " received : " << line << endl;
+            cout << " ~~~~~ Line n°" << i << " received : " << line << endl;
 
             // Finally we clean and free the buffer
             memset(buffer, 0, sizeToRead[0]);
@@ -231,6 +216,9 @@ void Server::receiveFileUpload(string filename) {
         sizeToRead[0] = {0};
     }
 
-    cout << "File transfer finished" << endl;
+    // Once the file transfer is done, we close the socket
+    close(userSocket);
+
+    cout << "File transfer done" << endl;
 }
 

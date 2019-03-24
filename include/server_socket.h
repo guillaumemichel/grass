@@ -32,7 +32,7 @@ private:
 
     uint16_t port;
 
-    static void receiveFileUpload(string filename);
+    static void receiveFileUpload(string filename, int port);
 };
 
 

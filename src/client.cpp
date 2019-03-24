@@ -51,9 +51,9 @@ void search(char *pattern) {
     // TODO
 }
 
-void ouba() {
+void ouba(string filename, string size, int port) {
     cout << "Starting new thread to send the file to the server" << endl;
-    Client client(9999);
+    Client client(port);
 
     // Loop while the server is ready
     int maxTries = 10;
@@ -64,9 +64,10 @@ void ouba() {
             client.initiateConnection();
             connected = true;
         } catch (exception &e) {
-            cout << "Cannot connect to the server... Attempting again...";
+            cout << "Cannot connect to the server... Attempting again..." << endl;
             maxTries--;
-            usleep(100);
+            // Wait an exponential amount of time until the server is ready
+            usleep(100 * (10 - maxTries));
         }
     }
 
@@ -80,7 +81,10 @@ void ouba() {
         throw invalid_argument("The socket was not properly created");
     }
 
-    client.uploadFile();
+    client.uploadFile(filename);
+
+    // Close the socket
+    client.closeConnection();
 
     cout << "Closing the upload thread" << endl;
 }
@@ -101,15 +105,25 @@ int main(int argc, char **argv) {
         // Read the command
         command = client.readCommand();
 
-        if (command == "put") {
+        // TODO : create constant for command names
+        // If a file must be uploaded
+        if (command.substr(0, 3) == "put") {
+            string removePut = command.substr(command.find(" ") + 1);
+            string filename = removePut.substr(0, removePut.find(" "));
+            string size = removePut.substr(removePut.find(" ") + 1); // TODO : what to do with the size?
+
             // Send the command to the server
             client.sendToServer(command);
 
             // Wait for the server answer
-            client.readFromServer();
+            string read = client.readFromServer();
+
+            // Parse the port number
+            cout << read << endl;
+            int port = stoi(read.substr(read.find(":") + 2));
 
             // Upload the file
-            thread t1(ouba);
+            thread t1(ouba, filename, size, port);
             t1.join();
         } else {
             // Send the command to the server
