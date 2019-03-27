@@ -14,7 +14,7 @@ protected:
 
     size_t fileSize() const;
 
-    const string BASEPATH = "/home/alex/Documents/EPFL/SoftSec/Project/ass_on_the_grass/";
+    const string BASEPATH = "../files/";
 };
 
 
