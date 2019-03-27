@@ -9,6 +9,7 @@ CFLAGS   :=-Wall -Wextra -g -fno-stack-protector -z execstack -pthread -std=gnu+
 LFLAGS   := -lm
 SRC      :=                      \
 	$(wildcard src/services/authorization/*.cpp) \
+	$(wildcard src/services/authentication/*.cpp) \
 	$(wildcard src/services/commands/*.cpp) \
 	$(wildcard src/configuration/*.cpp) \
 	$(wildcard src/network/*.cpp)      \

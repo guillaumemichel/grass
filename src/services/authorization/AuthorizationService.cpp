@@ -1,4 +1,5 @@
 #include <map>
+#include <string>
 #include "../../../include/AuthorizationService.h"
 
 using namespace std;

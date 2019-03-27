@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 
 #ifndef ASS_ON_THE_GRASS_FILEREADER_H
 #define ASS_ON_THE_GRASS_FILEREADER_H

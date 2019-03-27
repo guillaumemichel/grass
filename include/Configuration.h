@@ -11,15 +11,15 @@ using namespace std;
 class Configuration {
 private:
     const FileReader& fileReader;
-    vector<string> getEntriesWithKey(const string key);
-    string removeKeyInLine(string, string);
-    string extractStringValue(string);
+    vector<string> getEntriesWithKey(const string key) const;
+    string removeKeyInLine(string, string) const;
+    string extractStringValue(string) const;
 
 public:
     Configuration(const FileReader&);
-    string getBase();
-    unsigned int getPort();
-    map<string, string> getUsers();
+    string getBase() const;
+    unsigned int getPort() const;
+    map<string, string> getUsers() const;
 };
 
 #endif //ASS_ON_THE_GRASS_CONFIGURATION_H
