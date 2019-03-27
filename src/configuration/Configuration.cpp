@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "../../include/Configuration.h"
 #include "../../include/FileReader.h"
+#include "../../include/exception.h"
 
 using namespace std;
 
@@ -23,7 +24,7 @@ string Configuration::removeKeyInLine(string key, string line) const {
     if(line.find(" ", 0) == key.size() && line.size() > key.size() + 1) {
         return line.substr(key.size() + 1);
     }
-    return "NOT FOUND";
+    throw Exception(ERR_INVALID_ARGS);
 }
 
 string Configuration::extractStringValue(string key) const {
@@ -31,7 +32,7 @@ string Configuration::extractStringValue(string key) const {
     if(filtered.size() > 0) {
         return removeKeyInLine(key, filtered[0]);
     }
-    return "NOT FOUND";
+    throw Exception(ERR_INVALID_ARGS);
 }
 
 string Configuration::getBase() const {
@@ -40,8 +41,6 @@ string Configuration::getBase() const {
 
 unsigned int Configuration::getPort() const {
     string value = extractStringValue("port");
-    if(value == "NOT FOUND")
-        return -1;
     return stoul(value, NULL, 10);
 }
 
