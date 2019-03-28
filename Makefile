@@ -7,8 +7,10 @@ TESTDIR  := $(BINDIR)/tests
 CC       := g++
 CFLAGS   :=-Wall -Wextra -g -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES) -m32
 LFLAGS   := -lm
+
 SRC      :=                                     \
 	$(wildcard src/services/authorization/*.cpp)  \
+	$(wildcard src/services/authentication/*.cpp) \
 	$(wildcard src/services/commands/*.cpp)       \
 	$(wildcard src/configuration/*.cpp)           \
 	$(wildcard src/network/*.cpp)                 \

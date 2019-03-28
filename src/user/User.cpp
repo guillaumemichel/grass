@@ -1,10 +1,9 @@
+#include <string>
 #include "../../include/User.h"
 
-User::User() {
+User::User(const string name): name(name) {
     authenticated = false;
 }
-
-User::~User() {}
 
 bool User::setAuthenticated(bool status) {
     authenticated = status;
@@ -12,4 +11,8 @@ bool User::setAuthenticated(bool status) {
 
 bool User::isAuthenticated() const {
     return authenticated;
+}
+
+string User::getName() const {
+    return name;
 }
