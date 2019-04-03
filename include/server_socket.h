@@ -32,7 +32,9 @@ private:
 
     uint16_t port;
 
-    static void receiveFileUpload(string filename, int port);
+    const int SOCKET_BUFFER_SIZE = 128;
+
+    static void receiveFileUpload(string filename, int size, int port);
 };
 
 

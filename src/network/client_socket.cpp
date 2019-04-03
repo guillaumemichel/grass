@@ -63,23 +63,9 @@ bool Client::isSocketInitiated() {
 }
 
 void Client::sendToServer(string toSend) {
-    // Send the size of the data to the server
-    // Thanks to that he can allocate the right amount of memory to read the string
-    const size_t buf[1] = {toSend.size()};
-    if (-1 == send(this->getSocket(), buf, 1, 0)) {
-        cout << "Error : cannot send the size...";
-    } else {
-        // Then we send the actual command
-        if (-1 == send(this->getSocket(), toSend.data(), toSend.size(), 0)) {
-            cout << "Error : cannot send the data to the server..." << endl;
-        }
-    }
-}
-
-void Client::sendToServerWithoutSize(string toSend) {
-    // Same as above function but doesn't send the size as a preamble
+    // Then we send the actual command
     if (-1 == send(this->getSocket(), toSend.data(), toSend.size(), 0)) {
-        cout << "Error : cannot send the data";
+        throw invalid_argument("Error : cannot send the data to the server...");
     }
 }
 
@@ -106,13 +92,8 @@ void Client::uploadFile(string filename) {
     FileReader fileReader(filename);
 
     // We first read the file
-    vector<string> vecOfStr;
+    vector <string> vecOfStr;
     fileReader.readFileVector(vecOfStr);
-
-    string nbrStrings = to_string(vecOfStr.size());
-
-    // Send to the server the # of strings it has to read
-    this->sendToServerWithoutSize(nbrStrings);
 
     // Then we send the lines 1 by 1
     vector<string>::iterator it;

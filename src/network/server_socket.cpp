@@ -59,86 +59,66 @@ bool Server::isSocketInitiated() {
 }
 
 void Server::readFromUserSocket(int userSocket) {
-    // TODO : WHAT IF A USER SETS A BIIIIIG NUMBER AND THE COMMAND IS WAY SMALLER THAN THAT ?
-    // --> Maybe put a size limit or whatever ?
-
-    // Buffer to get the size of the command
-    size_t sizeToRead[1] = {0};
     bool stopFlag = false;
 
-
-    // Get the size of the command
-    while (!stopFlag && 0 < read(userSocket, sizeToRead, 1)) {
+    // Run while we are not receiving the "exit" command
+    while (!stopFlag) {
         // Buffer where we'll store the data sent by the client
-        char *buffer;
+        char buffer[SOCKET_BUFFER_SIZE];
+        // Clean the old data in it by setting 0
+        memset(buffer, 0, SOCKET_BUFFER_SIZE);
 
-        // Allocating the memory to the buffer
-        buffer = (char *) malloc(sizeToRead[0]);
+        // Now we can read the data
+        // TODO : check if read does not return 0 or -1
+        if (0 < read(userSocket, buffer, SOCKET_BUFFER_SIZE)) {
+            // TODO : later
+            //string command = str(buffer);
+            //int permission_level = 2;
+            //int i = exec_command(command, permission_level);
 
-        // Check if buffer was correctly allocated
-        if (buffer == nullptr) {
-            throw invalid_argument("Cannot allocate the buffer");
-        } else {
-            // Allocate the buffer with 0
-            for (int i = 0; i < sizeToRead[0]; i++) {
-                buffer[i] = 0;
-            }
+            // My command interpreter
+            if (0 == strcmp(buffer, "exit")) {
+                cout << "Signal to shutdown the server was received..." << endl;
+                stopFlag = true;
+            } else if (0 == strncmp(buffer, "put", 3)) {
+                // Convert the buffer to string
+                string command(buffer, SOCKET_BUFFER_SIZE);
 
-            // Now we can read the data
-            // TODO : check if read does not return 0 or -1
-            if (0 < read(userSocket, buffer, sizeToRead[0])) {
-                // TODO : later
-                //string command = str(buffer);
-                //int permission_level = 2;
-                //int i = exec_command(command, permission_level);
+                // Get the filename and the size
+                string removePut = command.substr(command.find(" ") + 1);
+                string filename = removePut.substr(0, removePut.find(" "));
+                int size = std::stoi(removePut.substr(removePut.find(" ") + 1));
 
-                // My command interpreter
-                if (0 == strcmp(buffer, "exit")) {
-                    cout << "Signal to shutdown the server was received..." << endl;
-                    free(buffer);
-                    stopFlag = true;
-                } else if (0 == strncmp(buffer, "put", 3)) {
-                    // Convert the buffer to string
-                    string command(buffer, sizeToRead[0]);
+                // TODO : throw exception if expected values are not present
 
-                    // Get the filename and the size
-                    string removePut = command.substr(command.find(" ") + 1);
-                    string filename = removePut.substr(0, removePut.find(" "));
-                    string size = removePut.substr(removePut.find(" ") + 1); // TODO : what to do with the size?
+                // On upload we have to start a new thread and a new socket
 
-                    // TODO : throw exception if expected values are not present
+                // First we send to the client the port number
+                // Generate random port
+                // TODO : check if port is usable or nto
+                int portNumber = 10000 + (std::rand() % (42420 - 10000 + 1));
+                string message = "put port: " + to_string(portNumber);
 
-                    // On upload we have to start a new thread and a new socket
-
-                    // First we send to the client the port number
-                    // Generate random port
-                    // TODO : check if port is usable or nto
-                    int portNumber = 10000 + (std::rand() % (42420 - 10000 + 1));
-                    string message = "put port: " + to_string(portNumber);
-
-                    if (-1 == send(userSocket, message.c_str(), message.size(), 0)) {
-                        throw invalid_argument("Cannot send the port to the client");
-                    }
-
-                    // Then we start a new thread to receive it
-                    thread t1(Server::receiveFileUpload, filename, portNumber);
-                    t1.join();
-                } else {
-                    cout << "Command received : " << buffer << endl;
+                // TODO : create a method "send" in the class
+                if (-1 == send(userSocket, message.c_str(), message.size(), 0)) {
+                    throw invalid_argument("Cannot send the port to the client");
                 }
+
+                // Then we start a new thread to receive it
+                thread t1(Server::receiveFileUpload, filename, size, portNumber);
+                t1.join();
+            } else {
+                cout << "Command received : " << buffer << endl;
             }
-
-            // Finally we clean and free the buffer
-            memset(buffer, 0, sizeToRead[0]);
-            free(buffer);
+        } else {
+            cout << "Error while reading from the socket" << endl;
         }
-
-        sizeToRead[0] = {0};
     }
 }
 
-void Server::receiveFileUpload(string filename, int port) {
-    cout << "Starting a new thread for the receiving server on port " << port << endl;
+void Server::receiveFileUpload(string filename, int size, int port) {
+    cout << "Starting a new thread for the receiving server on port " << port << ". The size of the file is : " << size
+         << endl;
 
     Server receivingServer(port);
 
@@ -148,11 +128,11 @@ void Server::receiveFileUpload(string filename, int port) {
 
     cout << "New thread instantiated, waiting for the client to connect..." << endl;
 
-    int userSocket;
+    int receivingSocket;
     struct sockaddr_in sockaddrIn;
     int addrlen = sizeof(sockaddrIn);
-    if ((userSocket = accept(receivingServer.getSocket(), (struct sockaddr *) &receivingServer.address,
-                             (socklen_t * ) & addrlen)) < 0) {
+    if ((receivingSocket = accept(receivingServer.getSocket(), (struct sockaddr *) &receivingServer.address,
+                                  (socklen_t * ) & addrlen)) < 0) {
         perror("accept");
         throw invalid_argument("Cannot listen for sockets");
     }
@@ -170,54 +150,33 @@ void Server::receiveFileUpload(string filename, int port) {
     // Clear the file in case of all data was there
     fw.clearFile();
 
-    // Buffer to get the size the file and of each line
-    size_t sizeToRead[1] = {0};
+    // Buffer where we'll store the data sent by the client
+    char *buffer;
 
-    // Read the # of lines
-    // TODO : check if read returns 0 or -1
-    read(userSocket, sizeToRead, 1);
+    // Allocating the memory to the buffer
+    buffer = (char *) malloc(size);
 
-    // Converting from byte to int
-    int nbrLines = (int) sizeToRead[0] - '0';
+    // Check if buffer was correctly allocated
+    if (buffer == nullptr) {
+        throw invalid_argument("Cannot allocate the buffer");
+    } else {
+        memset(buffer, 0, size);
+        // Now we can read the data
+        // TODO : check if read does not return 0 or -1
+        read(receivingSocket, buffer, size);
 
-    // Reinitialise the buffer to read lines
-    sizeToRead[0] = {0};
+        // Create the string and write it to the file
+        string line(buffer, size);
+        cout << "File received : " << line << endl;
+        fw.writeLine(line);
 
-    // Read each line successively
-    for (int i = 0; i < nbrLines; i++) {
-        // Get the size of the line
-        read(userSocket, sizeToRead, 1);
-        cout << " ~~~~~ Next line size : " << sizeToRead[0] << endl;
-
-        // Buffer where we'll store the data sent by the client
-        char *buffer;
-
-        // Allocating the memory to the buffer
-        buffer = (char *) malloc(sizeToRead[0]);
-
-        // Check if buffer was correctly allocated
-        if (buffer == nullptr) {
-            throw invalid_argument("Cannot allocate the buffer");
-        } else {
-            // Now we can read the data
-            // TODO : check if read does not return 0 or -1
-            read(userSocket, buffer, sizeToRead[0]);
-
-            // Create the string and write it to the file
-            string line(buffer, sizeToRead[0]);
-            fw.writeLine(line);
-
-            cout << " ~~~~~ Line n°" << i << " received : " << line << endl;
-
-            // Finally we clean and free the buffer
-            memset(buffer, 0, sizeToRead[0]);
-            free(buffer);
-        }
-        sizeToRead[0] = {0};
+        // Finally we clean and free the buffer
+        memset(buffer, 0, size);
+        free(buffer);
     }
 
     // Once the file transfer is done, we close the socket
-    close(userSocket);
+    close(receivingSocket);
 
     cout << "File transfer done" << endl;
 }

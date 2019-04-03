@@ -25,8 +25,6 @@ public:
 
     void sendToServer(string toSend);
 
-    void sendToServerWithoutSize(string toSend);
-
     void initiateConnection();
 
     void closeConnection();
