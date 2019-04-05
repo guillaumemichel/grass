@@ -17,13 +17,16 @@ using namespace std;
 #include "../../include/client_socket.h"
 #include "../../include/FileReader.h"
 
+Client::Client(uint16_t dstPort) : NetworkSocket(dstPort) {
+}
+
 void Client::initiateConnection() {
     // Create the object in which we'll be storing the server address
     struct sockaddr_in serverAddress{};
 
-    // Create the socket
+    // Create the NetworkSocket
     if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        throw invalid_argument("Cannot create the socket");
+        throw invalid_argument("Cannot create the NetworkSocket");
     }
 
     // Set the serverAddress object to 0 as initial values;
@@ -54,19 +57,8 @@ string Client::readCommand() {
     return command;
 }
 
-int Client::getSocket() {
-    return this->sock;
-}
-
-bool Client::isSocketInitiated() {
-    return this->sock > 0;
-}
-
 void Client::sendToServer(string toSend) {
-    // Then we send the actual command
-    if (-1 == send(this->getSocket(), toSend.data(), toSend.size(), 0)) {
-        throw invalid_argument("Error : cannot send the data to the server...");
-    }
+    this->sendTo(this->getSocket(), toSend);
 }
 
 string Client::readFromServer() {
@@ -82,7 +74,7 @@ string Client::readFromServer() {
             return string(buffer, Client::SOCKET_BUFFER_SIZE);
         }
     } else {
-        throw invalid_argument("Cannot read from server, the socket was not initiated");
+        throw invalid_argument("Cannot read from server, the NetworkSocket was not initiated");
     }
 }
 
@@ -101,14 +93,6 @@ void Client::uploadFile(string filename) {
     }
 
     cout << "File upload!" << endl;
-}
-
-Client::Client(uint16_t dstPort) {
-    this->port = dstPort;
-}
-
-void Client::closeConnection() {
-    close(this->sock);
 }
 
 void Client::downloadFile(string filename, int size) {

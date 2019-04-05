@@ -16,7 +16,7 @@ char port[7] = "31337";
 
 // Helper function to run commands in unix.
 int run_command(string command, int sock) {
-    //manage socket
+    //manage NetworkSocket
     //manage control access
     int permission_level = 2;
     int i = exec_command(command, permission_level);
@@ -28,7 +28,7 @@ int run_command(string command, int sock) {
  * Send a file to the client as its own thread
  *
  * fp: file descriptor of file to send
- * sock: socket that has already been created.
+ * sock: NetworkSocket that has already been created.
  */
 void send_file(int fp, int sock) {
 }
@@ -37,13 +37,13 @@ void send_file(int fp, int sock) {
  * Send a file to the server as its own thread
  *
  * fp: file descriptor of file to save to.
- * sock: socket that has already been created.
+ * sock: NetworkSocket that has already been created.
  * size: the size (in bytes) of the file to recv
  */
 void recv_file(int fp, int sock, int size) {
 }
 
-// Server side REPL given a socket file descriptor
+// Server side REPL given a NetworkSocket file descriptor
 void *connection_handler(void *sockfd) {
 }
 
@@ -70,13 +70,13 @@ int main() {
     // Create a server object
     Server server(8080);
 
-    // Create the socket
+    // Create the NetworkSocket
     if (-1 == server.initiateConnection()) {
         cout << "Cannot create a server...";
         return -1;
     }
 
-    cout << "Server socket initiated" << endl;
+    cout << "Server NetworkSocket initiated" << endl;
     cout << "Listening for incoming connections..." << endl;
 
     // TODO : refactor this

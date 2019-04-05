@@ -78,12 +78,12 @@ void download(string filename, int size, int port) {
 
     // Should be ok, but we just check if the sock was properly created
     if (!client.isSocketInitiated()) {
-        throw invalid_argument("The socket was not properly created");
+        throw invalid_argument("The NetworkSocket was not properly created");
     }
 
     client.downloadFile(filename, size);
 
-    // Close the socket
+    // Close the NetworkSocket
     client.closeConnection();
 
     cout << "Closing the upload thread" << endl;
@@ -117,12 +117,12 @@ void ouba(string filename, string size, int port) {
 
     // Should be ok, but we just check if the sock was properly created
     if (!client.isSocketInitiated()) {
-        throw invalid_argument("The socket was not properly created");
+        throw invalid_argument("The NetworkSocket was not properly created");
     }
 
     client.uploadFile(filename);
 
-    // Close the socket
+    // Close the NetworkSocket
     client.closeConnection();
 
     cout << "Closing the upload thread" << endl;

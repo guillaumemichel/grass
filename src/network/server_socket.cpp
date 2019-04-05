@@ -11,31 +11,30 @@ using namespace std;
 
 #include "../../include/server_socket.h"
 
-Server::Server(uint16_t port) {
-    this->port = port;
+Server::Server(uint16_t port) : NetworkSocket(port) {
 }
 
 int Server::initiateConnection() {
     int opt = 1;
 
-    // Creating socket file descriptor
+    // Creating NetworkSocket file descriptor
     if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("socket");
+        perror("NetworkSocket");
         return -1;
     }
 
-    // Forcefully attaching socket to the port
+    // Forcefully attaching NetworkSocket to the port
     if (setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
         perror("setsockopt");
         return -1;
     }
 
-    // Setting up the socket
+    // Setting up the NetworkSocket
     (this->address).sin_family = AF_INET;
     (this->address).sin_addr.s_addr = INADDR_ANY;
     (this->address).sin_port = htons(this->port);
 
-    // Forcefully attaching socket to the port provided by the user
+    // Forcefully attaching NetworkSocket to the port provided by the user
     if (bind(this->sock, (struct sockaddr *) &(this->address), sizeof(this->address)) < 0) {
         perror("bind");
         return -1;
@@ -48,14 +47,6 @@ int Server::initiateConnection() {
     }
 
     return 0;
-}
-
-int Server::getSocket() {
-    return this->sock;
-}
-
-bool Server::isSocketInitiated() {
-    return this->sock > 0;
 }
 
 void Server::readFromUserSocket(int userSocket) {
@@ -91,7 +82,7 @@ void Server::readFromUserSocket(int userSocket) {
 
                 // TODO : throw exception if expected values are not present
 
-                // On upload we have to start a new thread and a new socket
+                // On upload we have to start a new thread and a new NetworkSocket
 
                 // First we send to the client the port number
                 // Generate random port
@@ -116,7 +107,7 @@ void Server::readFromUserSocket(int userSocket) {
                 // Check if the file exists
                 try {
                     FileReader fileReader(filename);
-                } catch(exception& e) {
+                } catch (exception &e) {
                     // If the file does not exist, we send to the client an error message
                     string errorMessage = "File does not exist";
                     sendToClient(userSocket, errorMessage);
@@ -125,7 +116,7 @@ void Server::readFromUserSocket(int userSocket) {
                 // TODO : how to not redefine it???
                 FileReader fileReader(filename);
 
-                // On download we have to start a new thread and a new socket
+                // On download we have to start a new thread and a new NetworkSocket
 
                 // First we send to the client the port number
                 // Generate random port
@@ -143,7 +134,7 @@ void Server::readFromUserSocket(int userSocket) {
                 cout << "Command received : " << buffer << endl;
             }
         } else {
-            cout << "Error while reading from the socket" << endl;
+            cout << "Error while reading from the NetworkSocket" << endl;
         }
     }
 }
@@ -207,16 +198,14 @@ void Server::receiveFileUpload(string filename, int size, int port) {
         free(buffer);
     }
 
-    // Once the file transfer is done, we close the socket
+    // Once the file transfer is done, we close the NetworkSocket
     close(receivingSocket);
 
     cout << "File transfer done" << endl;
 }
 
 void Server::sendToClient(int socket, string message) {
-    if (-1 == send(socket, message.c_str(), message.size(), 0)) {
-        throw invalid_argument("Cannot send the port to the client");
-    }
+    this->sendTo(socket, message);
 }
 
 void Server::sendFile(string filename, int port) {
@@ -229,7 +218,7 @@ void Server::sendFile(string filename, int port) {
 
     // Should be ok, but we just check if the sock was properly created
     if (!server.isSocketInitiated()) {
-        throw invalid_argument("The socket was not properly created");
+        throw invalid_argument("The NetworkSocket was not properly created");
     }
 
     // Wait for the client to connect
@@ -237,8 +226,8 @@ void Server::sendFile(string filename, int port) {
     struct sockaddr_in sockaddrIn;
     int addrlen = sizeof(sockaddrIn);
     if ((userSocket = accept(server.getSocket(), (struct sockaddr *) &server.address,
-                             (socklen_t *) &addrlen)) < 0) {
-        throw invalid_argument("Error while accepting the client's socket");
+                             (socklen_t * ) & addrlen)) < 0) {
+        throw invalid_argument("Error while accepting the client's NetworkSocket");
     }
 
     FileReader fileReader(filename);
@@ -255,13 +244,8 @@ void Server::sendFile(string filename, int port) {
 
     cout << "File send to the client!" << endl;
 
-    // Close the socket
+    // Close the NetworkSocket
     server.closeConnection();
 
     cout << "Closing the server thread" << endl;
 }
-
-void Server::closeConnection() {
-    close(this->sock);
-}
-

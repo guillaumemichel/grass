@@ -11,10 +11,11 @@
 #include <thread>
 #include "commands.h"
 #include "FileWriter.h"
+#include "NetworkSocket.h"
 
 using namespace std;
 
-class Client {
+class Client: public NetworkSocket {
 public:
     explicit Client(uint16_t dstPort);
 
@@ -29,12 +30,6 @@ public:
 
     void initiateConnection();
 
-    void closeConnection();
-
-    int getSocket();
-
-    bool isSocketInitiated();
-
     string readFromServer();
 
     inline static const string EXIT_CMD = "exit";
@@ -42,13 +37,6 @@ public:
     void uploadFile(string filename);
 
     void downloadFile(string filename, int size);
-
-private:
-    const int SOCKET_BUFFER_SIZE = 128;
-
-    int sock = 0;
-
-    uint16_t port;
 };
 
 

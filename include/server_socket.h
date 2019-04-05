@@ -12,33 +12,22 @@
 #include "commands.h"
 #include "FileWriter.h"
 #include "FileReader.h"
+#include "NetworkSocket.h"
 
 using namespace std;
 
-class Server {
+class Server: public NetworkSocket {
 public:
     explicit Server(uint16_t port);
 
     int initiateConnection();
 
-    int getSocket();
-
-    bool isSocketInitiated();
-
     struct sockaddr_in address;
 
     void readFromUserSocket(int userSocket);
 
-    void closeConnection();
-
     void sendToClient(int socket, string message);
 private:
-    int sock = 0;
-
-    uint16_t port;
-
-    const int SOCKET_BUFFER_SIZE = 128;
-
     static void receiveFileUpload(string filename, int size, int port);
 
     static void sendFile(string filename, int port);
