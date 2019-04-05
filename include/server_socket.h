@@ -20,7 +20,7 @@ class Server: public NetworkSocket {
 public:
     explicit Server(uint16_t port);
 
-    int initiateConnection();
+    void initiateConnection();
 
     struct sockaddr_in address;
 

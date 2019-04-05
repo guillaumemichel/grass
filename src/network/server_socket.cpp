@@ -5,19 +5,17 @@ using namespace std;
 Server::Server(uint16_t port) : NetworkSocket(port) {
 }
 
-int Server::initiateConnection() {
+void Server::initiateConnection() {
     int opt = 1;
 
     // Creating NetworkSocket file descriptor
     if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("NetworkSocket");
-        return -1;
+        throw invalid_argument("Cannot create socket");
     }
 
     // Forcefully attaching NetworkSocket to the port
     if (setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
-        perror("setsockopt");
-        return -1;
+        throw invalid_argument("Cannot configure the socket");
     }
 
     // Setting up the NetworkSocket
@@ -27,17 +25,13 @@ int Server::initiateConnection() {
 
     // Forcefully attaching NetworkSocket to the port provided by the user
     if (bind(this->sock, (struct sockaddr *) &(this->address), sizeof(this->address)) < 0) {
-        perror("bind");
-        return -1;
+        throw invalid_argument("Cannot bind the socket");
     }
 
     // Prepare to lister for incoming connections.
     if (listen(this->sock, 3) < 0) {
-        perror("listen");
-        return -1;
+        throw invalid_argument("Cannot make the socket to listen");
     }
-
-    return 0;
 }
 
 void Server::readFromUserSocket(int userSocket) {
@@ -136,9 +130,7 @@ void Server::receiveFileUpload(string filename, int size, int port) {
 
     Server receivingServer(port);
 
-    if (-1 == receivingServer.initiateConnection()) {
-        throw invalid_argument("Cannot start the receiving server");
-    }
+    receivingServer.initiateConnection();
 
     cout << "New thread instantiated, waiting for the client to connect..." << endl;
 
@@ -203,9 +195,7 @@ void Server::sendFile(string filename, int port) {
     cout << "Starting new thread to send the file to the client" << endl;
     Server server(port);
 
-    if (-1 == server.initiateConnection()) {
-        throw invalid_argument("Cannot initiate the server's conenction");
-    }
+    server.initiateConnection();
 
     // Should be ok, but we just check if the sock was properly created
     if (!server.isSocketInitiated()) {

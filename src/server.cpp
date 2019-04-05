@@ -70,11 +70,8 @@ int main() {
     // Create a server object
     Server server(8080);
 
-    // Create the NetworkSocket
-    if (-1 == server.initiateConnection()) {
-        cout << "Cannot create a server...";
-        return -1;
-    }
+    // Create the server socket
+    server.initiateConnection();
 
     cout << "Server NetworkSocket initiated" << endl;
     cout << "Listening for incoming connections..." << endl;
