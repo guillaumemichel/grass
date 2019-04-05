@@ -10,12 +10,14 @@
 #include <iostream>
 #include <thread>
 #include "commands.h"
+#include "FileWriter.h"
 
 using namespace std;
 
 class Client {
 public:
     explicit Client(uint16_t dstPort);
+
     /**
      * Read from the keyboard a command and returns it.
      *
@@ -39,7 +41,11 @@ public:
 
     void uploadFile(string filename);
 
+    void downloadFile(string filename, int size);
+
 private:
+    const int SOCKET_BUFFER_SIZE = 128;
+
     int sock = 0;
 
     uint16_t port;

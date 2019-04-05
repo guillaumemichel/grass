@@ -72,15 +72,14 @@ void Client::sendToServer(string toSend) {
 string Client::readFromServer() {
     if (this->isSocketInitiated()) {
         // TODO : replace this by dynamic size
-        int size = 15;
-        char buffer[size] = {0};
+        char buffer[Client::SOCKET_BUFFER_SIZE] = {0};
 
         // Read data from the server
-        ssize_t valRead = read(this->getSocket(), buffer, size);
+        ssize_t valRead = read(this->getSocket(), buffer, Client::SOCKET_BUFFER_SIZE);
         if (-1 == valRead) {
             throw invalid_argument("Error while reading data from server");
         } else {
-            return string(buffer, size);
+            return string(buffer, Client::SOCKET_BUFFER_SIZE);
         }
     } else {
         throw invalid_argument("Cannot read from server, the socket was not initiated");
@@ -88,7 +87,7 @@ string Client::readFromServer() {
 }
 
 void Client::uploadFile(string filename) {
-    // Upload dummy file for test purpose
+    filename = BASEPATH + filename;
     FileReader fileReader(filename);
 
     // We first read the file
@@ -101,7 +100,7 @@ void Client::uploadFile(string filename) {
         this->sendToServer(*it);
     }
 
-    cout << "File uploaded!" << endl;
+    cout << "File upload!" << endl;
 }
 
 Client::Client(uint16_t dstPort) {
@@ -110,4 +109,40 @@ Client::Client(uint16_t dstPort) {
 
 void Client::closeConnection() {
     close(this->sock);
+}
+
+void Client::downloadFile(string filename, int size) {
+    // Rewrite the filename to the download directory
+    filename = DOWNLOAD_BASEPATH + filename;
+
+    // Create a file writer to write the file
+    FileWriter fw(filename);
+
+    // Clear the file in case of all data was there
+    fw.clearFile();
+
+    // Buffer where we'll store the data sent by the client
+    char *buffer;
+
+    // Allocating the memory to the buffer
+    buffer = (char *) malloc(size);
+
+    // Check if buffer was correctly allocated
+    if (buffer == nullptr) {
+        throw invalid_argument("Cannot allocate the buffer");
+    } else {
+        memset(buffer, 0, size);
+        // Now we can read the data
+        // TODO : check if read does not return 0 or -1
+        read(this->sock, buffer, size);
+
+        // Create the string and write it to the file
+        string line(buffer, size);
+        cout << "File received : " << line << endl;
+        fw.writeLine(line);
+
+        // Finally we clean and free the buffer
+        memset(buffer, 0, size);
+        free(buffer);
+    }
 }

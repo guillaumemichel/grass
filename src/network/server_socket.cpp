@@ -99,13 +99,45 @@ void Server::readFromUserSocket(int userSocket) {
                 int portNumber = 10000 + (std::rand() % (42420 - 10000 + 1));
                 string message = "put port: " + to_string(portNumber);
 
-                // TODO : create a method "send" in the class
-                if (-1 == send(userSocket, message.c_str(), message.size(), 0)) {
-                    throw invalid_argument("Cannot send the port to the client");
-                }
+                // Send it to the client
+                sendToClient(userSocket, message);
 
                 // Then we start a new thread to receive it
                 thread t1(Server::receiveFileUpload, filename, size, portNumber);
+                t1.join();
+            } else if (0 == strncmp(buffer, "get", 3)) {
+                // Convert the buffer to string
+                string command(buffer, SOCKET_BUFFER_SIZE);
+
+                // Get the filename and the size
+                string removePut = command.substr(command.find(" ") + 1);
+                string filename = BASEPATH + removePut.substr(0, removePut.find(" "));
+
+                // Check if the file exists
+                try {
+                    FileReader fileReader(filename);
+                } catch(exception& e) {
+                    // If the file does not exist, we send to the client an error message
+                    string errorMessage = "File does not exist";
+                    sendToClient(userSocket, errorMessage);
+                }
+
+                // TODO : how to not redefine it???
+                FileReader fileReader(filename);
+
+                // On download we have to start a new thread and a new socket
+
+                // First we send to the client the port number
+                // Generate random port
+                // TODO : check if port is usable or nto
+                int portNumber = 10000 + (std::rand() % (42420 - 10000 + 1));
+                string message = "get port: " + to_string(portNumber) + " size: " + to_string(fileReader.fileSize());
+
+                // Send it to the client
+                sendToClient(userSocket, message);
+
+                // Then we start a new thread to receive it
+                thread t1(Server::sendFile, filename, portNumber);
                 t1.join();
             } else {
                 cout << "Command received : " << buffer << endl;
@@ -141,8 +173,8 @@ void Server::receiveFileUpload(string filename, int size, int port) {
 
     // ==== READ THE FILE ==== //
 
-    // Rewrite the filename to the "uploaded" directory
-    filename = "uploaded/" + filename;
+    // Rewrite the filename to the upload directory
+    filename = UPLOAD_BASEPATH + filename;
 
     // Create a file writer to write the file
     FileWriter fw(filename);
@@ -179,5 +211,57 @@ void Server::receiveFileUpload(string filename, int size, int port) {
     close(receivingSocket);
 
     cout << "File transfer done" << endl;
+}
+
+void Server::sendToClient(int socket, string message) {
+    if (-1 == send(socket, message.c_str(), message.size(), 0)) {
+        throw invalid_argument("Cannot send the port to the client");
+    }
+}
+
+void Server::sendFile(string filename, int port) {
+    cout << "Starting new thread to send the file to the client" << endl;
+    Server server(port);
+
+    if (-1 == server.initiateConnection()) {
+        throw invalid_argument("Cannot initiate the server's conenction");
+    }
+
+    // Should be ok, but we just check if the sock was properly created
+    if (!server.isSocketInitiated()) {
+        throw invalid_argument("The socket was not properly created");
+    }
+
+    // Wait for the client to connect
+    int userSocket;
+    struct sockaddr_in sockaddrIn;
+    int addrlen = sizeof(sockaddrIn);
+    if ((userSocket = accept(server.getSocket(), (struct sockaddr *) &server.address,
+                             (socklen_t *) &addrlen)) < 0) {
+        throw invalid_argument("Error while accepting the client's socket");
+    }
+
+    FileReader fileReader(filename);
+
+    // We first read the file
+    vector <string> vecOfStr;
+    fileReader.readFileVector(vecOfStr);
+
+    // Then we send the lines 1 by 1
+    vector<string>::iterator it;
+    for (it = vecOfStr.begin(); it != vecOfStr.end(); ++it) {
+        server.sendToClient(userSocket, *it);
+    }
+
+    cout << "File send to the client!" << endl;
+
+    // Close the socket
+    server.closeConnection();
+
+    cout << "Closing the server thread" << endl;
+}
+
+void Server::closeConnection() {
+    close(this->sock);
 }
 

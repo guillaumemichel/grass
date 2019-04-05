@@ -14,7 +14,6 @@ using namespace std;
 FileReader::FileReader(string filename) {
     // Append the basepath to the filename
     // TODO : check if file is accessible (like not something ../../../info.root)
-    filename = File::BASEPATH + filename;
 
     // Check if file exists
     std::ifstream ifile(filename.c_str());

@@ -2,7 +2,6 @@
 
 FileWriter::FileWriter(string filename) {
     // Add the basepath to the filename
-    filename = File::BASEPATH + filename;
 
     // TODO : what to do if the file already exists ? Destroy it and create a new one?
     this->filename = std::move(filename);

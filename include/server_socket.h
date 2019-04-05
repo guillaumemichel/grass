@@ -11,6 +11,7 @@
 #include <thread>
 #include "commands.h"
 #include "FileWriter.h"
+#include "FileReader.h"
 
 using namespace std;
 
@@ -27,6 +28,10 @@ public:
     struct sockaddr_in address;
 
     void readFromUserSocket(int userSocket);
+
+    void closeConnection();
+
+    void sendToClient(int socket, string message);
 private:
     int sock = 0;
 
@@ -35,6 +40,9 @@ private:
     const int SOCKET_BUFFER_SIZE = 128;
 
     static void receiveFileUpload(string filename, int size, int port);
+
+    static void sendFile(string filename, int port);
+
 };
 
 
