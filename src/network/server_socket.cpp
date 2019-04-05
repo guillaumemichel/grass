@@ -8,20 +8,16 @@ Server::Server(uint16_t port) : NetworkSocket(port) {
 void Server::initiateConnection() {
     int opt = 1;
 
-    // Creating NetworkSocket file descriptor
-    if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        throw invalid_argument("Cannot create socket");
-    }
+    // Common settings to create the socket
+    this->commonInitiateConnection();
 
     // Forcefully attaching NetworkSocket to the port
     if (setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
         throw invalid_argument("Cannot configure the socket");
     }
 
-    // Setting up the NetworkSocket
-    (this->address).sin_family = AF_INET;
+    // Setting up the server socket
     (this->address).sin_addr.s_addr = INADDR_ANY;
-    (this->address).sin_port = htons(this->port);
 
     // Forcefully attaching NetworkSocket to the port provided by the user
     if (bind(this->sock, (struct sockaddr *) &(this->address), sizeof(this->address)) < 0) {

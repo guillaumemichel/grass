@@ -7,28 +7,16 @@ Client::Client(uint16_t dstPort) : NetworkSocket(dstPort) {
 }
 
 void Client::initiateConnection() {
-    // Create the object in which we'll be storing the server address
-    struct sockaddr_in serverAddress{};
-
-    // Create the NetworkSocket
-    if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        throw invalid_argument("Cannot create the NetworkSocket");
-    }
-
-    // Set the serverAddress object to 0 as initial values;
-    memset(&serverAddress, 0, sizeof(serverAddress));
-
-    // Configuration for our protocol
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(this->port);
+    // Common settings to create the socket
+    this->commonInitiateConnection();
 
     // Convert IPv4 and IPv6 addresses from text to binary form
-    if (inet_pton(AF_INET, "127.0.0.1", &serverAddress.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, "127.0.0.1", &(this->address).sin_addr) <= 0) {
         throw invalid_argument("Invalid address");
     }
 
     // Tries to connect to the server
-    if (connect(this->sock, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0) {
+    if (connect(this->sock, (struct sockaddr *) &(this->address), sizeof(this->address)) < 0) {
         throw invalid_argument("Connection to server failed");
     }
 }

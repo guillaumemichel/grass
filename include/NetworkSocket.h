@@ -14,6 +14,9 @@ using namespace std;
 
 class NetworkSocket {
 public:
+    // TODO : how to initialize it?
+    struct sockaddr_in address;
+
     explicit NetworkSocket(uint16_t port);
 
     void closeConnection();
@@ -24,6 +27,8 @@ public:
 
 protected:
     string readFrom(int socket);
+
+    void commonInitiateConnection();
 
     void sendTo(int socket, string msg);
 

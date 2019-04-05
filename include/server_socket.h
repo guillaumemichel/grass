@@ -22,8 +22,6 @@ public:
 
     void initiateConnection();
 
-    struct sockaddr_in address;
-
     void readFromUserSocket(int userSocket);
 
     void sendToClient(int socket, string message);

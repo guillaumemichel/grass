@@ -28,4 +28,13 @@ void NetworkSocket::sendTo(int socket, string msg) {
     }
 }
 
+void NetworkSocket::commonInitiateConnection() {
+    // Create the socket
+    if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        throw invalid_argument("Cannot create the NetworkSocket");
+    }
 
+    // Configuration of the socket
+    (this->address).sin_family = AF_INET;
+    (this->address).sin_port = htons(this->port);
+}
