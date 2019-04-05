@@ -8,7 +8,9 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <iostream>
+#include <fstream>
 #include <thread>
+#include <vector>
 #include "commands.h"
 #include "FileWriter.h"
 #include "NetworkSocket.h"
