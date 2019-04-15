@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 #include "exception.h"
+#include <string>
+#include <cstring>
 
 using namespace std;
 

@@ -41,21 +41,15 @@ void Server::readFromUserSocket(int userSocket) {
         memset(buffer, 0, SOCKET_BUFFER_SIZE);
 
         // Now we can read the data
-        // TODO : check if read does not return 0 or -1
         if (0 < read(userSocket, buffer, SOCKET_BUFFER_SIZE)) {
-            // TODO : later
-            //string command = str(buffer);
-            //int permission_level = 2;
-            //int i = exec_command(command, permission_level);
+            // Convert the buffer to string
+            string command(buffer, SOCKET_BUFFER_SIZE);
 
             // My command interpreter
-            if (0 == strcmp(buffer, "exit")) {
+            if (0 == strcmp("exit", buffer)) {
                 cout << "Signal to shutdown the server was received..." << endl;
                 stopFlag = true;
             } else if (0 == strncmp(buffer, "put", 3)) {
-                // Convert the buffer to string
-                string command(buffer, SOCKET_BUFFER_SIZE);
-
                 // Get the filename and the size
                 string removePut = command.substr(command.find(" ") + 1);
                 string filename = removePut.substr(0, removePut.find(" "));
@@ -78,9 +72,6 @@ void Server::readFromUserSocket(int userSocket) {
                 thread t1(Server::receiveFileUpload, filename, size, portNumber);
                 t1.join();
             } else if (0 == strncmp(buffer, "get", 3)) {
-                // Convert the buffer to string
-                string command(buffer, SOCKET_BUFFER_SIZE);
-
                 // Get the filename and the size
                 string removePut = command.substr(command.find(" ") + 1);
                 string filename = BASEPATH + removePut.substr(0, removePut.find(" "));
@@ -113,6 +104,9 @@ void Server::readFromUserSocket(int userSocket) {
                 t1.join();
             } else {
                 cout << "Command received : " << buffer << endl;
+                // Execute the command
+                int permission_level = 2;
+                int i = exec_command(command, permission_level);
             }
         } else {
             cout << "Error while reading from the NetworkSocket" << endl;

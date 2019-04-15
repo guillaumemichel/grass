@@ -94,8 +94,9 @@ int sanitize(string full_cmd){
   string cmd = full_cmd.substr(0,pos);
 
   for (int i=0; i < CMD_NB; ++i){
-    if (!cmd.compare(commands[i].str)){
-      return commands[i].fct(full_cmd);;
+    // Fix otherwise they were not correctly compared
+    if (0 == cmd.compare(0, commands[i].str.length(), commands[i].str)){
+        return commands[i].fct(full_cmd);
     }
   }
   throw Exception(ERR_INVALID_CMD);
@@ -124,7 +125,33 @@ int cmd_ping(string cmd){
 
 int cmd_ls(string cmd){
   string str = str_ls + " -l";
-  system((str).c_str());
+
+  // Convert string to char *
+  char * tab2 = new char [str.length()+1];
+  // TODO : strncpy
+  std::strcpy (tab2, str.c_str());
+
+  //system((str).c_str());
+
+  // TODO : recode this (taken from StackOverflow)
+  FILE *fp;
+  char path[1035];
+
+  /* Open the command for reading. */
+  fp = popen(tab2, "r");
+  if (fp == NULL) {
+    throw invalid_argument("Failed to run command 'ls'");
+  }
+
+  /* Read the output a line at a time - output it. */
+  while (fgets(path, sizeof(path)-1, fp) != NULL) {
+   printf("%s", path);
+  }
+
+  /* close */
+  pclose(fp);
+
+  // Would be cool to return the command output
   return 0;
 }
 
