@@ -124,7 +124,7 @@ void ouba(string filename, string size, int port) {
     // Close the NetworkSocket
     client.closeConnection();
 
-    cout << "Closing the upload thread" << endl;
+    //cout << "Closing the upload thread" << endl;
 }
 
 
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
 
             // Upload the file
             thread t1(ouba, filename, size, port);
-            t1.join();
+            t1.detach();
         } else if (command.substr(0, 3) == "get") {
             string removePut = command.substr(command.find(" ") + 1);
             string filename = removePut.substr(0, removePut.find(" "));
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
 
                 // Download the file
                 thread t1(download, filename, size, port);
-                t1.join();
+                t1.detach();
             }
         } else {
             // Send the command to the server

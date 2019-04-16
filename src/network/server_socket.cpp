@@ -70,7 +70,7 @@ void Server::readFromUserSocket(int userSocket) {
 
                 // Then we start a new thread to receive it
                 thread t1(Server::receiveFileUpload, filename, size, portNumber);
-                t1.join();
+                t1.detach();
             } else if (0 == strncmp(buffer, "get", 3)) {
                 // Get the filename and the size
                 string removePut = command.substr(command.find(" ") + 1);
@@ -103,7 +103,7 @@ void Server::readFromUserSocket(int userSocket) {
 
                 // Then we start a new thread to receive it
                 thread t1(Server::sendFile, filename, portNumber);
-                t1.join();
+                t1.detach();
             } else {
                 cout << "Command received : " << buffer << endl;
                 // Execute the command
