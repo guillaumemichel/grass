@@ -1,10 +1,9 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+#include "exception.h"
 #include <ctype.h>
 #include <iostream>
-#include <string>
-#include "exception.h"
 #include <string>
 #include <cstring>
 
