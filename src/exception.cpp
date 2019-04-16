@@ -7,11 +7,16 @@ using namespace std;
  */
 string ERR_MESSAGES[] = {
     "", // no error
-    "Unknown error",
-    "Login required to perform this operation",
-    "File not found",
-    "Invalid command",
-    "Invalid arguments"
+    "unknown error.",
+    "login required to perform this operation!",
+    "file not found.",
+    "invalid command.",
+    "invalid arguments.",
+    "access denied!",
+    "path too long.",
+    "file transfer failed.",
+    "failed to run command.",
+    "response too long!"
 };
 
 /**
@@ -24,12 +29,14 @@ Exception::Exception(int c){
 }
 
 /**
- * Print the message error associated with the exception
+ * Print and return the message error associated with the exception
  * @method Exception::print_error
  */
-void Exception::print_error(){
+std::string Exception::print_error(){
   if (code <= ERR_FIRST || code >= ERR_LAST){
     code = ERR_ERR_NOT_FOUND;
   }
-  cout << "Error: " << ERR_MESSAGES[code - ERR_FIRST] << endl;
+  string err_str = ERR_MESSAGES[code - ERR_FIRST];
+  cout << "Error: " << err_str << endl;
+  return err_str;
 }

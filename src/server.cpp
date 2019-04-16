@@ -18,8 +18,12 @@ int run_command(string command, int sock){
   //manage socket
   //manage control access
   int permission_level = 2;
-  int i = exec_command(command, permission_level);
-  return i;
+  std:string response = exec_command(command, permission_level);
+  cout << response << endl << endl;
+  if (!response.compare(0, str_bye.length(), str_bye)){
+    return 1;
+  }
+  return 0;
 }
 
 
