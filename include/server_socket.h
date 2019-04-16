@@ -13,6 +13,7 @@
 #include "FileWriter.h"
 #include "FileReader.h"
 #include "NetworkSocket.h"
+#include "exception.h"
 
 using namespace std;
 
@@ -25,6 +26,8 @@ public:
     void readFromUserSocket(int userSocket);
 
     void sendToClient(int socket, string message);
+
+    int allocateSocketClient();
 private:
     static void receiveFileUpload(string filename, int size, int port);
 

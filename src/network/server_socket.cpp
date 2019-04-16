@@ -61,7 +61,7 @@ void Server::readFromUserSocket(int userSocket) {
 
                 // First we send to the client the port number
                 // Generate random port
-                // TODO : check if port is usable or nto
+                // TODO : check if port is usable or not
                 int portNumber = 10000 + (std::rand() % (42420 - 10000 + 1));
                 string message = "put port: " + to_string(portNumber);
 
@@ -124,14 +124,7 @@ void Server::receiveFileUpload(string filename, int size, int port) {
 
     cout << "New thread instantiated, waiting for the client to connect..." << endl;
 
-    int receivingSocket;
-    struct sockaddr_in sockaddrIn;
-    int addrlen = sizeof(sockaddrIn);
-    if ((receivingSocket = accept(receivingServer.getSocket(), (struct sockaddr *) &receivingServer.address,
-                                  (socklen_t * ) & addrlen)) < 0) {
-        perror("accept");
-        throw invalid_argument("Cannot listen for sockets");
-    }
+    int receivingSocket = receivingServer.allocateSocketClient();
 
     cout << "File transfer started" << endl;
 
@@ -193,13 +186,7 @@ void Server::sendFile(string filename, int port) {
     }
 
     // Wait for the client to connect
-    int userSocket;
-    struct sockaddr_in sockaddrIn;
-    int addrlen = sizeof(sockaddrIn);
-    if ((userSocket = accept(server.getSocket(), (struct sockaddr *) &server.address,
-                             (socklen_t * ) & addrlen)) < 0) {
-        throw invalid_argument("Error while accepting the client's NetworkSocket");
-    }
+    int userSocket = server.allocateSocketClient();
 
     FileReader fileReader(filename);
 
@@ -219,4 +206,19 @@ void Server::sendFile(string filename, int port) {
     server.closeConnection();
 
     cout << "Closing the server thread" << endl;
+}
+
+int Server::allocateSocketClient() {
+    // The client socket
+    int userSocket;
+
+    int addrlen = sizeof(this->address);
+    // Waiting for a client to conenct
+    if ((userSocket = accept(this->sock, (struct sockaddr *) &(this->address),
+                             (socklen_t * ) & addrlen)) < 0) {
+        throw Exception(ERR_ERR_NOT_FOUND);
+    }
+
+    // Returning the socket
+    return userSocket;
 }

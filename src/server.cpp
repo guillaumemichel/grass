@@ -76,15 +76,7 @@ int main() {
     cout << "Server NetworkSocket initiated" << endl;
     cout << "Listening for incoming connections..." << endl;
 
-    // TODO : refactor this
-    int userSocket;
-    struct sockaddr_in sockaddrIn;
-    int addrlen = sizeof(sockaddrIn);
-    if ((userSocket = accept(server.getSocket(), (struct sockaddr *) &server.address,
-                             (socklen_t *) &addrlen)) < 0) {
-        perror("accept");
-        exit(EXIT_FAILURE);
-    }
+    int userSocket = server.allocateSocketClient();
 
     cout << "New client connected" << endl;
 
