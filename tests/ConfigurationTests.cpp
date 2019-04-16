@@ -13,18 +13,32 @@ void testGetBaseShouldReturnCorrectBaseOnStandardConfig() {
 void testGetBaseShouldReturnErrorOnMissingEntry() {
     FileReader fr("tests/testables/no_base_grass.conf");
     Configuration conf(fr);
-    assert(conf.getBase() == "NOT FOUND");
-
+    try {
+        conf.getBase();
+        assert(false);
+    } catch(...) {
+        assert(true);
+    }
 }
 
 void testGetBaseShouldReturnErrorOnMissingValue() {
     FileReader fr1("tests/testables/malformed_base_grass_1.conf");
     Configuration conf1(fr1);
-    assert(conf1.getBase() == "NOT FOUND");
+    try {
+        conf1.getBase();
+        assert(false);
+    } catch(...) {
+        assert(true);
+    }
 
     FileReader fr2("tests/testables/malformed_base_grass_2.conf");
     Configuration conf2(fr2);
-    assert(conf2.getBase() == "NOT FOUND");
+    try {
+        conf2.getBase();
+        assert(false);
+    } catch(...) {
+        assert(true);
+    }
 }
 
 void testGetPortShouldReturn8888OnStandardConfig() {
@@ -36,24 +50,41 @@ void testGetPortShouldReturn8888OnStandardConfig() {
 void testGetPortShouldReturnErrorOnMissingEntry() {
     FileReader fr("tests/testables/no_port_grass.conf");
     Configuration conf(fr);
-    assert(conf.getPort() == (unsigned int) -1);
-
+    try {
+        conf.getPort();
+        assert(false);
+    } catch(...) {
+        assert(true);
+    }
 }
 
 void testGetPortShouldReturnErrorOnMissingValue() {
     FileReader fr1("tests/testables/malformed_port_grass_1.conf");
     Configuration conf1(fr1);
-    assert(conf1.getPort() == (unsigned int) -1);
+    try {
+        conf1.getPort();
+        assert(false);
+    } catch(...) {
+        assert(true);
+    }
 
     FileReader fr2("tests/testables/malformed_port_grass_2.conf");
     Configuration conf2(fr2);
-    assert(conf2.getPort() == (unsigned int) -1);
+    try {
+        conf2.getPort();
+        assert(false);
+    } catch(...) {
+        assert(true);
+    }
 
     FileReader fr3("tests/testables/malformed_port_grass_3.conf");
     Configuration conf3(fr3);
-    try { conf3.getPort(); }
-    catch(...) { return; }
-    assert(false);
+    try {
+        conf3.getPort();
+        assert(false);
+    } catch(...) {
+        assert(true);
+    }
 }
 
 void testGetUsersShouldReturnCorrectMapOnStandardConfig() {

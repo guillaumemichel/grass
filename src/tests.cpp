@@ -1,5 +1,6 @@
 #include "../tests/ConfigurationTests.h"
 #include "../tests/AuthorizationServiceTests.h"
+#include "../tests/AuthenticationServiceTests.h"
 #include "../tests/ExceptionsTests.h"
 
 int main(void) {
@@ -17,6 +18,14 @@ int main(void) {
     // Tests for AuthorizationService
     testsForAuthenticatedUser();
     testsForUnauthenticatedUser();
+
+    // Tests for AuthenticationSevice
+    testShouldAcceptToRegisterOnNewSocket();
+    testShouldRejectToRegisterOnExistingSocket();
+    testShouldConnectUserWithCorrectCredentials();
+    testShouldNotConnectUserWithIncorrectCredentials();
+    testShouldRemoveUserOnLogout();
+    testShouldReturnCorrectListOfAuthenticatedUsers();
 
     //Test for exceptions
     /*
