@@ -110,7 +110,6 @@ void ouba(string filename, string size, int port) {
         }
     }
 
-
     if (maxTries == 0) {
         throw invalid_argument("Cannot connect to the server");
     }

@@ -47,7 +47,7 @@ void Server::readFromUserSocket(int userSocket) {
 
             // My command interpreter
             if (0 == strcmp("exit", buffer)) {
-                cout << "Signal to shutdown the server was received..." << endl;
+                cout << "Exiting the client..." << endl;
                 stopFlag = true;
             } else if (0 == strncmp(buffer, "put", 3)) {
                 // Get the filename and the size

@@ -62,6 +62,13 @@ void search(char *pattern) {
 void parse_grass() {
 }
 
+void connectClient(int userSocket, Server server) {
+    // This function exists when the "exit" command is received
+    server.readFromUserSocket(userSocket);
+
+    cout << "Disconnecting client #" << userSocket << endl;
+}
+
 int main() {
     // TODO:
     // Parse the grass.conf file
@@ -74,17 +81,17 @@ int main() {
     server.initiateConnection();
 
     cout << "Server NetworkSocket initiated" << endl;
-    cout << "Listening for incoming connections..." << endl;
 
-    int userSocket = server.allocateSocketClient();
+    while (true) {
+        cout << "Listening for incoming connections..." << endl;
+        int userSocket = server.allocateSocketClient();
+        cout << "New client connected : " << userSocket << endl;
 
-    cout << "New client connected" << endl;
+        thread t(connectClient, userSocket, server);
+        t.detach();
 
-    // Loop while the command exit has not been sent
-    // TODO : add try catch around to print error message in case of
-    server.readFromUserSocket(userSocket);
-
-    cout << "Safely exiting the server" << endl;
+        // TODO : add try catch around to print error message in case of
+    }
 
     return 0;
 }
