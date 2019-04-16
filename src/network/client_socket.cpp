@@ -63,10 +63,13 @@ void Client::uploadFile(string filename) {
     // Then we send the lines 1 by 1
     vector<string>::iterator it;
     for (it = vecOfStr.begin(); it != vecOfStr.end(); ++it) {
-        this->sendToServer(*it);
+
+        // Mandatory appending \n
+        string toSend = *it + "\n";
+        this->sendToServer(toSend);
     }
 
-    cout << "File upload!" << endl;
+    cout << "File uploaded!" << endl;
 }
 
 void Client::downloadFile(string filename, int size) {
@@ -92,13 +95,13 @@ void Client::downloadFile(string filename, int size) {
         memset(buffer, 0, size);
         // Now we can read the data
         // TODO : check if read does not return 0 or -1
-        read(this->sock, buffer, size);
-
-        // Create the string and write it to the file
-        string line(buffer, size);
-        cout << "File received : " << line << endl;
-        fw.writeLine(line);
-
+        if (read(this->sock, buffer, size) > 0) {
+            // Create the string and write it to the file
+            string line(buffer, size);
+            fw.writeLine(line);
+        } else {
+            throw invalid_argument("Cannot read from the socket while downloading");
+        }
         // Finally we clean and free the buffer
         memset(buffer, 0, size);
         free(buffer);

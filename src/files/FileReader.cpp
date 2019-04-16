@@ -44,7 +44,7 @@ void FileReader::readFileVector(std::vector<std::string> &file) const {
     //Close The File
     in.close();
 }
-
+/*
 void FileReader::readFile(char *buffer) const {
     // Malloc the buffer for the file
     size_t fileSize = this->fileSize();
@@ -66,7 +66,7 @@ void FileReader::readFile(char *buffer) const {
         // close the opened file.
         infile.close();
     }
-}
+}*/
 
 string FileReader::fileToString() const {
     string str;

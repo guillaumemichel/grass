@@ -74,7 +74,9 @@ void Server::readFromUserSocket(int userSocket) {
             } else if (0 == strncmp(buffer, "get", 3)) {
                 // Get the filename and the size
                 string removePut = command.substr(command.find(" ") + 1);
-                string filename = BASEPATH + removePut.substr(0, removePut.find(" "));
+
+                // The file must be taken from the upload basepath
+                string filename = UPLOAD_BASEPATH + removePut.substr(0, removePut.find(" "));
 
                 // Check if the file exists
                 try {
@@ -156,7 +158,6 @@ void Server::receiveFileUpload(string filename, int size, int port) {
 
         // Create the string and write it to the file
         string line(buffer, size);
-        cout << "File received : " << line << endl;
         fw.writeLine(line);
 
         // Finally we clean and free the buffer
@@ -197,7 +198,9 @@ void Server::sendFile(string filename, int port) {
     // Then we send the lines 1 by 1
     vector<string>::iterator it;
     for (it = vecOfStr.begin(); it != vecOfStr.end(); ++it) {
-        server.sendToClient(userSocket, *it);
+        // Mandatory appending \n
+        string toSend = *it + "\n";
+        server.sendToClient(userSocket, toSend);
     }
 
     cout << "File send to the client!" << endl;
