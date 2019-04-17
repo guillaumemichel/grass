@@ -1,11 +1,26 @@
 #ifndef ASS_ON_THE_GRASS_CLIENT_H
 #define ASS_ON_THE_GRASS_CLIENT_H
 
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <iostream>
+#include <fstream>
 #include <thread>
+#include <vector>
+#include "commands.h"
+#include "FileWriter.h"
+#include "NetworkSocket.h"
 
-class Client {
+using namespace std;
+
+class Client: public NetworkSocket {
 public:
     explicit Client(uint16_t dstPort);
+
     /**
      * Read from the keyboard a command and returns it.
      *
@@ -17,20 +32,13 @@ public:
 
     void initiateConnection();
 
-    int getSocket();
-
-    bool isSocketInitiated();
-
-    void readFromServer();
+    string readFromServer();
 
     inline static const string EXIT_CMD = "exit";
 
-    void uploadFile();
+    void uploadFile(string filename);
 
-private:
-    int sock = 0;
-
-    uint16_t port;
+    void downloadFile(string filename, int size);
 };
 
 

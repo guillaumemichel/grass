@@ -9,28 +9,30 @@
 #include <string.h>
 #include <iostream>
 #include <thread>
+#include "commands.h"
+#include "FileWriter.h"
+#include "FileReader.h"
+#include "NetworkSocket.h"
+#include "exception.h"
 
 using namespace std;
 
-class Server {
+class Server: public NetworkSocket {
 public:
     explicit Server(uint16_t port);
 
-    int initiateConnection();
+    void initiateConnection();
 
-    int getSocket();
+    void readFromUserSocket(int userSocket);
 
-    bool isSocketInitiated();
+    void sendToClient(int socket, string message);
 
-    struct sockaddr_in address;
-
-    int readFromUserSocket(int userSocket);
+    int allocateSocketClient();
 private:
-    int sock = 0;
+    static void receiveFileUpload(string filename, int size, int port);
 
-    uint16_t port;
+    static void sendFile(string filename, int port);
 
-    static void receiveFileUpload();
 };
 
 

@@ -3,12 +3,13 @@
 #include <algorithm>
 #include "../../include/Configuration.h"
 #include "../../include/FileReader.h"
+#include "../../include/exception.h"
 
 using namespace std;
 
 Configuration::Configuration(const FileReader& fileReader): fileReader(fileReader) {}
 
-vector<string> Configuration::getEntriesWithKey(const string key) {
+vector<string> Configuration::getEntriesWithKey(const string key) const {
     vector<string> lines;
     fileReader.readFileVector(lines);
     vector<string> desiredLines;
@@ -19,33 +20,31 @@ vector<string> Configuration::getEntriesWithKey(const string key) {
     return desiredLines;
 }
 
-string Configuration::removeKeyInLine(string key, string line) {
+string Configuration::removeKeyInLine(string key, string line) const {
     if(line.find(" ", 0) == key.size() && line.size() > key.size() + 1) {
         return line.substr(key.size() + 1);
     }
-    return "NOT FOUND";
+    throw Exception(ERR_INVALID_ARGS);
 }
 
-string Configuration::extractStringValue(string key) {
+string Configuration::extractStringValue(string key) const {
     vector<string> filtered = getEntriesWithKey(key);
     if(filtered.size() > 0) {
         return removeKeyInLine(key, filtered[0]);
     }
-    return "NOT FOUND";
+    throw Exception(ERR_INVALID_ARGS);
 }
 
-string Configuration::getBase() {
+string Configuration::getBase() const {
     return extractStringValue("base");
 }
 
-unsigned int Configuration::getPort() {
+unsigned int Configuration::getPort() const {
     string value = extractStringValue("port");
-    if(value == "NOT FOUND")
-        return -1;
     return stoul(value, NULL, 10);
 }
 
-map<string, string> Configuration::getUsers() {
+map<string, string> Configuration::getUsers() const {
     vector<string> filtered = getEntriesWithKey("user");
     map<string, string> users;
     for(auto const& u: filtered) {

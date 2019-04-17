@@ -1,8 +1,9 @@
-#include <grass.h>
 #include <ctype.h>
 #include <iostream>
 #include <string>
+#include "../include/grass.h"
 #include "../include/commands.h"
+#include "../include/server_socket.h"
 
 using namespace std;
 
@@ -15,10 +16,9 @@ char port[7] = "31337";
 
 // Helper function to run commands in unix.
 int run_command(string command, int sock){
-  //manage socket
+  //manage NetworkSocket
   //manage control access
-  int permission_level = 2;
-  std:string response = exec_command(command, permission_level);
+  std:string response = exec_command(command, sock);
   cout << response << endl << endl;
   if (!response.compare(0, str_bye.length(), str_bye)){
     return 1;
@@ -31,7 +31,7 @@ int run_command(string command, int sock){
  * Send a file to the client as its own thread
  *
  * fp: file descriptor of file to send
- * sock: socket that has already been created.
+ * sock: NetworkSocket that has already been created.
  */
 void send_file(int fp, int sock) {
 }
@@ -40,14 +40,14 @@ void send_file(int fp, int sock) {
  * Send a file to the server as its own thread
  *
  * fp: file descriptor of file to save to.
- * sock: socket that has already been created.
+ * sock: NetworkSocket that has already been created.
  * size: the size (in bytes) of the file to recv
  */
 void recv_file(int fp, int sock, int size) {
 }
 
-// Server side REPL given a socket file descriptor
-void *connection_handler(void* sockfd) {
+// Server side REPL given a NetworkSocket file descriptor
+void *connection_handler(void *sockfd) {
 }
 
 /*
@@ -65,20 +65,36 @@ void search(char *pattern) {
 void parse_grass() {
 }
 
+void connectClient(int userSocket, Server server) {
+    // This function exists when the "exit" command is received
+    server.readFromUserSocket(userSocket);
+
+    cout << "Disconnecting client #" << userSocket << endl;
+}
+
 int main() {
     // TODO:
-    // Parse the rass.conf file
+    // Parse the grass.conf file
     // Listen to the port and handle each connection
-    cout << "I am the server =D\n\n";
-    //connect with client
-    //infinite loop: wait for Commands
-    string cmd;
-    int end = 0;
-    while(!end){
-        cout << endl << ">>> ";
-        getline(cin, cmd);
-        cout << endl;
-        end = run_command(cmd, 0);
+
+    // Create a server object
+    Server server(8080);
+
+    // Create the server socket
+    server.initiateConnection();
+
+    cout << "Server NetworkSocket initiated" << endl;
+
+    while (true) {
+        cout << "Listening for incoming connections..." << endl;
+        int userSocket = server.allocateSocketClient();
+        cout << "New client connected : " << userSocket << endl;
+
+        thread t(connectClient, userSocket, server);
+        t.detach();
+
+        // TODO : add try catch around to print error message in case of
     }
-    //run commands and loop again
+
+    return 0;
 }

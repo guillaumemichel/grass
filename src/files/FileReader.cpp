@@ -12,6 +12,9 @@ using namespace std;
 #include "../../include/FileReader.h"
 
 FileReader::FileReader(string filename) {
+    // Append the basepath to the filename
+    // TODO : check if file is accessible (like not something ../../../info.root)
+
     // Check if file exists
     std::ifstream ifile(filename.c_str());
     if (!(bool) ifile) {
@@ -41,7 +44,7 @@ void FileReader::readFileVector(std::vector<std::string> &file) const {
     //Close The File
     in.close();
 }
-
+/*
 void FileReader::readFile(char *buffer) const {
     // Malloc the buffer for the file
     size_t fileSize = this->fileSize();
@@ -63,20 +66,7 @@ void FileReader::readFile(char *buffer) const {
         // close the opened file.
         infile.close();
     }
-}
-
-size_t FileReader::fileSize() const {
-    // File size
-    streampos fsize = 0;
-    ifstream file(filename, ios::binary);
-
-    fsize = file.tellg();
-    file.seekg(0, ios::end);
-    fsize = file.tellg() - fsize;
-    file.close();
-
-    return (size_t) fsize;
-}
+}*/
 
 string FileReader::fileToString() const {
     string str;

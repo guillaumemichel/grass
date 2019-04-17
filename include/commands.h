@@ -1,11 +1,12 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+#include "exception.h"
 #include <ctype.h>
 #include <iostream>
 #include <cstring>
 #include <string>
-#include "exception.h"
+#include <cstring>
 
 using namespace std;
 
