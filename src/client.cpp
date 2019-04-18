@@ -15,41 +15,9 @@
 #include "../include/client_socket.h"
 #include "../include/FileReader.h"
 #include "../include/FileWriter.h"
+#include "../include/exception.h"
 
 using namespace std;
-
-
-/*
- * Send a file to the server as its own thread
- *
- * fp: file descriptor of file to send
- * d_port: destination port
- */
-void send_file(int fp, int d_port) {
-    // TODO
-}
-
-/*
- * Recv a file from the server as its own thread
- *
- * fp: file descriptor of file to save to.
- * d_port: destination port
- * size: the size (in bytes) of the file to recv
- */
-void recv_file(int fp, int d_port, int size) {
-    // TODO
-}
-
-
-/*
- * search all files in the current directory
- * and its subdirectory for the pattern
- *
- * pattern: an extended regular expressions.
- */
-void search(char *pattern) {
-    // TODO
-}
 
 void download(string filename, int size, int port) {
     cout << "Starting new thread to receive the file from the server" << endl;
@@ -73,12 +41,12 @@ void download(string filename, int size, int port) {
 
 
     if (maxTries == 0) {
-        throw invalid_argument("Cannot connect to the server");
+        throw Exception(ERR_NETWORK_CONNECTION_SERVER_FAILED);
     }
 
     // Should be ok, but we just check if the sock was properly created
     if (!client.isSocketInitiated()) {
-        throw invalid_argument("The NetworkSocket was not properly created");
+        throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);
     }
 
     client.downloadFile(filename, size);
@@ -111,12 +79,12 @@ void ouba(string filename, string size, int port) {
     }
 
     if (maxTries == 0) {
-        throw invalid_argument("Cannot connect to the server");
+        throw Exception(ERR_NETWORK_CONNECTION_SERVER_FAILED);
     }
 
     // Should be ok, but we just check if the sock was properly created
     if (!client.isSocketInitiated()) {
-        throw invalid_argument("The NetworkSocket was not properly created");
+        throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);
     }
 
     client.uploadFile(filename);

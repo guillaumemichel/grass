@@ -1,7 +1,6 @@
 using namespace std;
 
 #include "../../include/client_socket.h"
-#include "../../include/FileReader.h"
 
 Client::Client(uint16_t dstPort) : NetworkSocket(dstPort) {
 }
@@ -12,12 +11,12 @@ void Client::initiateConnection() {
 
     // Convert IPv4 and IPv6 addresses from text to binary form
     if (inet_pton(AF_INET, "127.0.0.1", &(this->address).sin_addr) <= 0) {
-        throw invalid_argument("Invalid address");
+        throw Exception(ERR_NETWORK_BAD_ADDRESS);
     }
 
     // Tries to connect to the server
     if (connect(this->sock, (struct sockaddr *) &(this->address), sizeof(this->address)) < 0) {
-        throw invalid_argument("Connection to server failed");
+        throw Exception(ERR_NETWORK_CONNECTION_SERVER_FAILED);
     }
 }
 
@@ -43,12 +42,12 @@ string Client::readFromServer() {
         // Read data from the server
         ssize_t valRead = read(this->getSocket(), buffer, Client::SOCKET_BUFFER_SIZE);
         if (-1 == valRead) {
-            throw invalid_argument("Error while reading data from server");
+            throw Exception(ERR_NETWORK_READ_SOCKET);
         } else {
             return string(buffer, Client::SOCKET_BUFFER_SIZE);
         }
     } else {
-        throw invalid_argument("Cannot read from server, the NetworkSocket was not initiated");
+        throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);
     }
 }
 
@@ -90,7 +89,7 @@ void Client::downloadFile(string filename, int size) {
 
     // Check if buffer was correctly allocated
     if (buffer == nullptr) {
-        throw invalid_argument("Cannot allocate the buffer");
+        throw Exception(ERR_MEMORY_MALLOC);
     } else {
         memset(buffer, 0, size);
         // Now we can read the data
@@ -100,8 +99,9 @@ void Client::downloadFile(string filename, int size) {
             string line(buffer, size);
             fw.writeLine(line);
         } else {
-            throw invalid_argument("Cannot read from the socket while downloading");
+            throw Exception(ERR_NETWORK_READ_SOCKET);
         }
+
         // Finally we clean and free the buffer
         memset(buffer, 0, size);
         free(buffer);

@@ -11,9 +11,11 @@
 #include <fstream>
 #include <thread>
 #include <vector>
+#include "FileReader.h"
 #include "commands.h"
 #include "FileWriter.h"
 #include "NetworkSocket.h"
+#include "exception.h"
 
 using namespace std;
 

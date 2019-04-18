@@ -13,7 +13,7 @@ void Server::initiateConnection() {
 
     // Forcefully attaching NetworkSocket to the port
     if (setsockopt(this->sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
-        throw invalid_argument("Cannot configure the socket");
+        throw Exception(ERR_NETWORK_SOCKET_CONFIGURATION);
     }
 
     // Setting up the server socket
@@ -21,12 +21,12 @@ void Server::initiateConnection() {
 
     // Forcefully attaching NetworkSocket to the port provided by the user
     if (bind(this->sock, (struct sockaddr *) &(this->address), sizeof(this->address)) < 0) {
-        throw invalid_argument("Cannot bind the socket");
+        throw Exception(ERR_NETWORK_SOCKET_CONFIGURATION);
     }
 
     // Prepare to lister for incoming connections.
     if (listen(this->sock, 3) < 0) {
-        throw invalid_argument("Cannot make the socket to listen");
+        throw Exception(ERR_NETWORK_SOCKET_CONFIGURATION);
     }
 }
 
@@ -149,7 +149,7 @@ void Server::receiveFileUpload(string filename, int size, int port) {
 
     // Check if buffer was correctly allocated
     if (buffer == nullptr) {
-        throw invalid_argument("Cannot allocate the buffer");
+        throw Exception(ERR_MEMORY_MALLOC);
     } else {
         memset(buffer, 0, size);
         // Now we can read the data
@@ -183,7 +183,7 @@ void Server::sendFile(string filename, int port) {
 
     // Should be ok, but we just check if the sock was properly created
     if (!server.isSocketInitiated()) {
-        throw invalid_argument("The NetworkSocket was not properly created");
+        throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);
     }
 
     // Wait for the client to connect
@@ -216,10 +216,11 @@ int Server::allocateSocketClient() {
     int userSocket;
 
     int addrlen = sizeof(this->address);
+
     // Waiting for a client to conenct
     if ((userSocket = accept(this->sock, (struct sockaddr *) &(this->address),
                              (socklen_t * ) & addrlen)) < 0) {
-        throw Exception(ERR_ERR_NOT_FOUND);
+        throw Exception(ERR_NETWORK_ACCEPT_SOCKET);
     }
 
     // Returning the socket

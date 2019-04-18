@@ -6,6 +6,7 @@
 #include <string.h>
 #include <iostream>
 #include <arpa/inet.h>
+#include "exception.h"
 
 #ifndef ASS_ON_THE_GRASS_SOCKET_H
 #define ASS_ON_THE_GRASS_SOCKET_H

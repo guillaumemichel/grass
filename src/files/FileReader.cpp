@@ -1,15 +1,6 @@
-#include <utility>
-#include <string>
-#include <fstream>
-#include <stdlib.h>
-#include <iostream>
-#include <algorithm>
-#include <vector>
-#include <iterator>
+#include "../../include/FileReader.h"
 
 using namespace std;
-
-#include "../../include/FileReader.h"
 
 FileReader::FileReader(string filename) {
     // Append the basepath to the filename
@@ -19,7 +10,7 @@ FileReader::FileReader(string filename) {
     std::ifstream ifile(filename.c_str());
     if (!(bool) ifile) {
         // File doesn't exist, we throw an exception
-        throw invalid_argument("File does not exist");
+        throw Exception(ERR_FILE_NOT_FOUND);
     }
 
     this->filename = std::move(filename);
@@ -31,7 +22,7 @@ void FileReader::readFileVector(std::vector<std::string> &file) const {
 
     // Check if object is valid
     if (!in) {
-        throw invalid_argument("Cannot open the file");
+        throw Exception(ERR_CANNOT_OPEN_FILE);
     }
 
     std::string str;
@@ -44,29 +35,6 @@ void FileReader::readFileVector(std::vector<std::string> &file) const {
     //Close The File
     in.close();
 }
-/*
-void FileReader::readFile(char *buffer) const {
-    // Malloc the buffer for the file
-    size_t fileSize = this->fileSize();
-    buffer = (char *) malloc(fileSize);
-
-    // TODO : FOR MALLOC, ASSERT OR EXCEPTION ?
-    if (buffer == nullptr) {
-        cout << "Error while reading the file";
-        throw logic_error("Cannot allocate the buffer to read the file");
-    } else {
-        ifstream infile;
-        infile.open("test.txt");
-
-        cout << "Reading from the file :" << endl;
-        infile.getline(buffer, fileSize);
-
-        // write the data at the screen.
-        cout << buffer << endl;
-        // close the opened file.
-        infile.close();
-    }
-}*/
 
 string FileReader::fileToString() const {
     string str;
