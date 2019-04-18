@@ -33,6 +33,7 @@ private:
 
     static void sendFile(string filename, int port);
 
+    const int MAX_WRONG_READ = 10;
 };
 
 

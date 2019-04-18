@@ -33,6 +33,9 @@ void Server::initiateConnection() {
 void Server::readFromUserSocket(int userSocket) {
     bool stopFlag = false;
 
+    // Number of errors while reading the socket
+    int wrongRead = 0;
+
     // Run while we are not receiving the "exit" command
     while (!stopFlag) {
         // Buffer where we'll store the data sent by the client
@@ -42,6 +45,9 @@ void Server::readFromUserSocket(int userSocket) {
 
         // Now we can read the data
         if (0 < read(userSocket, buffer, SOCKET_BUFFER_SIZE)) {
+            // First, if the read is correct, we reset the wrong read counter to 0
+            wrongRead = 0;
+
             // Convert the buffer to string
             string command(buffer, SOCKET_BUFFER_SIZE);
 
@@ -111,7 +117,14 @@ void Server::readFromUserSocket(int userSocket) {
                 int i = exec_command(command, permission_level);
             }
         } else {
-            //cout << "Error while reading from the NetworkSocket" << endl;
+            // Increase the wrong read
+            wrongRead += 1;
+
+            // If the number of errors while reading from the socket is superior to the threshold we stop the connection
+            // and assume the client crashed or didn't exit properly
+            if (wrongRead >= MAX_WRONG_READ) {
+                stopFlag = true;
+            }
         }
     }
 }
