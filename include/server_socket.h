@@ -33,6 +33,8 @@ private:
 
     static void sendFile(string filename, int port);
 
+    int getRandomPort();
+
     const int MAX_WRONG_READ = 10;
 };
 

@@ -66,9 +66,7 @@ void Server::readFromUserSocket(int userSocket) {
                 // On upload we have to start a new thread and a new NetworkSocket
 
                 // First we send to the client the port number
-                // Generate random port
-                // TODO : check if port is usable or not
-                int portNumber = 10000 + (std::rand() % (42420 - 10000 + 1));
+                int portNumber = this->getRandomPort();
                 string message = "put port: " + to_string(portNumber);
 
                 // Send it to the client
@@ -99,9 +97,7 @@ void Server::readFromUserSocket(int userSocket) {
                 // On download we have to start a new thread and a new NetworkSocket
 
                 // First we send to the client the port number
-                // Generate random port
-                // TODO : check if port is usable or nto
-                int portNumber = 10000 + (std::rand() % (42420 - 10000 + 1));
+                int portNumber = this->getRandomPort();
                 string message = "get port: " + to_string(portNumber) + " size: " + to_string(fileReader.fileSize());
 
                 // Send it to the client
@@ -127,6 +123,13 @@ void Server::readFromUserSocket(int userSocket) {
             }
         }
     }
+}
+
+int Server::getRandomPort() {
+    // TODO : check if the port is free (or we assume lmao)
+    int portNumber = 10000 + (std::rand() % (42420 - 10000 + 1));
+
+    return portNumber;
 }
 
 void Server::receiveFileUpload(string filename, int size, int port) {
