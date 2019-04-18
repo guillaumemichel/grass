@@ -111,7 +111,7 @@ void Server::readFromUserSocket(int userSocket) {
                 int i = exec_command(command, permission_level);
             }
         } else {
-            cout << "Error while reading from the NetworkSocket" << endl;
+            //cout << "Error while reading from the NetworkSocket" << endl;
         }
     }
 }

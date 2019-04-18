@@ -1,74 +1,40 @@
-#include <stdio.h>
-#include <sys/socket.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <vector>
-#include <thread>
-
-#include "../include/grass.h"
-#include "../include/client_socket.h"
-#include "../include/FileReader.h"
-#include "../include/FileWriter.h"
-#include "../include/exception.h"
+#include "../include/client.h"
 
 using namespace std;
 
-void download(string filename, int size, int port) {
+void ClientLauncher::downloadFile(string filename, int size, int port) {
     cout << "Starting new thread to receive the file from the server" << endl;
     Client client(port);
 
-    // Loop while the server is ready
-    int maxTries = 10;
-    bool connected = false;
-    while (maxTries > 0 && !connected) {
-        // Tries to connect
-        try {
-            client.initiateConnection();
-            connected = true;
-        } catch (exception &e) {
-            cout << "Cannot connect to the server... Attempting again..." << endl;
-            maxTries--;
-            // Wait an exponential amount of time until the server is ready
-            usleep(100 * (10 - maxTries));
-        }
-    }
-
-
-    if (maxTries == 0) {
-        throw Exception(ERR_NETWORK_CONNECTION_SERVER_FAILED);
-    }
-
-    // Should be ok, but we just check if the sock was properly created
-    if (!client.isSocketInitiated()) {
-        throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);
-    }
+    ClientLauncher::fileTransferConnect(&client);
 
     client.downloadFile(filename, size);
 
     // Close the NetworkSocket
     client.closeConnection();
-
-    cout << "Closing the upload thread" << endl;
 }
 
 
-void ouba(string filename, string size, int port) {
+void ClientLauncher::uploadFile(string filename, string size, int port) {
     cout << "Starting new thread to send the file to the server" << endl;
     Client client(port);
 
+    ClientLauncher::fileTransferConnect(&client);
+
+    client.uploadFile(filename);
+
+    // Close the NetworkSocket
+    client.closeConnection();
+}
+
+void ClientLauncher::fileTransferConnect(Client* client) {
     // Loop while the server is ready
     int maxTries = 10;
     bool connected = false;
     while (maxTries > 0 && !connected) {
         // Tries to connect
         try {
-            client.initiateConnection();
+            client->initiateConnection();
             connected = true;
         } catch (exception &e) {
             cout << "Cannot connect to the server... Attempting again..." << endl;
@@ -83,20 +49,12 @@ void ouba(string filename, string size, int port) {
     }
 
     // Should be ok, but we just check if the sock was properly created
-    if (!client.isSocketInitiated()) {
+    if (!(client->isSocketInitiated())) {
         throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);
     }
-
-    client.uploadFile(filename);
-
-    // Close the NetworkSocket
-    client.closeConnection();
-
-    //cout << "Closing the upload thread" << endl;
 }
 
-
-int main(int argc, char **argv) {
+void ClientLauncher::startClient() {
     // TODO:
     // Make a short REPL to send commands to the server
     // Make sure to also handle the special cases of a get and put command
@@ -132,7 +90,7 @@ int main(int argc, char **argv) {
             int port = stoi(read.substr(read.find(":") + 2));
 
             // Upload the file
-            thread t1(ouba, filename, size, port);
+            thread t1(ClientLauncher::uploadFile, filename, size, port);
             t1.detach();
         } else if (command.substr(0, 3) == "get") {
             string removePut = command.substr(command.find(" ") + 1);
@@ -152,7 +110,7 @@ int main(int argc, char **argv) {
                 int size = stoi(withoutPort.substr(withoutPort.find(":") + 2));
 
                 // Download the file
-                thread t1(download, filename, size, port);
+                thread t1(ClientLauncher::downloadFile, filename, size, port);
                 t1.detach();
             }
         } else {
@@ -160,6 +118,16 @@ int main(int argc, char **argv) {
             client.sendToServer(command);
         }
     } while (command != Client::EXIT_CMD);
+
+}
+
+int main(int argc, char **argv) {
+    ClientLauncher launcher;
+    try {
+        launcher.startClient();
+    } catch (Exception &e) {
+        e.print_error();
+    }
 
     cout << "Exiting the client" << endl;
 
