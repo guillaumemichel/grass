@@ -164,10 +164,13 @@ void Server::receiveFileUpload(string filename, int size, int port) {
     if (buffer == nullptr) {
         throw Exception(ERR_MEMORY_MALLOC);
     } else {
+        // Clean the buffer
         memset(buffer, 0, size);
+
         // Now we can read the data
-        // TODO : check if read does not return 0 or -1
-        read(receivingSocket, buffer, size);
+        if (read(receivingSocket, buffer, size) <= 0) {
+            throw new Exception(ERR_NETWORK_READ_SOCKET);
+        }
 
         // Create the string and write it to the file
         string line(buffer, size);
@@ -228,14 +231,14 @@ int Server::allocateSocketClient() {
     // The client socket
     int userSocket;
 
+    // Store the length in a variable
     int addrlen = sizeof(this->address);
 
-    // Waiting for a client to conenct
-    if ((userSocket = accept(this->sock, (struct sockaddr *) &(this->address),
-                             (socklen_t * ) & addrlen)) < 0) {
+    // The socket will be created when a client connect
+    if ((userSocket = accept(this->sock, (struct sockaddr *) &(this->address), (socklen_t * ) & addrlen)) < 0) {
         throw Exception(ERR_NETWORK_ACCEPT_SOCKET);
     }
 
-    // Returning the socket
+    // Returns the socket
     return userSocket;
 }
