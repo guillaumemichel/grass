@@ -23,7 +23,7 @@ void FileWriter::writeLine(string line) {
 
     // Check the file was properly opened
     if (!file) {
-        throw invalid_argument("Cannot open the file for writing");
+        throw Exception(ERR_CANNOT_OPEN_FILE);
     }
 
     // Add the return otherwise it just overwrites the file
@@ -41,7 +41,7 @@ void FileWriter::clearFile() {
 
     // Check the file was properly opened
     if (!file) {
-        throw invalid_argument("Cannot open the file for writing");
+        throw Exception(ERR_CANNOT_OPEN_FILE);
     }
 
     file << "";

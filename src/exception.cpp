@@ -17,6 +17,21 @@ string ERR_MESSAGES[] = {
     "file transfer failed.",
     "failed to run command.",
     "response too long!"
+    "Unknown error",
+    "Login required to perform this operation",
+    "File not found",
+    "Cannot open the file",
+    "Cannot allocate memory",
+    "Invalid command",
+    "Invalid arguments",
+    "Invalid address",
+    "Network error : connection to the server failed",
+    "Cannot read data from the socket",
+    "Cannot write data in the socket",
+    "Cannot create the socket",
+    "The socket was not instantiated",
+    "Cannot configure the socket",
+    "Cannot accept a socket"
 };
 
 /**
