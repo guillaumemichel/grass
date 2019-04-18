@@ -2,10 +2,11 @@ SRCDIR   := src
 BINDIR   := bin
 INCLUDES := -Iinclude/
 OBJDIR   := .build
+FILESDIR := files
 TESTDIR  := $(BINDIR)/tests
 
 CC       := g++
-CFLAGS   :=-Wall -Wextra -g -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES) -m32
+CFLAGS   :=-Wall -Wextra -g -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES)
 LFLAGS   := -lm
 
 SRC      :=                                     \
@@ -14,6 +15,7 @@ SRC      :=                                     \
 	$(wildcard src/services/commands/*.cpp)       \
 	$(wildcard src/configuration/*.cpp)           \
 	$(wildcard src/network/*.cpp)                 \
+	$(wildcard src/files/*.cpp)                 \
 	$(wildcard src/user/*.cpp)				            \
 	$(wildcard src/grass.cpp)                     \
 	$(wildcard src/error.cpp)					            \
@@ -48,6 +50,7 @@ $(TESTDIR): $(OBJECTS)
 build:
 	@mkdir -p $(BINDIR)
 	@mkdir -p $(OBJDIR)
+	@mkdir -p $(FILESDIR)
 
 debug: CFLAGS += -DDEBUG -g
 debug: all

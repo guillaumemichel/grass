@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <exception>
+#include <string>
 
 /*
  * - MAN to use custom exceptions
@@ -29,8 +30,23 @@ enum error_codes {
     ERR_ERR_NOT_FOUND,
     ERR_LOGIN_REQUIRED,
     ERR_FILE_NOT_FOUND,
+    ERR_CANNOT_OPEN_FILE,
+    ERR_MEMORY_MALLOC,
     ERR_INVALID_CMD,
     ERR_INVALID_ARGS,
+    ERR_ACCESS_DENIED,
+    ERR_PATH_TOO_LONG,
+    ERR_TRANSFER_FAIL,
+    ERR_FAIL_CMD,
+    ERR_RESPONSE_TOO_LONG,
+    ERR_NETWORK_BAD_ADDRESS,
+    ERR_NETWORK_CONNECTION_SERVER_FAILED,
+    ERR_NETWORK_READ_SOCKET,
+    ERR_NETWORK_WRITE_SOCKET,
+    ERR_NETWORK_CREATE_SOCKET,
+    ERR_NETWORK_SOCKET_NOT_CREATED,
+    ERR_NETWORK_SOCKET_CONFIGURATION,
+    ERR_NETWORK_ACCEPT_SOCKET,
     ERR_LAST // not an actual error but to have e.g. the total number of errors
 };
 
@@ -44,7 +60,7 @@ private:
 
 public:
   Exception(int);
-  void print_error();
+  std::string print_error();
 };
 
 #endif
