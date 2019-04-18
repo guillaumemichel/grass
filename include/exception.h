@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <exception>
+#include <string>
 
 /*
  * - MAN to use custom exceptions
@@ -33,6 +34,11 @@ enum error_codes {
     ERR_MEMORY_MALLOC,
     ERR_INVALID_CMD,
     ERR_INVALID_ARGS,
+    ERR_ACCESS_DENIED,
+    ERR_PATH_TOO_LONG,
+    ERR_TRANSFER_FAIL,
+    ERR_FAIL_CMD,
+    ERR_RESPONSE_TOO_LONG,
     ERR_NETWORK_BAD_ADDRESS,
     ERR_NETWORK_CONNECTION_SERVER_FAILED,
     ERR_NETWORK_READ_SOCKET,
@@ -54,7 +60,7 @@ private:
 
 public:
   Exception(int);
-  void print_error();
+  std::string print_error();
 };
 
 #endif

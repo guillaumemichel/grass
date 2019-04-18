@@ -14,6 +14,17 @@ static struct Command **cmdlist;
 static int numCmds;
 char port[7] = "31337";
 
+// Helper function to run commands in unix.
+int run_command(string command, int sock){
+  //manage NetworkSocket
+  //manage control access
+  std:string response = exec_command(command, sock);
+  cout << response << endl << endl;
+  if (!response.compare(0, str_bye.length(), str_bye)){
+    return 1;
+  }
+  return 0;
+}
 
 void connectClient(int userSocket, Server server) {
     // This function exists when the "exit" command is received

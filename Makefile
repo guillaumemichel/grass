@@ -6,7 +6,7 @@ FILESDIR := files
 TESTDIR  := $(BINDIR)/tests
 
 CC       := g++
-CFLAGS   :=-Wall -Wextra -g -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES) -m32
+CFLAGS   :=-Wall -Wextra -g -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES)
 LFLAGS   := -lm
 
 SRC      :=                                     \
