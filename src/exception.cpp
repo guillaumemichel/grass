@@ -10,6 +10,8 @@ string ERR_MESSAGES[] = {
     "unknown error.",
     "login required to perform this operation!",
     "file not found.",
+    "cannot open the file.",
+    "cannot allocate memory!",
     "invalid command.",
     "invalid arguments.",
     "access denied!",
@@ -17,21 +19,14 @@ string ERR_MESSAGES[] = {
     "file transfer failed.",
     "failed to run command.",
     "response too long!"
-    "Unknown error",
-    "Login required to perform this operation",
-    "File not found",
-    "Cannot open the file",
-    "Cannot allocate memory",
-    "Invalid command",
-    "Invalid arguments",
-    "Invalid address",
-    "Network error : connection to the server failed",
-    "Cannot read data from the socket",
-    "Cannot write data in the socket",
-    "Cannot create the socket",
-    "The socket was not instantiated",
-    "Cannot configure the socket",
-    "Cannot accept a socket"
+    "invalid address.",
+    "connection to the server failed.",
+    "cannot read data from the socket.",
+    "cannot write data in the socket.",
+    "cannot create the socket.",
+    "the socket was not instantiated!",
+    "cannot configure the socket.",
+    "cannot accept a socket."
 };
 
 /**
