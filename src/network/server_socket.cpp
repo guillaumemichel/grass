@@ -110,7 +110,7 @@ void Server::readFromUserSocket(int userSocket) {
                 cout << "Command received : " << buffer << endl;
                 // Execute the command
                 int permission_level = 2;
-                int i = exec_command(command, permission_level);
+                string i = exec_command(command, permission_level);
             }
         } else {
             // Increase the wrong read
