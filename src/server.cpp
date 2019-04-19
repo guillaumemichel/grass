@@ -4,15 +4,9 @@
 #include "../include/grass.h"
 #include "../include/commands.h"
 #include "../include/server_socket.h"
+#include "../include/Configuration.h"
 
 using namespace std;
-
-
-static struct User **userlist;
-static int numUsers;
-static struct Command **cmdlist;
-static int numCmds;
-char port[7] = "31337";
 
 void connectClient(int userSocket, Server server) {
     // This function exists when the "exit" command is received
@@ -22,12 +16,10 @@ void connectClient(int userSocket, Server server) {
 }
 
 int main() {
-    // TODO:
-    // Parse the grass.conf file
-    // Listen to the port and handle each connection
+    Configuration conf = Configuration(FileReader("grass.conf"));
 
     // Create a server object
-    Server server(8080);
+    Server server(conf.getPort());
 
     // Create the server socket
     server.initiateConnection();
