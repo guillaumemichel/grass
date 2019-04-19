@@ -1,5 +1,7 @@
-#include <string>
+#ifndef USER
+#define USER
 
+#include <string>
 using namespace std;
 
 class User {
@@ -13,3 +15,4 @@ private:
     bool authenticated;
     const string name;
 };
+#endif

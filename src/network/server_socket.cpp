@@ -1,9 +1,9 @@
 using namespace std;
 
 #include "../../include/server_socket.h"
+#include "../../include/commands.h"
 
-Server::Server(uint16_t port) : NetworkSocket(port) {
-}
+Server::Server(unsigned int port): NetworkSocket(port) {}
 
 void Server::initiateConnection() {
     int opt = 1;
@@ -31,6 +31,7 @@ void Server::initiateConnection() {
 }
 
 void Server::readFromUserSocket(int userSocket) {
+
     bool stopFlag = false;
 
     // Number of errors while reading the socket

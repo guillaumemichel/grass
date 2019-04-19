@@ -1,4 +1,6 @@
 #include "../../../include/commands.h"
+#include "../../../include/AuthorizationService.h"
+#include "../../../include/AuthenticationService.h"
 
 using namespace std;
 
@@ -8,31 +10,31 @@ using namespace std;
 /*
  * The 15 different commands recognized by the server
  */
-std::string cmd_login(string);
-std::string cmd_pass(string);
-std::string cmd_ping(string);
-std::string cmd_ls(string);
-std::string cmd_cd(string);
-std::string cmd_mkdir(string);
-std::string cmd_rm(string);
-std::string cmd_get(string);
-std::string cmd_put(string);
-std::string cmd_grep(string);
-std::string cmd_date(string);
-std::string cmd_whoami(string);
-std::string cmd_w(string);
-std::string cmd_logout(string);
-std::string cmd_exit(string);
+std::string cmd_login(string, unsigned int);
+std::string cmd_pass(string, unsigned int);
+std::string cmd_ping(string, unsigned int);
+std::string cmd_ls(string, unsigned int);
+std::string cmd_cd(string, unsigned int);
+std::string cmd_mkdir(string, unsigned int);
+std::string cmd_rm(string, unsigned int);
+std::string cmd_get(string, unsigned int);
+std::string cmd_put(string, unsigned int);
+std::string cmd_grep(string, unsigned int);
+std::string cmd_date(string, unsigned int);
+std::string cmd_whoami(string, unsigned int);
+std::string cmd_w(string, unsigned int);
+std::string cmd_logout(string, unsigned int);
+std::string cmd_exit(string, unsigned int);
 
-std::string sanitize(string);
+std::string sanitize(string, unsigned int);
 string break_characters = " \n"; //space and newline
 
 class Command{
 public:
   string str;
-  std::string (*fct)(string);
+  std::string (*fct)(string, unsigned int);
 
-  Command(string str0, std::string (*fct0)(string)){
+  Command(string str0, std::string (*fct0)(string, unsigned int)){
     str = str0;
     fct = fct0;
   }
@@ -56,6 +58,9 @@ Command commands[CMD_NB] = {
   Command(str_exit,   cmd_exit)
 };
 
+Configuration conf = Configuration(FileReader("grass.conf"));
+AuthenticationService auth = AuthenticationService(conf);
+
 /**
  * Sanitize and try to execute a given command
  * @method exec_command
@@ -65,7 +70,7 @@ Command commands[CMD_NB] = {
  */
 std::string exec_command(string cmd, int socket){
   try{
-    return sanitize(cmd);
+    return sanitize(cmd, socket);
   }
   catch(Exception& e){
     e.print_error();
@@ -73,7 +78,7 @@ std::string exec_command(string cmd, int socket){
   return 0;
 }
 
-std::string sanitize(string full_cmd){
+std::string sanitize(string full_cmd, unsigned int socket){
   //TODO: it is suppose to work with spaces in front of the command
   //TODO: sanitize more
   int pos = full_cmd.find_first_of((break_characters).c_str(),0);
@@ -81,7 +86,7 @@ std::string sanitize(string full_cmd){
 
   for (int i=0; i < CMD_NB; ++i){
     if (!cmd.compare(0, commands[i].str.length(), commands[i].str)){
-      return commands[i].fct(full_cmd);
+      return commands[i].fct(full_cmd, socket);
     }
   }
   throw Exception(ERR_INVALID_CMD);
@@ -123,15 +128,16 @@ std::string call_cmd(string str1){
   return str1;
 }
 
-std::string cmd_login(string cmd){
-  return 0;
+std::string cmd_login(string cmd, unsigned int socket){
+    return auth.registerUser(socket, cmd) ? "Login successful" : "Unable to login";
 }
 
-std::string cmd_pass(string cmd){
-  return 0;
+std::string cmd_pass(string cmd, unsigned int socket){
+    return auth.login(socket, auth.getUser(socket).getName(), cmd) ? "Password entered successfully" : "Wrong password";
 }
 
-std::string cmd_ping(string cmd){
+std::string cmd_ping(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_ping);
   if (cmd.size() == str_ping.size()){
     throw Exception(ERR_INVALID_ARGS);
   }
@@ -139,53 +145,67 @@ std::string cmd_ping(string cmd){
   return call_cmd((str).c_str());
 }
 
-std::string cmd_ls(string cmd){
+std::string cmd_ls(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_ls);
   string str = str_ls + " -l";
   return call_cmd(str);
 }
 
-std::string cmd_cd(string cmd){
+std::string cmd_cd(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_cd);
   return 0;
 }
 
-std::string cmd_mkdir(string cmd){
+std::string cmd_mkdir(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_mkdir);
   return 0;
 }
 
-std::string cmd_rm(string cmd){
+std::string cmd_rm(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_rm);
   return 0;
 }
 
-std::string cmd_get(string cmd){
+std::string cmd_get(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_get);
   return 0;
 }
 
-std::string cmd_put(string cmd){
+std::string cmd_put(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_put);
   return 0;
 }
 
-std::string cmd_grep(string cmd){
+std::string cmd_grep(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_grep);
   return 0;
 }
 
-std::string cmd_date(string cmd){
+std::string cmd_date(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_date);
   //TODO: update according to the login
   return call_cmd((str_date).c_str());
 }
 
-std::string cmd_whoami(string cmd){
+std::string cmd_whoami(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_whoami);
   //TODO: update according to the login
   return call_cmd((str_whoami).c_str());
 }
 
-std::string cmd_w(string cmd){
-  return 0;
+std::string cmd_w(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_w);
+    // Get users with auth.getAuthenticatedUsers()
+    return 0;
 }
 
-std::string cmd_logout(string cmd){
-  return 0;
+std::string cmd_logout(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_logout);
+  auth.logout(socket);
+  return "Logout successful";
 }
 
-std::string cmd_exit(string cmd){
+std::string cmd_exit(string cmd, unsigned int socket){
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_exit);
   return str_bye;
 }

@@ -8,7 +8,6 @@
 #include <string.h>
 #include <iostream>
 #include <thread>
-#include "commands.h"
 #include "FileWriter.h"
 #include "FileReader.h"
 #include "NetworkSocket.h"
@@ -18,7 +17,7 @@ using namespace std;
 
 class Server: public NetworkSocket {
 public:
-    explicit Server(uint16_t port);
+    explicit Server(unsigned int);
 
     void initiateConnection();
 

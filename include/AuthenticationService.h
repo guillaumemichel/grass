@@ -1,6 +1,9 @@
 #include <map>
 #include "Configuration.h"
+
+#ifndef USER
 #include "User.h"
+#endif
 
 #ifndef ASS_ON_THE_GRASS_AUTHENTICATIONSERVICE_H
 #define ASS_ON_THE_GRASS_AUTHENTICATIONSERVICE_H
