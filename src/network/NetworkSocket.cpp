@@ -2,7 +2,7 @@
 
 using namespace std;
 
-NetworkSocket::NetworkSocket(uint16_t port) {
+NetworkSocket::NetworkSocket(unsigned int port) {
     this->port = port;
 }
 

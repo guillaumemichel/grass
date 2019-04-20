@@ -54,12 +54,12 @@ void ClientLauncher::fileTransferConnect(Client* client) {
     }
 }
 
-void ClientLauncher::startClient() {
+void ClientLauncher::startClient(int port) {
     // TODO:
     // Make a short REPL to send commands to the server
     // Make sure to also handle the special cases of a get and put command
     // Instantiate a new client
-    Client client(8080);
+    Client client(port);
 
     client.initiateConnection();
 
@@ -123,8 +123,10 @@ void ClientLauncher::startClient() {
 
 int main(int argc, char **argv) {
     ClientLauncher launcher;
+    Configuration conf = Configuration(FileReader("grass.conf"));
+
     try {
-        launcher.startClient();
+        launcher.startClient(conf.getPort());
     } catch (Exception &e) {
         e.print_error();
     }

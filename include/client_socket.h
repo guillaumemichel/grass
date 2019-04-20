@@ -19,7 +19,7 @@ using namespace std;
 
 class Client: public NetworkSocket {
 public:
-    explicit Client(uint16_t dstPort);
+    explicit Client(unsigned int dstPort);
 
     /**
      * Read from the keyboard a command and returns it.

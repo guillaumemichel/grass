@@ -8,12 +8,12 @@
 #include <fstream>
 #include <vector>
 #include <thread>
-
 #include "grass.h"
 #include "client_socket.h"
 #include "FileReader.h"
 #include "FileWriter.h"
 #include "exception.h"
+#include "Configuration.h"
 
 using namespace std;
 
@@ -25,5 +25,5 @@ public:
 
     static void fileTransferConnect(Client* client);
 
-    void startClient();
+    void startClient(int port);
 };

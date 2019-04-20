@@ -2,7 +2,7 @@ using namespace std;
 
 #include "../../include/client_socket.h"
 
-Client::Client(uint16_t dstPort) : NetworkSocket(dstPort) {
+Client::Client(unsigned int dstPort) : NetworkSocket(dstPort) {
 }
 
 void Client::initiateConnection() {

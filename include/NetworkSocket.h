@@ -18,7 +18,7 @@ public:
     // TODO : how to initialize it?
     struct sockaddr_in address;
 
-    explicit NetworkSocket(uint16_t port);
+    explicit NetworkSocket(unsigned int port);
 
     void closeConnection();
 
@@ -35,7 +35,7 @@ protected:
 
     int sock = 0;
 
-    uint16_t port;
+    unsigned int port;
 
     const int SOCKET_BUFFER_SIZE = 128;
 };
