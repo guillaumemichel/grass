@@ -75,7 +75,7 @@ std::string exec_command(string cmd, int socket){
   catch(Exception& e){
     e.print_error();
   }
-  return 0;
+  return string();
 }
 
 std::string sanitize(string full_cmd, unsigned int socket){
@@ -89,6 +89,7 @@ std::string sanitize(string full_cmd, unsigned int socket){
       return commands[i].fct(full_cmd, socket);
     }
   }
+
   throw Exception(ERR_INVALID_CMD);
 }
 

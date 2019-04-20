@@ -25,5 +25,5 @@ public:
 
     static void fileTransferConnect(Client* client);
 
-    void startClient(int port);
+    void startClient(unsigned int port);
 };

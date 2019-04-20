@@ -27,7 +27,7 @@ void ClientLauncher::uploadFile(string filename, string size, int port) {
     client.closeConnection();
 }
 
-void ClientLauncher::fileTransferConnect(Client* client) {
+void ClientLauncher::fileTransferConnect(Client *client) {
     // Loop while the server is ready
     int maxTries = 10;
     bool connected = false;
@@ -54,7 +54,7 @@ void ClientLauncher::fileTransferConnect(Client* client) {
     }
 }
 
-void ClientLauncher::startClient(int port) {
+void ClientLauncher::startClient(unsigned int port) {
     // TODO:
     // Make a short REPL to send commands to the server
     // Make sure to also handle the special cases of a get and put command
