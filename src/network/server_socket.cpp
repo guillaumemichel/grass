@@ -111,6 +111,7 @@ void Server::readFromUserSocket(int userSocket) {
                 cout << "Command received : " << buffer << endl;
                 // Execute the command
                 string i = exec_command(command, userSocket);
+                cout << "Response : " << i <<endl;
             }
         } else {
             // Increase the wrong read

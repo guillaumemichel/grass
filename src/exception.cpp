@@ -18,7 +18,7 @@ string ERR_MESSAGES[] = {
     "path too long.",
     "file transfer failed.",
     "failed to run command.",
-    "response too long!"
+    "response too long!",
     "invalid address.",
     "connection to the server failed.",
     "cannot read data from the socket.",

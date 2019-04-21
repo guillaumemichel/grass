@@ -1,3 +1,4 @@
+#include <sstream>
 #include "../../../include/commands.h"
 #include "../../../include/AuthorizationService.h"
 #include "../../../include/AuthenticationService.h"
@@ -195,9 +196,11 @@ std::string cmd_whoami(string cmd, unsigned int socket){
 }
 
 std::string cmd_w(string cmd, unsigned int socket){
-    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_w);
-    // Get users with auth.getAuthenticatedUsers()
-    return 0;
+    if(!AuthorizationService(auth.getUser(socket)).hasAccessTo(str_w)) { throw Exception(ERR_LOGIN_REQUIRED); }
+    std::stringstream users;
+    for(const User &u: auth.getAuthenticatedUsers())
+        users << u.getName() << endl;
+    return users.str().substr(0, users.str().size()-1);
 }
 
 std::string cmd_logout(string cmd, unsigned int socket){
