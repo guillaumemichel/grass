@@ -21,15 +21,15 @@ public:
 
     void initiateConnection();
 
-    void readFromUserSocket(int userSocket);
+    void readFromUserSocket(unsigned int userSocket);
 
-    void sendToClient(int socket, string message);
+    void sendToClient(unsigned int socket, string message);
 
     int allocateSocketClient();
 private:
-    static void receiveFileUpload(string filename, int size, int port);
+    static void receiveFileUpload(string filename, unsigned int size, unsigned int port);
 
-    static void sendFile(string filename, int port);
+    static void sendFile(string filename, unsigned int port);
 
     int getRandomPort();
 

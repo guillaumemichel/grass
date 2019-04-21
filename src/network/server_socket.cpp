@@ -30,7 +30,7 @@ void Server::initiateConnection() {
     }
 }
 
-void Server::readFromUserSocket(int userSocket) {
+void Server::readFromUserSocket(unsigned int userSocket) {
 
     bool stopFlag = false;
 
@@ -111,6 +111,7 @@ void Server::readFromUserSocket(int userSocket) {
                 cout << "Command received : " << buffer << endl;
                 // Execute the command
                 string i = exec_command(command, userSocket);
+                cout << "Response : " << i <<endl;
             }
         } else {
             // Increase the wrong read
@@ -132,7 +133,7 @@ int Server::getRandomPort() {
     return portNumber;
 }
 
-void Server::receiveFileUpload(string filename, int size, int port) {
+void Server::receiveFileUpload(string filename, unsigned int size, unsigned int port) {
     cout << "Starting a new thread for the receiving server on port " << port << ". The size of the file is : " << size
          << endl;
 
@@ -190,11 +191,11 @@ void Server::receiveFileUpload(string filename, int size, int port) {
     cout << "File transfer done" << endl;
 }
 
-void Server::sendToClient(int socket, string message) {
+void Server::sendToClient(unsigned int socket, string message) {
     this->sendTo(socket, message);
 }
 
-void Server::sendFile(string filename, int port) {
+void Server::sendFile(string filename, unsigned int port) {
     cout << "Starting new thread to send the file to the client" << endl;
     Server server(port);
 

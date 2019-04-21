@@ -5,7 +5,7 @@ User::User(const string name): name(name) {
     authenticated = false;
 }
 
-bool User::setAuthenticated(bool status) {
+void User::setAuthenticated(bool status) {
     authenticated = status;
 }
 

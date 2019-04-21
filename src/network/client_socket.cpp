@@ -5,6 +5,8 @@ using namespace std;
 Client::Client(unsigned int dstPort) : NetworkSocket(dstPort) {
 }
 
+const string Client::EXIT_CMD = "exit";
+
 void Client::initiateConnection() {
     // Common settings to create the socket
     this->commonInitiateConnection();
@@ -71,7 +73,7 @@ void Client::uploadFile(string filename) {
     cout << "File uploaded!" << endl;
 }
 
-void Client::downloadFile(string filename, int size) {
+void Client::downloadFile(string filename, unsigned int size) {
     // Rewrite the filename to the download directory
     filename = DOWNLOAD_BASEPATH + filename;
 

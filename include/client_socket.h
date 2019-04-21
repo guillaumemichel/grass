@@ -34,11 +34,11 @@ public:
 
     string readFromServer();
 
-    inline static const string EXIT_CMD = "exit";
+    static const string EXIT_CMD;
 
     void uploadFile(string filename);
 
-    void downloadFile(string filename, int size);
+    void downloadFile(string filename, unsigned int size);
 };
 
 

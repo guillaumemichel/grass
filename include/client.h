@@ -19,9 +19,9 @@ using namespace std;
 
 class ClientLauncher {
 public:
-    static void downloadFile(string filename, int size, int port);
+    static void downloadFile(string filename, int size, unsigned int port);
 
-    static void uploadFile(string filename, string size, int port);
+    static void uploadFile(string filename, string size, unsigned int port);
 
     static void fileTransferConnect(Client* client);
 
