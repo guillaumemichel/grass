@@ -190,9 +190,8 @@ std::string cmd_date(string cmd, unsigned int socket){
 }
 
 std::string cmd_whoami(string cmd, unsigned int socket){
-    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_whoami);
-  //TODO: update according to the login
-  return call_cmd((str_whoami).c_str());
+    if(!AuthorizationService(auth.getUser(socket)).hasAccessTo(str_whoami)) { throw Exception(ERR_LOGIN_REQUIRED); }
+    return auth.getUser(socket).getName();
 }
 
 std::string cmd_w(string cmd, unsigned int socket){
