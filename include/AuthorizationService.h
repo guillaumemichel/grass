@@ -1,6 +1,6 @@
 /**
  * AuthorizationService.h
- * Determined which resources a given user is allowed to access.
+ * Determines which resources a given user is allowed to access to.
  * See AuthorizationPolicies.h for details.
  * Author: Xavier Pantet
  */

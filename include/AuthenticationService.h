@@ -1,6 +1,6 @@
 /**
  * AuthenticationService.h
- * Handles user authentication from a Configuration which contains user definitions
+ * Handles user authentication from a Configuration which contains user definitions.
  * Author: Xavier Pantet
  */
 
