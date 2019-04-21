@@ -46,7 +46,7 @@ std::string Exception::print_error(){
   if (code <= ERR_FIRST || code >= ERR_LAST){
     code = ERR_ERR_NOT_FOUND;
   }
-  string err_str = ERR_MESSAGES[code - ERR_FIRST];
-  cout << "Error: " << err_str << endl;
+  string err_str = "Error: " + ERR_MESSAGES[code - ERR_FIRST];
+  cout << err_str << endl;
   return err_str;
 }
