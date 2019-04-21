@@ -93,8 +93,30 @@ std::string sanitize(string full_cmd, unsigned int socket){
   throw Exception(ERR_INVALID_CMD);
 }
 
-std::string tokenize_ip(string){
-  return "0.0.0.0";
+void check_last_n(const char* tmp0, const char* tmp1, int n){
+  if (tmp0==tmp1 || n < 0|| n>=0x100) throw Exception(ERR_INVALID_ARGS);
+}
+
+void check_n(const char* tmp0, const char* tmp1, int n){
+  check_last_n(tmp0,tmp1,n);
+  if (tmp1[0] != '.') throw Exception(ERR_INVALID_ARGS);
+}
+
+string tokenize_ip(string str0){
+  //TODO: check for spaces at the begining of the string
+  const char* str1 = (str0).c_str();
+  char *tmp0, *tmp1;
+  int n;
+  n = strtol(str1, &tmp0, 10);
+  check_n(str1, tmp0, n);
+  n = strtol(++tmp0, &tmp1, 10);
+  check_n(tmp0, tmp1, n);
+  n = strtol(++tmp1, &tmp0, 10);
+  check_n(tmp1, tmp0, n);
+  n = strtol(++tmp0, &tmp1, 10);
+  check_last_n(tmp0, tmp1, n);
+
+  return str0.substr(0,str1-tmp1);
 }
 
 std::string call_cmd(string str1){
@@ -134,7 +156,7 @@ std::string cmd_login(string cmd, unsigned int socket){
 }
 
 std::string cmd_pass(string cmd, unsigned int socket){
-    return auth.login(socket, auth.getUser(socket).getName(), cmd) ? "Password entered successfully" : "Wrong password";
+    return auth.login(socket, auth.getUser(socket).getName(), cmd) ? "Password entered successfully" : "Incorrect password";
 }
 
 std::string cmd_ping(string cmd, unsigned int socket){

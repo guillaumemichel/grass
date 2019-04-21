@@ -6,7 +6,6 @@
 #include <iostream>
 #include <cstring>
 #include <string>
-#include <cstring>
 
 using namespace std;
 
@@ -29,6 +28,8 @@ const string str_bye    = "bye!";
 
 
 std::string exec_command(string, int);
+
+string tokenize_ip(string);
 
 int return_error(int);
 
