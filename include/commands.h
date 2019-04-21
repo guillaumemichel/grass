@@ -28,7 +28,7 @@ const string str_exit   = "exit";
 const string str_bye    = "bye!";
 
 
-std::string exec_command(string, int);
+std::string exec_command(string, unsigned int);
 
 int return_error(int);
 

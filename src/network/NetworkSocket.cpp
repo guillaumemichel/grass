@@ -18,10 +18,6 @@ int NetworkSocket::getSocket() {
     return this->sock;
 }
 
-string NetworkSocket::readFrom(int socket) {
-    return NULL;
-}
-
 void NetworkSocket::sendTo(int socket, string msg) {
     if (-1 == send(socket, msg.data(), msg.size(), 0)) {
         throw Exception(ERR_NETWORK_WRITE_SOCKET);

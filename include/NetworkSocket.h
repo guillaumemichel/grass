@@ -27,7 +27,6 @@ public:
     int getSocket();
 
 protected:
-    string readFrom(int socket);
 
     void commonInitiateConnection();
 

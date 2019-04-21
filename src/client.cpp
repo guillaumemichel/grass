@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void ClientLauncher::downloadFile(string filename, int size, int port) {
+void ClientLauncher::downloadFile(string filename, int size, unsigned int port) {
     cout << "Starting new thread to receive the file from the server" << endl;
     Client client(port);
 
@@ -15,7 +15,7 @@ void ClientLauncher::downloadFile(string filename, int size, int port) {
 }
 
 
-void ClientLauncher::uploadFile(string filename, string size, int port) {
+void ClientLauncher::uploadFile(string filename, string size, unsigned int port) {
     cout << "Starting new thread to send the file to the server" << endl;
     Client client(port);
 
@@ -121,7 +121,7 @@ void ClientLauncher::startClient(unsigned int port) {
 
 }
 
-int main(int argc, char **argv) {
+int main(void) {
     ClientLauncher launcher;
     Configuration conf = Configuration(FileReader("grass.conf"));
 

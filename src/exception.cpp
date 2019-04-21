@@ -1,4 +1,4 @@
-#include "../include/exception.h";
+#include "../include/exception.h"
 
 using namespace std;
 

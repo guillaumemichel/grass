@@ -69,7 +69,7 @@ AuthenticationService auth = AuthenticationService(conf);
  * @param  p            The permission level of the user who try to execute the command
  * @return              0 for success, 1 for exit, <0 for failure
  */
-std::string exec_command(string cmd, int socket){
+std::string exec_command(string cmd, unsigned int socket){
   try{
     return sanitize(cmd, socket);
   }

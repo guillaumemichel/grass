@@ -7,7 +7,7 @@ using namespace std;
 class User {
 public:
     User(const string name);
-    bool setAuthenticated(bool);
+    void setAuthenticated(bool);
     bool isAuthenticated() const;
     string getName() const;
 
