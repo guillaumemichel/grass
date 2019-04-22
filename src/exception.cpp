@@ -12,6 +12,7 @@ string ERR_MESSAGES[] = {
     "file not found.",
     "cannot open the file.",
     "cannot allocate memory!",
+    "null pointer found.",
     "invalid command.",
     "invalid arguments.",
     "access denied!",

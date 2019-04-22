@@ -29,7 +29,7 @@ const string str_exit   = "exit";
 const string str_bye    = "bye!";
 
 
-std::string exec_command(string, unsigned int);
+string exec_command(string, unsigned int);
 
 string tokenize_ip(string);
 
