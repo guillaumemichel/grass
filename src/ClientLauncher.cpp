@@ -1,10 +1,17 @@
-#include "../include/client.h"
+/**
+ * ClientLauncher.cpp
+ * Implementation of the ClientLauncher.h file. Launches and runs the client to connect it to the server. Also does all tasks related to the user interface such as reading commands and also uploading / downloading files.
+ *
+ * @author Alexandre Chambet
+ */
+
+#include "../include/ClientLauncher.h"
 
 using namespace std;
 
-void ClientLauncher::downloadFile(string filename, int size, unsigned int port) {
+void ClientLauncher::downloadFile(string filename, unsigned int size, unsigned int port) {
     cout << "Starting new thread to receive the file from the server" << endl;
-    Client client(port);
+    ClientSocket client(port);
 
     ClientLauncher::fileTransferConnect(&client);
 
@@ -17,7 +24,7 @@ void ClientLauncher::downloadFile(string filename, int size, unsigned int port) 
 
 void ClientLauncher::uploadFile(string filename, string size, unsigned int port) {
     cout << "Starting new thread to send the file to the server" << endl;
-    Client client(port);
+    ClientSocket client(port);
 
     ClientLauncher::fileTransferConnect(&client);
 
@@ -27,7 +34,7 @@ void ClientLauncher::uploadFile(string filename, string size, unsigned int port)
     client.closeConnection();
 }
 
-void ClientLauncher::fileTransferConnect(Client *client) {
+void ClientLauncher::fileTransferConnect(ClientSocket *client) {
     // Loop while the server is ready
     int maxTries = 10;
     bool connected = false;
@@ -54,12 +61,9 @@ void ClientLauncher::fileTransferConnect(Client *client) {
     }
 }
 
-void ClientLauncher::startClient(unsigned int port) {
-    // TODO:
-    // Make a short REPL to send commands to the server
-    // Make sure to also handle the special cases of a get and put command
+void ClientLauncher::startClient(unsigned int serverPort) {
     // Instantiate a new client
-    Client client(port);
+    ClientSocket client(serverPort);
 
     client.initiateConnection();
 
@@ -116,16 +120,24 @@ void ClientLauncher::startClient(unsigned int port) {
         } else {
             // Send the command to the server
             client.sendToServer(command);
+
+            // Read and print the result from the server
+            string returned = client.readFromServer();
+            cout << returned;
         }
-    } while (command != Client::EXIT_CMD);
+    } while (command != ClientSocket::EXIT_CMD);
 
 }
 
 int main(void) {
+    // Creates a client starter
     ClientLauncher launcher;
+
+    // Parses the configuration file
     Configuration conf = Configuration(FileReader("grass.conf"));
 
     try {
+        // Launches a new client with the server port as a target destination
         launcher.startClient(conf.getPort());
     } catch (Exception &e) {
         e.print_error();

@@ -1,3 +1,10 @@
+/**
+ * FileWriter.cpp
+ * Implementation of the FileWriter.h file. Writes stuff to a file.
+ *
+ * @author Alexandre Chambet
+ */
+
 #include "../../include/FileWriter.h"
 
 FileWriter::FileWriter(string filename) {
