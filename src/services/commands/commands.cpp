@@ -104,30 +104,22 @@ string sanitize(string full_cmd, unsigned int socket){
   throw Exception(ERR_INVALID_CMD);
 }
 
-void check_last_n(const char* tmp0, const char* tmp1, int n){
-  if (tmp0==tmp1 || n < 0|| n>=0x100) throw Exception(ERR_INVALID_ARGS);
-}
-
-void check_n(const char* tmp0, const char* tmp1, int n){
-  check_last_n(tmp0,tmp1,n);
-  if (tmp1[0] != '.') throw Exception(ERR_INVALID_ARGS);
-}
-
-string tokenize_ip(string str0){
-  str0 = remove_spaces(str0);
-  const char* str1 = (str0).c_str();
-  char *tmp0, *tmp1;
-  int n;
-  n = strtol(str1, &tmp0, 10);
-  check_n(str1, tmp0, n);
-  n = strtol(++tmp0, &tmp1, 10);
-  check_n(tmp0, tmp1, n);
-  n = strtol(++tmp1, &tmp0, 10);
-  check_n(tmp1, tmp0, n);
-  n = strtol(++tmp0, &tmp1, 10);
-  check_last_n(tmp0, tmp1, n);
-
-  return str0.substr(0,str1-tmp1);
+/**
+ * Verify the given hostname, throw an invalid argument exception if it contains
+ * characters others that "A-Z", "a-z", "0-9", '-' and '.'.
+ *
+ * @method check_hostname
+ * @param  str            the given hostname
+ */
+void check_hostname(string str){
+  size_t len = strlen((str).c_str());
+  for(size_t i=0;i < len;++i){
+    char c=str[i];
+    if (!(c == '.' || c == '-' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
+      cout << i << c << endl;
+      throw Exception(ERR_INVALID_ARGS);
+    }
+  }
 }
 
 string call_cmd(string str1){
@@ -173,7 +165,8 @@ string cmd_ping(string cmd, unsigned int){
   if (cmd.size() == str_ping.size()){
     throw Exception(ERR_INVALID_ARGS);
   }
-  string str = str_ping + " -c1 " + tokenize_ip(cmd);
+  check_hostname(cmd);
+  string str = str_ping + " -c1 " + cmd;
   return call_cmd((str).c_str());
 }
 

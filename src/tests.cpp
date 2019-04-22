@@ -35,7 +35,4 @@ int main(void) {
     testError2();
     */
 
-   //Test for commands
-   testCorrectIP();
-   testIncorrectIP();
 }
