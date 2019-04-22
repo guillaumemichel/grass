@@ -28,7 +28,7 @@ string cmd_logout(string, unsigned int);
 string cmd_exit(string, unsigned int);
 
 string sanitize(string, unsigned int);
-string break_characters = " \n\0"; //space and newline
+string break_characters = " \n\0\t"; //space and newline
 
 class Command{
 public:
@@ -71,12 +71,13 @@ AuthenticationService auth = AuthenticationService(conf);
  */
 string exec_command(string cmd, unsigned int socket){
   try{
-    return sanitize(cmd, socket);
+    string response = sanitize(cmd, socket);
+    if (response[response.size()-1]!='\n') response += '\n';
+    return response;
   }
   catch(Exception& e){
-    e.print_error();
+    return e.print_error();
   }
-  return string();
 }
 
 string remove_spaces(string input){
@@ -95,12 +96,11 @@ string remove_front_spaces(string input){
 }
 
 string sanitize(string full_cmd, unsigned int socket){
-  //TODO: sanitize more
   int pos = full_cmd.find_first_of((break_characters).c_str(),0);
   string cmd = full_cmd.substr(0,pos);
 
   for (int i=0; i < CMD_NB; ++i){
-    if (!cmd.compare(0, commands[i].str.size(), commands[i].str)){
+    if (strlen((cmd).c_str())==commands[i].str.size() && !cmd.compare(0, commands[i].str.size(), commands[i].str)){
       //TODO: try this
       //if(!AuthorizationService(auth.getUser(socket)).hasAccessTo(commands[i].str))
       //  throw Exception(ERR_LOGIN_REQUIRED);
@@ -129,7 +129,8 @@ void check_hostname(string str){
 }
 
 string call_cmd(string str1){
-  const char *str2 = (str1).c_str();//new char [str1.length()+1];
+  str1 += " 2>&1"; // to redirect stderr to stdout
+  const char *str2 = (str1).c_str();
 
   /* Open the command for reading. */
   FILE *fp;
@@ -171,7 +172,7 @@ string cmd_ping(string cmd, unsigned int){
   if (cmd.size() == str_ping.size()){
     throw Exception(ERR_INVALID_ARGS);
   }
-  if (cmd[0]=='\0') throw Exception(ERR_INVALID_ARGS);
+  //if (cmd[0]=='\0') throw Exception(ERR_INVALID_ARGS);
   check_hostname(cmd);
   string str = str_ping + " -c1 " + cmd;
   return call_cmd((str).c_str());
