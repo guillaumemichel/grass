@@ -38,7 +38,6 @@ void Client::sendToServer(string toSend) {
 
 string Client::readFromServer() {
     if (this->isSocketInitiated()) {
-        // TODO : replace this by dynamic size
         char buffer[Client::SOCKET_BUFFER_SIZE] = {0};
 
         // Read data from the server

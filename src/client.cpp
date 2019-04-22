@@ -116,6 +116,10 @@ void ClientLauncher::startClient(unsigned int port) {
         } else {
             // Send the command to the server
             client.sendToServer(command);
+
+            // Read and print the result from the server
+            string returned = client.readFromServer();
+            cout << returned;
         }
     } while (command != Client::EXIT_CMD);
 

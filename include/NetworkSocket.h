@@ -36,7 +36,7 @@ protected:
 
     unsigned int port;
 
-    const int SOCKET_BUFFER_SIZE = 128;
+    const int SOCKET_BUFFER_SIZE = 32768;
 };
 
 
