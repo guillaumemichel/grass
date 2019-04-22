@@ -1,4 +1,3 @@
-#include <sstream>
 #include "../../../include/commands.h"
 #include "../../../include/AuthorizationService.h"
 #include "../../../include/AuthenticationService.h"
@@ -79,6 +78,15 @@ std::string exec_command(string cmd, unsigned int socket){
   return string();
 }
 
+string remove_spaces(string input){
+  string output;
+  int i;
+  for(i = 0;i < input.size();++i){
+    if(input[i] != ' ') output += input[i];
+  }
+  return output;
+}
+
 std::string sanitize(string full_cmd, unsigned int socket){
   //TODO: it is suppose to work with spaces in front of the command
   //TODO: sanitize more
@@ -104,7 +112,7 @@ void check_n(const char* tmp0, const char* tmp1, int n){
 }
 
 string tokenize_ip(string str0){
-  //TODO: check for spaces at the begining of the string
+  str0 = remove_spaces(str0);
   const char* str1 = (str0).c_str();
   char *tmp0, *tmp1;
   int n;
