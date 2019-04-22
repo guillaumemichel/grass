@@ -28,7 +28,7 @@ string cmd_logout(string, unsigned int);
 string cmd_exit(string, unsigned int);
 
 string sanitize(string, unsigned int);
-string break_characters = " \n"; //space and newline
+string break_characters = " \n\0"; //space and newline
 
 class Command{
 public:
@@ -94,11 +94,11 @@ string sanitize(string full_cmd, unsigned int socket){
   string cmd = full_cmd.substr(0,pos);
 
   for (int i=0; i < CMD_NB; ++i){
-    if (!cmd.compare(0, commands[i].str.length(), commands[i].str)){
+    if (!cmd.compare(0, commands[i].str.size(), commands[i].str)){
       //TODO: try this
       //if(!AuthorizationService(auth.getUser(socket)).hasAccessTo(commands[i].str))
       //  throw Exception(ERR_LOGIN_REQUIRED);
-      return commands[i].fct(full_cmd, socket);
+      return commands[i].fct(full_cmd.substr(commands[i].str.size()+1), socket);
     }
   }
   throw Exception(ERR_INVALID_CMD);
@@ -160,12 +160,11 @@ string call_cmd(string str1){
 }
 
 string cmd_login(string cmd, unsigned int socket){
-  return auth.registerUser(socket, cmd.substr(str_login.size() + 1)) ?
-          "Login successful" : "Unable to login";
+  return auth.registerUser(socket, cmd) ? "Login successful" : "Unable to login";
 }
 
 string cmd_pass(string cmd, unsigned int socket){
-  return auth.login(socket, auth.getUser(socket).getName(), cmd.substr(str_pass.size() + 1)) ?
+  return auth.login(socket, auth.getUser(socket).getName(), cmd) ?
           "Password entered successfully" : "Incorrect password";
 }
 
@@ -174,7 +173,7 @@ string cmd_ping(string cmd, unsigned int){
   if (cmd.size() == str_ping.size()){
     throw Exception(ERR_INVALID_ARGS);
   }
-  string str = str_ping + " " + tokenize_ip(cmd.substr(str_ping.size() + 1)) + " -c1";
+  string str = str_ping + " " + tokenize_ip(cmd) + " -c1";
   return call_cmd((str).c_str());
 }
 
