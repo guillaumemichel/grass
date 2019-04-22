@@ -173,7 +173,7 @@ string cmd_ping(string cmd, unsigned int){
   if (cmd.size() == str_ping.size()){
     throw Exception(ERR_INVALID_ARGS);
   }
-  string str = str_ping + " " + tokenize_ip(cmd) + " -c1";
+  string str = str_ping + " -c1 " + tokenize_ip(cmd);
   return call_cmd((str).c_str());
 }
 
