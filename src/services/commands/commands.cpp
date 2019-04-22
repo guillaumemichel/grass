@@ -161,11 +161,15 @@ std::string call_cmd(string str1){
 }
 
 std::string cmd_login(string cmd, unsigned int socket){
-    return auth.registerUser(socket, cmd) ? "Login successful" : "Unable to login";
+  cout << cmd.substr(str_login.size() + 1) << endl;
+  return auth.registerUser(socket, cmd.substr(str_login.size() + 1)) ?
+          "Login successful" : "Unable to login";
 }
 
 std::string cmd_pass(string cmd, unsigned int socket){
-    return auth.login(socket, auth.getUser(socket).getName(), cmd) ? "Password entered successfully" : "Incorrect password";
+  cout << cmd.substr(str_pass.size() + 1) << endl;
+  return auth.login(socket, auth.getUser(socket).getName(), cmd.substr(str_pass.size() + 1)) ?
+          "Password entered successfully" : "Incorrect password";
 }
 
 std::string cmd_ping(string cmd, unsigned int socket){
