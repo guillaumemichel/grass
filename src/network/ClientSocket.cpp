@@ -1,13 +1,22 @@
+/**
+ * ClientSocket.cpp
+ * The implementation of the ClientSocket.h file.
+ * Manages all the stuff related to the client network.
+ *
+ * @author Alexandre Chambet
+ */
+
 using namespace std;
 
-#include "../../include/client_socket.h"
+#include "../../include/ClientSocket.h"
 
-Client::Client(unsigned int dstPort) : NetworkSocket(dstPort) {
+
+ClientSocket::ClientSocket(unsigned int dstPort) : NetworkSocket(dstPort) {
 }
 
-const string Client::EXIT_CMD = "exit";
+const string ClientSocket::EXIT_CMD = "exit";
 
-void Client::initiateConnection() {
+void ClientSocket::initiateConnection() {
     // Common settings to create the socket
     this->commonInitiateConnection();
 
@@ -22,7 +31,7 @@ void Client::initiateConnection() {
     }
 }
 
-string Client::readCommand() {
+string ClientSocket::readCommand() {
     // Read the command of the user
     string command = "";
 
@@ -32,27 +41,27 @@ string Client::readCommand() {
     return command;
 }
 
-void Client::sendToServer(string toSend) {
+void ClientSocket::sendToServer(string toSend) {
     this->sendTo(this->getSocket(), toSend);
 }
 
-string Client::readFromServer() {
+string ClientSocket::readFromServer() {
     if (this->isSocketInitiated()) {
-        char buffer[Client::SOCKET_BUFFER_SIZE] = {0};
+        char buffer[ClientSocket::SOCKET_BUFFER_SIZE] = {0};
 
         // Read data from the server
-        ssize_t valRead = read(this->getSocket(), buffer, Client::SOCKET_BUFFER_SIZE);
+        ssize_t valRead = read(this->getSocket(), buffer, ClientSocket::SOCKET_BUFFER_SIZE);
         if (-1 == valRead) {
             throw Exception(ERR_NETWORK_READ_SOCKET);
         } else {
-            return string(buffer, Client::SOCKET_BUFFER_SIZE);
+            return string(buffer, ClientSocket::SOCKET_BUFFER_SIZE);
         }
     } else {
         throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);
     }
 }
 
-void Client::uploadFile(string filename) {
+void ClientSocket::uploadFile(string filename) {
     filename = BASEPATH + filename;
     FileReader fileReader(filename);
 
@@ -72,7 +81,7 @@ void Client::uploadFile(string filename) {
     cout << "File uploaded!" << endl;
 }
 
-void Client::downloadFile(string filename, unsigned int size) {
+void ClientSocket::downloadFile(string filename, unsigned int size) {
     // Rewrite the filename to the download directory
     filename = DOWNLOAD_BASEPATH + filename;
 
@@ -82,7 +91,7 @@ void Client::downloadFile(string filename, unsigned int size) {
     // Clear the file in case of all data was there
     fw.clearFile();
 
-    // Buffer where we'll store the data sent by the client
+    // Buffer where we'll store the data sent by the ClientSocket
     char *buffer;
 
     // Allocating the memory to the buffer

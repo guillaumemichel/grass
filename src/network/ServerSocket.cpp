@@ -1,11 +1,18 @@
+/**
+ * ServerSocket.cpp
+ * Implementation of the ServerSocketSocket.h file.
+ * Manages all the network stuff related to the server.
+ *
+ * @author Alexandre Chambet
+ */
+
 using namespace std;
 
-#include "../../include/server_socket.h"
-#include "../../include/commands.h"
+#include "../../include/ServerSocket.h"
 
-Server::Server(unsigned int port): NetworkSocket(port) {}
+ServerSocket::ServerSocket(unsigned int port): NetworkSocket(port) {}
 
-void Server::initiateConnection() {
+void ServerSocket::initiateConnection() {
     int opt = 1;
 
     // Common settings to create the socket
@@ -30,7 +37,7 @@ void Server::initiateConnection() {
     }
 }
 
-void Server::readFromUserSocket(unsigned int userSocket) {
+void ServerSocket::readFromUserSocket(int userSocket) {
 
     bool stopFlag = false;
 
@@ -74,7 +81,7 @@ void Server::readFromUserSocket(unsigned int userSocket) {
                 sendToClient(userSocket, message);
 
                 // Then we start a new thread to receive it
-                thread t1(Server::receiveFileUpload, filename, size, portNumber);
+                thread t1(ServerSocket::receiveFileUpload, filename, size, portNumber);
                 t1.detach();
             } else if (0 == strncmp(buffer, "get", 3)) {
                 // Get the filename and the size
@@ -105,7 +112,7 @@ void Server::readFromUserSocket(unsigned int userSocket) {
                 sendToClient(userSocket, message);
 
                 // Then we start a new thread to receive it
-                thread t1(Server::sendFile, filename, portNumber);
+                thread t1(ServerSocket::sendFile, filename, portNumber);
                 t1.detach();
             } else {
                 cout << "Command received : " << buffer << endl;
@@ -129,24 +136,25 @@ void Server::readFromUserSocket(unsigned int userSocket) {
     }
 }
 
-int Server::getRandomPort() {
+int ServerSocket::getRandomPort() {
     // TODO : check if the port is free (or we assume lmao)
+    // 42420 blaze it
     int portNumber = 10000 + (std::rand() % (42420 - 10000 + 1));
 
     return portNumber;
 }
 
-void Server::receiveFileUpload(string filename, unsigned int size, unsigned int port) {
+void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigned int port) {
     cout << "Starting a new thread for the receiving server on port " << port << ". The size of the file is : " << size
          << endl;
 
-    Server receivingServer(port);
+    ServerSocket receivingServerSocket(port);
 
-    receivingServer.initiateConnection();
+    receivingServerSocket.initiateConnection();
 
     cout << "New thread instantiated, waiting for the client to connect..." << endl;
 
-    int receivingSocket = receivingServer.allocateSocketClient();
+    int receivingSocket = receivingServerSocket.allocateSocketClient();
 
     cout << "File transfer started" << endl;
 
@@ -194,13 +202,13 @@ void Server::receiveFileUpload(string filename, unsigned int size, unsigned int 
     cout << "File transfer done" << endl;
 }
 
-void Server::sendToClient(unsigned int socket, string message) {
+void ServerSocket::sendToClient(int socket, string message) {
     this->sendTo(socket, message);
 }
 
-void Server::sendFile(string filename, unsigned int port) {
+void ServerSocket::sendFile(string filename, unsigned int port) {
     cout << "Starting new thread to send the file to the client" << endl;
-    Server server(port);
+    ServerSocket server(port);
 
     server.initiateConnection();
 
@@ -234,7 +242,7 @@ void Server::sendFile(string filename, unsigned int port) {
     cout << "Closing the server thread" << endl;
 }
 
-int Server::allocateSocketClient() {
+int ServerSocket::allocateSocketClient() {
     // The client socket
     int userSocket;
 
