@@ -3,6 +3,7 @@
 
 #include "exception.h"
 #include <ctype.h>
+#include <unistd.h>
 #include <iostream>
 #include <cstring>
 #include <string>

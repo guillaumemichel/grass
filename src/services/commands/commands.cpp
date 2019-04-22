@@ -83,9 +83,15 @@ string remove_spaces(string input){
   string output;
   size_t i;
   for(i = 0;i < input.size();++i){
-    if(input[i] != ' ') output += input[i];
+    if(!isspace(input[i])) output += input[i];
   }
   return output;
+}
+
+string remove_front_spaces(string input){
+  size_t i=0;
+  for (; i < input.size() && isspace(input[i]); ++i){}
+  return input.substr(i);
 }
 
 string sanitize(string full_cmd, unsigned int socket){
@@ -98,7 +104,7 @@ string sanitize(string full_cmd, unsigned int socket){
       //TODO: try this
       //if(!AuthorizationService(auth.getUser(socket)).hasAccessTo(commands[i].str))
       //  throw Exception(ERR_LOGIN_REQUIRED);
-      return commands[i].fct(full_cmd.substr(commands[i].str.size()+1), socket);
+      return commands[i].fct(remove_front_spaces(full_cmd.substr(commands[i].str.size()+1)), socket);
     }
   }
   throw Exception(ERR_INVALID_CMD);
@@ -165,6 +171,7 @@ string cmd_ping(string cmd, unsigned int){
   if (cmd.size() == str_ping.size()){
     throw Exception(ERR_INVALID_ARGS);
   }
+  if (cmd[0]=='\0') throw Exception(ERR_INVALID_ARGS);
   check_hostname(cmd);
   string str = str_ping + " -c1 " + cmd;
   return call_cmd((str).c_str());
@@ -176,13 +183,16 @@ string cmd_ls(string, unsigned int){
   return call_cmd(str);
 }
 
-string cmd_cd(string, unsigned int){
+string cmd_cd(string cmd, unsigned int){
     // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_cd);
+  //sanitize to avoid getting out of the root dir
+  chdir((cmd).c_str());
   return "";
 }
 
 string cmd_mkdir(string, unsigned int){
     // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_mkdir);
+  cout << system("pwd") << endl;
   return "";
 }
 
