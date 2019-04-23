@@ -21,6 +21,7 @@
 #include "FileWriter.h"
 #include "NetworkSocket.h"
 #include "exception.h"
+#include "commands.h"
 
 using namespace std;
 

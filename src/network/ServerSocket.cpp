@@ -119,7 +119,11 @@ void ServerSocket::readFromUserSocket(int userSocket) {
                 // Execute the command
                 string response = exec_command(command, userSocket);
 
-                this->sendToClient(userSocket, response);
+                try{
+                  this->sendToClient(userSocket, response);
+                } catch(Exception e){
+                  e.print_error();
+                }
                 cout << "Response sent to client" << endl;
                 //cout << "Response : " << i <<endl;
             }

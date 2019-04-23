@@ -35,7 +35,7 @@ string ClientSocket::readCommand() {
     // Read the command of the user
     string command = "";
 
-    cout << "Enter your command : ";
+    cout << ">>> ";
     getline(cin, command);
 
     return command;
@@ -54,6 +54,9 @@ string ClientSocket::readFromServer() {
         if (-1 == valRead) {
             throw Exception(ERR_NETWORK_READ_SOCKET);
         } else {
+            if (!strncmp(buffer,(str_nodata).c_str(),str_nodata.size())){
+              return "";
+            }
             return string(buffer, ClientSocket::SOCKET_BUFFER_SIZE);
         }
     } else {

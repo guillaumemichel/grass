@@ -72,6 +72,9 @@ AuthenticationService auth = AuthenticationService(conf);
 string exec_command(string cmd, unsigned int socket){
   try{
     string response = sanitize(cmd, socket);
+    if (response=="") {
+      return "__nodata__";
+    }
     if (response[response.size()-1]!='\n') response += '\n';
     return response;
   }
@@ -90,21 +93,27 @@ string remove_spaces(string input){
 }
 
 string remove_front_spaces(string input){
+  size_t len = strlen((input).c_str());
   size_t i=0;
-  for (; i < input.size() && isspace(input[i]); ++i){}
+  for (; i < len && isspace(input[i]); ++i){}
   return input.substr(i);
 }
 
 string sanitize(string full_cmd, unsigned int socket){
+  full_cmd = full_cmd.substr(0, full_cmd.find_first_of('\0'));
   int pos = full_cmd.find_first_of((break_characters).c_str(),0);
   string cmd = full_cmd.substr(0,pos);
 
   for (int i=0; i < CMD_NB; ++i){
-    if (strlen((cmd).c_str())==commands[i].str.size() && !cmd.compare(0, commands[i].str.size(), commands[i].str)){
+    if (cmd.size()==commands[i].str.size() && !cmd.compare(0, commands[i].str.size(), commands[i].str)){
       //TODO: try this
       //if(!AuthorizationService(auth.getUser(socket)).hasAccessTo(commands[i].str))
       //  throw Exception(ERR_LOGIN_REQUIRED);
-      return commands[i].fct(remove_front_spaces(full_cmd.substr(commands[i].str.size()+1)), socket);
+      if (full_cmd.size() <= commands[i].str.size()){
+        return commands[i].fct("", socket);
+      } else {
+        return commands[i].fct(remove_front_spaces(full_cmd.substr(commands[i].str.size()+1)), socket);
+      }
     }
   }
   throw Exception(ERR_INVALID_CMD);
@@ -172,7 +181,6 @@ string cmd_ping(string cmd, unsigned int){
   if (cmd.size() == str_ping.size()){
     throw Exception(ERR_INVALID_ARGS);
   }
-  //if (cmd[0]=='\0') throw Exception(ERR_INVALID_ARGS);
   check_hostname(cmd);
   string str = str_ping + " -c1 " + cmd;
   return call_cmd((str).c_str());
