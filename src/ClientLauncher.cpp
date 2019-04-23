@@ -68,6 +68,7 @@ void ClientLauncher::startClient(unsigned int serverPort) {
     client.initiateConnection();
 
     string command;
+    string returned = "";
 
     // Loop while command is not exit
     do {
@@ -122,10 +123,10 @@ void ClientLauncher::startClient(unsigned int serverPort) {
             client.sendToServer(command);
 
             // Read and print the result from the server
-            string returned = client.readFromServer();
+            returned = client.readFromServer();
             cout << returned;
         }
-    } while (command != ClientSocket::EXIT_CMD);
+    } while (returned.compare(str_bye));
 
 }
 
@@ -143,7 +144,7 @@ int main(void) {
         e.print_error();
     }
 
-    cout << "Exiting the client" << endl;
+    //cout << "Exiting the client" << endl;
 
     return 0;
 }

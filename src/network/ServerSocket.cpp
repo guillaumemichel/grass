@@ -57,13 +57,14 @@ void ServerSocket::readFromUserSocket(int userSocket) {
             wrongRead = 0;
 
             // Convert the buffer to string
-            string command(buffer, SOCKET_BUFFER_SIZE);
+            size_t len = (strlen(buffer)>SOCKET_BUFFER_SIZE) ? SOCKET_BUFFER_SIZE : strlen(buffer);
+            string command(buffer, len);
 
             // My command interpreter
-            if (0 == strcmp("exit", buffer)) {
+            /*if (0 == strcmp((str_exit).c_str(), buffer)) {
                 cout << "Exiting the client..." << endl;
                 stopFlag = true;
-            } else if (0 == strncmp(buffer, "put", 3)) {
+            } else */if (0 == strncmp(buffer, "put", 3)) {
                 // Get the filename and the size
                 string removePut = command.substr(command.find(" ") + 1);
                 string filename = removePut.substr(0, removePut.find(" "));
@@ -118,6 +119,7 @@ void ServerSocket::readFromUserSocket(int userSocket) {
                 cout << "Command received : " << buffer << endl;
                 // Execute the command
                 string response = exec_command(command, userSocket);
+                if (response==str_bye) stopFlag=true;
 
                 try{
                   this->sendToClient(userSocket, response);

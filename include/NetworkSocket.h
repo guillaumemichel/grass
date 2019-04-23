@@ -80,7 +80,7 @@ protected:
     /**
      * The size to read from the socket. This is equal to 2^15.
      */
-    const int SOCKET_BUFFER_SIZE = 32768;
+    const unsigned int SOCKET_BUFFER_SIZE = 32768;
 };
 
 

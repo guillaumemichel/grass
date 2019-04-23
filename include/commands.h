@@ -27,7 +27,7 @@ const string str_whoami = "whoami";
 const string str_w      = "w";
 const string str_logout = "logout";
 const string str_exit   = "exit";
-const string str_bye    = "bye!";
+const string str_bye    = "bye!\n";
 const string str_nodata = "__nodata__";
 
 

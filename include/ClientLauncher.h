@@ -21,6 +21,7 @@
 #include "FileWriter.h"
 #include "exception.h"
 #include "Configuration.h"
+#include "commands.h"
 
 using namespace std;
 

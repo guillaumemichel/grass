@@ -14,8 +14,6 @@ using namespace std;
 ClientSocket::ClientSocket(unsigned int dstPort) : NetworkSocket(dstPort) {
 }
 
-const string ClientSocket::EXIT_CMD = "exit";
-
 void ClientSocket::initiateConnection() {
     // Common settings to create the socket
     this->commonInitiateConnection();
@@ -37,8 +35,8 @@ string ClientSocket::readCommand() {
 
     cout << ">>> ";
     getline(cin, command);
-
-    return command;
+    if (command=="") return str_nodata;
+    else return command;
 }
 
 void ClientSocket::sendToServer(string toSend) {
@@ -57,7 +55,8 @@ string ClientSocket::readFromServer() {
             if (!strncmp(buffer,(str_nodata).c_str(),str_nodata.size())){
               return "";
             }
-            return string(buffer, ClientSocket::SOCKET_BUFFER_SIZE);
+            size_t len = (strlen(buffer)>SOCKET_BUFFER_SIZE) ? SOCKET_BUFFER_SIZE : strlen(buffer);
+            return string(buffer, len);
         }
     } else {
         throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);

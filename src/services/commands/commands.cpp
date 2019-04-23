@@ -71,9 +71,10 @@ AuthenticationService auth = AuthenticationService(conf);
  */
 string exec_command(string cmd, unsigned int socket){
   try{
+    if (cmd==str_nodata) return cmd;
     string response = sanitize(cmd, socket);
     if (response=="") {
-      return "__nodata__";
+      return str_nodata;
     }
     if (response[response.size()-1]!='\n') response += '\n';
     return response;
@@ -100,7 +101,7 @@ string remove_front_spaces(string input){
 }
 
 string sanitize(string full_cmd, unsigned int socket){
-  full_cmd = full_cmd.substr(0, full_cmd.find_first_of('\0'));
+  //full_cmd = full_cmd.substr(0, full_cmd.find_first_of('\0'));
   int pos = full_cmd.find_first_of((break_characters).c_str(),0);
   string cmd = full_cmd.substr(0,pos);
 
