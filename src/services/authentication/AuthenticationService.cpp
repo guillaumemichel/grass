@@ -48,7 +48,6 @@ User AuthenticationService::getUser(const unsigned int socketID) {
         return users.find(socketID)->second;
     }
     return User("Anonymous");
-    //throw Exception(ERR_INVALID_ARGS);
 }
 
 vector<User> AuthenticationService::getAuthenticatedUsers() {
