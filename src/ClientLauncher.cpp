@@ -135,7 +135,7 @@ int main(void) {
     ClientLauncher launcher;
 
     // Parses the configuration file
-    Configuration conf = Configuration(FileReader("grass.conf"));
+    Configuration conf = Configuration("grass.conf");
 
     try {
         // Launches a new client with the server port as a target destination

@@ -41,8 +41,9 @@ public:
      * Reads the commands sent by the user and answers accordingly to the protocol.
      *
      * @param userSocket the socket to read the commands from
+     * @param conf the configuration of the server
      */
-    void readFromUserSocket(int userSocket);
+    void readFromUserSocket(int userSocket, Commands commands);
 
     /**
      * Sends a message to a socket.

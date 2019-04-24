@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <iostream>
 #include "../../../include/AuthorizationService.h"
 
 using namespace std;
@@ -20,7 +21,7 @@ map<string, AuthorizationPolicy> init_policies() {
     m["whoami"] = user;
     m["w"] = user;
     m["logout"] = user;
-    m["exit"] = user;
+    m["exit"] = anonymous;
     return m;
 }
 

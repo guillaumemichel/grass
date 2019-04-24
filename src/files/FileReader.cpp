@@ -25,7 +25,7 @@ FileReader::FileReader(string filename) {
 
 void FileReader::readFileVector(std::vector<std::string> &file) const {
     // Open the file
-    std::ifstream in(this->filename.c_str());
+    std::ifstream in(this->filename);
 
     // Check if object is valid
     if (!in) {

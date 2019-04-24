@@ -5,14 +5,12 @@
 #include "ConfigurationTests.h"
 
 void testGetBaseShouldReturnCorrectBaseOnStandardConfig() {
-    FileReader fr("tests/testables/grass.conf");
-    Configuration conf(fr);
+    Configuration conf("tests/testables/grass.conf");
     assert(conf.getBase() == "my_super_base");
 }
 
 void testGetBaseShouldReturnErrorOnMissingEntry() {
-    FileReader fr("tests/testables/no_base_grass.conf");
-    Configuration conf(fr);
+    Configuration conf("tests/testables/no_base_grass.conf");
     try {
         conf.getBase();
         assert(false);
@@ -22,8 +20,7 @@ void testGetBaseShouldReturnErrorOnMissingEntry() {
 }
 
 void testGetBaseShouldReturnErrorOnMissingValue() {
-    FileReader fr1("tests/testables/malformed_base_grass_1.conf");
-    Configuration conf1(fr1);
+    Configuration conf1("tests/testables/malformed_base_grass_1.conf");
     try {
         conf1.getBase();
         assert(false);
@@ -31,8 +28,7 @@ void testGetBaseShouldReturnErrorOnMissingValue() {
         assert(true);
     }
 
-    FileReader fr2("tests/testables/malformed_base_grass_2.conf");
-    Configuration conf2(fr2);
+    Configuration conf2("tests/testables/malformed_base_grass_2.conf");
     try {
         conf2.getBase();
         assert(false);
@@ -42,14 +38,12 @@ void testGetBaseShouldReturnErrorOnMissingValue() {
 }
 
 void testGetPortShouldReturn8888OnStandardConfig() {
-    FileReader fr("tests/testables/grass.conf");
-    Configuration conf(fr);
+    Configuration conf("tests/testables/grass.conf");
     assert(conf.getPort() == (unsigned int) 8888);
 }
 
 void testGetPortShouldReturnErrorOnMissingEntry() {
-    FileReader fr("tests/testables/no_port_grass.conf");
-    Configuration conf(fr);
+    Configuration conf("tests/testables/no_port_grass.conf");
     try {
         conf.getPort();
         assert(false);
@@ -59,8 +53,7 @@ void testGetPortShouldReturnErrorOnMissingEntry() {
 }
 
 void testGetPortShouldReturnErrorOnMissingValue() {
-    FileReader fr1("tests/testables/malformed_port_grass_1.conf");
-    Configuration conf1(fr1);
+    Configuration conf1("tests/testables/malformed_port_grass_1.conf");
     try {
         conf1.getPort();
         assert(false);
@@ -68,8 +61,7 @@ void testGetPortShouldReturnErrorOnMissingValue() {
         assert(true);
     }
 
-    FileReader fr2("tests/testables/malformed_port_grass_2.conf");
-    Configuration conf2(fr2);
+    Configuration conf2("tests/testables/malformed_port_grass_2.conf");
     try {
         conf2.getPort();
         assert(false);
@@ -77,8 +69,7 @@ void testGetPortShouldReturnErrorOnMissingValue() {
         assert(true);
     }
 
-    FileReader fr3("tests/testables/malformed_port_grass_3.conf");
-    Configuration conf3(fr3);
+    Configuration conf3("tests/testables/malformed_port_grass_3.conf");
     try {
         conf3.getPort();
         assert(false);
@@ -88,8 +79,7 @@ void testGetPortShouldReturnErrorOnMissingValue() {
 }
 
 void testGetUsersShouldReturnCorrectMapOnStandardConfig() {
-    FileReader fr("tests/testables/grass.conf");
-    Configuration conf(fr);
+    Configuration conf("tests/testables/grass.conf");
     map<string, string> users = conf.getUsers();
     map<string, string> usersTest = {
             {"XavierP", "TopSecretPasswd"},
@@ -102,14 +92,12 @@ void testGetUsersShouldReturnCorrectMapOnStandardConfig() {
 }
 
 void testGetUsersShouldReturnEmptyMapOnMissingEntries() {
-    FileReader fr("tests/testables/no_users_grass.conf");
-    Configuration conf(fr);
+    Configuration conf("tests/testables/no_users_grass.conf");
     assert(conf.getUsers().size() == 0);
 }
 
 void testGetUsersShouldIgnoreMalformedEntries() {
-    FileReader fr("tests/testables/malformed_users_grass.conf");
-    Configuration conf(fr);
+    Configuration conf("tests/testables/malformed_users_grass.conf");
     map<string, string> users = conf.getUsers();
     map<string, string> usersTest = {
             {"GuillaumeMichel", "FreeGuissou"},
