@@ -59,13 +59,8 @@ public:
      * @param ipAddress the string to be checked
      * @return true if the IP is correct, false otherwise
      */
-    static bool isValidIpAddress(char *ipAddress) {
-        struct sockaddr_in sa;
+    static bool isValidIpAddress(char *ipAddress);
 
-        // Uses the inet_pton function to check if the IP is correct
-        int result = inet_pton(AF_INET, ipAddress, &(sa.sin_addr));
-        return result != 0;
-    }
 
     /**
      * Starts a new client and connects to the server on the given port.
@@ -75,4 +70,15 @@ public:
      * @param port the server's port to connect to
      */
     void startClient(string serverIP, unsigned int port);
+
+    /**
+     * Starts a new client and connects to the server on the given port.
+     * Typically, this will be called in the main function to start the client and run it.
+     *
+     * @param serverIP the server's IP to connect to
+     * @param port the server's port to connect to
+     * @param commands the list of commands to run on the client
+     * @return a vector of string containing what the server returned
+     */
+    vector<string> startClientAutomated(string serverIP, unsigned int port, vector<string> commands);
 };

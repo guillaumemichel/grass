@@ -61,6 +61,15 @@ void ClientLauncher::fileTransferConnect(ClientSocket *client) {
     }
 }
 
+bool ClientLauncher::isValidIpAddress(char *ipAddress) {
+    struct sockaddr_in sa;
+
+    // Uses the inet_pton function to check if the IP is correct
+    int result = inet_pton(AF_INET, ipAddress, &(sa.sin_addr));
+    return result != 0;
+}
+
+
 void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
     // Instantiate a new client
     ClientSocket client(serverIP, serverPort);
@@ -127,7 +136,88 @@ void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
             cout << returned;
         }
     } while (returned.compare(str_bye));
+}
 
+
+vector<string> ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, vector <string> commands) {
+    cout << "Starting the client in the automated mode" << endl;
+
+    // Instantiate a new client
+    ClientSocket client(serverIP, serverPort);
+
+    client.initiateConnection();
+
+    // Iterator for the commands
+    vector<string>::iterator it;
+
+    // The string returned from the server
+    vector <string> returned;
+
+    for (it = commands.begin(); it != commands.end(); ++it) {
+        // Get the command
+        string command = *it;
+
+        // TODO : refactor put & get command (same stuff)
+        // TODO : create constant for command names
+        // If a file must be upload
+        if (command.substr(0, 3) == "put") {
+            string removePut = command.substr(command.find(" ") + 1);
+            string filename = removePut.substr(0, removePut.find(" "));
+            string size = removePut.substr(
+                    removePut.find(" ") + 1); // TODO : what if the size is not the same size of the file?
+
+            // Send the command to the server
+            client.sendToServer(command);
+
+            // Wait for the server answer
+            string read = client.readFromServer();
+
+            // Parse the port number
+            cout << read << endl;
+            int port = stoi(read.substr(read.find(":") + 2));
+
+            // Upload the file
+            thread t1(ClientLauncher::uploadFile, filename, size, serverIP, port);
+            t1.detach();
+        } else if (command.substr(0, 3) == "get") {
+            string removePut = command.substr(command.find(" ") + 1);
+            string filename = removePut.substr(0, removePut.find(" "));
+
+            // Send the command to the server
+            client.sendToServer(command);
+
+            // Wait for the server answer
+            string read = client.readFromServer();
+
+            cout << read << endl;
+            // Check if the message has the expected form
+            if (read.substr(0, 3) == "get") {
+                int port = stoi(read.substr(read.find(":") + 2));
+                string withoutPort = read.substr(read.find(":") + 1);
+                int size = stoi(withoutPort.substr(withoutPort.find(":") + 2));
+
+                // Download the file
+                thread t1(ClientLauncher::downloadFile, filename, size, serverIP, port);
+                t1.detach();
+            }
+        } else {
+            // Send the command to the server
+            client.sendToServer(command);
+
+            // Read and print the result from the server
+            string fromServer = client.readFromServer();
+
+            // Remove the "\n" (i.e. shitty fix)
+            fromServer = fromServer.substr(0, fromServer.size()-1);
+
+            // Append it the vector
+            returned.push_back(std::move(fromServer));
+        }
+    }
+
+    cout << "Exiting the automated mode" << endl;
+
+    return returned;
 }
 
 int main(int argc, char *argv[]) {
@@ -158,21 +248,43 @@ int main(int argc, char *argv[]) {
 
     string serverIP(ip);
 
-    // If the infile and outfile for automation are also specified
-    if (argc == 5) {
-        // + infile and outfile
-        cout << "Oba oba not imlementa" << endl;
-
-    }
-
-    // Launches a new client with the server port as a target destination
+    // Create the object to launch the client
     ClientLauncher clientLauncher;
 
-    try {
-        clientLauncher.startClient(serverIP, serverPort);
-    } catch (Exception &e) {
-        e.print_error();
-    }
+    // If the infile and outfile for automation are also specified
+    if (argc == 5) {
+        // Get the infile and outfile
+        string inFile(argv[3]);
+        string outFile(argv[4]);
 
+        try {
+            // Checks if infile exists
+            FileReader fr(BASEPATH + inFile);
+            FileWriter fw(BASEPATH + outFile);
+
+            // Clear the output file
+            fw.clearFile();
+
+            // We read all the commands
+            vector <string> commands;
+            fr.readFileVector(commands);
+
+            // Launches the client in automated mode
+            vector <string> output = clientLauncher.startClientAutomated(serverIP, serverPort, commands);
+
+            fw.write(output);
+
+        } catch (Exception &e) {
+            e.print_error();
+            return -1;
+        }
+    } else {
+        // Launches the client in normal mode
+        try {
+            clientLauncher.startClient(serverIP, serverPort);
+        } catch (Exception &e) {
+            e.print_error();
+        }
+    }
     return 0;
 }
