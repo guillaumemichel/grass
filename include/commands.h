@@ -57,9 +57,15 @@ private:
 
     string sanitize(string full_cmd, unsigned int socket);
 
-    string tokenize_ip(string);
+    void require_parameters(string);
+
+    void require_no_parameters(string);
 
     void check_hostname(string);
+
+    void check_filename(string);
+
+    void check_path(string);
 
     int return_error(int);
 
