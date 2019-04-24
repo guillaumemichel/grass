@@ -11,7 +11,9 @@ using namespace std;
 #include "../../include/ClientSocket.h"
 
 
-ClientSocket::ClientSocket(unsigned int dstPort) : NetworkSocket(dstPort) {
+ClientSocket::ClientSocket(string serverIP, unsigned int dstPort) : NetworkSocket(dstPort) {
+    // TODO : check if IP is correct ?
+    this->serverIP = serverIP;
 }
 
 void ClientSocket::initiateConnection() {
@@ -19,7 +21,7 @@ void ClientSocket::initiateConnection() {
     this->commonInitiateConnection();
 
     // Convert IPv4 and IPv6 addresses from text to binary form
-    if (inet_pton(AF_INET, "127.0.0.1", &(this->address).sin_addr) <= 0) {
+    if (inet_pton(AF_INET, this->serverIP.c_str(), &(this->address).sin_addr) <= 0) {
         throw Exception(ERR_NETWORK_BAD_ADDRESS);
     }
 

@@ -1,6 +1,5 @@
 #include <map>
 #include <string>
-#include <iostream>
 #include "../../../include/AuthorizationService.h"
 
 using namespace std;

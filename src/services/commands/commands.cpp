@@ -206,6 +206,7 @@ string Commands::call_cmd(string str1){
 }
 
 string Commands::cmd_login(string cmd, unsigned int socket){
+<<<<<<< HEAD
     require_parameters(cmd);
     return auth.registerUser(socket, cmd) ? "OK. Go on..." : "Unable to login on this socket. Please restart the client.";
 }
@@ -214,6 +215,16 @@ string Commands::cmd_pass(string cmd, unsigned int socket){
     require_parameters(cmd);
     return auth.login(socket, auth.getUser(socket).getName(), cmd) ?
             "Login successful. Welcome!" : "Incorrect credentials";
+=======
+  auth.registerUser(socket, cmd);
+  return "OK. Go on...";
+}
+
+string Commands::cmd_pass(string cmd, unsigned int socket){
+    cout << "Username: " << auth.getUser(socket).getName() << endl;
+  return auth.login(socket, auth.getUser(socket).getName(), cmd) ?
+          "Login successful. Welcome!" : "Incorrect credentials";
+>>>>>>> 80f63158340e7f82491dd7966d2809401babad89
 }
 
 string Commands::cmd_ping(string cmd, unsigned int){
