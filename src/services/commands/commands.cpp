@@ -235,17 +235,18 @@ string Commands::cmd_cd(string cmd, unsigned int){
     cmd = remove_spaces(cmd);
     require_parameters(cmd);
     check_path(cmd);
-    string server_path = conf.getServerPath();
-    server_path = server_path.substr(0,server_path.size()-1);
+    string files_path = conf.getFilesPath();
+    files_path = files_path.substr(0,files_path.size());
+    cout << files_path << endl;
     bool dot = (cmd==".");
     if (cmd[0]=='/'){
-        cmd=server_path + cmd;
+        cmd=files_path + cmd;
     }
     string old_path = call_cmd(str_pwd);
     string new_path = call_cmd(str_cd+" "+cmd+";"+str_pwd);
     if (old_path==new_path && !dot) throw Exception(ERR_CD);
 
-    if (!new_path.compare(0,server_path.size()-1,server_path,0,server_path.size()-1)){
+    if (!new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
         chdir((cmd).c_str());
         return "";
     }

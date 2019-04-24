@@ -31,10 +31,12 @@ int main() {
     try {
 
         // Parses the configuration file
+        string path = Commands::call_cmd(str_pwd);
+        //cout << path.substr(0,path.size()-1)<<"/grass.conf" << endl;
+        //Configuration conf = Configuration(path.substr(0,path.size()-1)+"/grass.conf");
         Configuration conf = Configuration("grass.conf");
         Commands commands = Commands(conf);
 
-        conf.setServerPath();
         // Create a server object
         ServerSocket server(conf.getPort());
 
@@ -46,6 +48,7 @@ int main() {
         while (true) {
             cout << "Listening for incoming connections..." << endl;
             int userSocket = server.allocateSocketClient();
+            //chdir((conf.getFilesPath()).c_str());
             cout << "New client connected : " << userSocket << endl;
 
             // Start a new thread to handle the new client
