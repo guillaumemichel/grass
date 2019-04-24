@@ -2,7 +2,7 @@
  * AuthorizationService.h
  * Determines which resources a given user is allowed to access to.
  * See AuthorizationPolicies.h for details.
- * Author: Xavier Pantet
+ * @author: Xavier Pantet
  */
 
 #include <string>

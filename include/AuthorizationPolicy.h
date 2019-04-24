@@ -1,7 +1,7 @@
 /**
  * AuthorizationPolicy.h
  * Describes all possible access policies to all resources of the system.
- * Author: Xavier Pantet
+ * @author: Xavier Pantet
  */
 #ifndef ASS_ON_THE_GRASS_AUTHORIZATIONPOLICY_H
 #define ASS_ON_THE_GRASS_AUTHORIZATIONPOLICY_H

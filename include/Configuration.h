@@ -2,7 +2,7 @@
  * Configuration.h
  * Reads and parses configuration file.
  * In particular, the config file contains the port used by the server, the base directory of the service and the list of users with their respective passwords.
- * Author: Xavier Pantet
+ * @author: Xavier Pantet
  */
 #include <map>
 #include <string>

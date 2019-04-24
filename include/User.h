@@ -1,7 +1,7 @@
 /**
  * User.h
  * Defines the notion of user within the system.
- * Author: Xavier Pantet
+ * @author: Xavier Pantet
  */
 #ifndef USER
 #define USER
