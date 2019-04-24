@@ -19,6 +19,7 @@ string ERR_MESSAGES[] = {
     "path too long.",
     "file transfer failed.",
     "failed to run command.",
+    "server path not defined.",
     "response too long!",
     "invalid address.",
     "connection to the server failed.",

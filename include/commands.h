@@ -1,7 +1,6 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
-#include "exception.h"
 #include <ctype.h>
 #include <unistd.h>
 #include <iostream>
@@ -9,6 +8,11 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <errno.h>
+
+
+#include "exception.h"
+#include "Configuration.h"
 
 using namespace std;
 
@@ -27,6 +31,7 @@ const string str_whoami = "whoami";
 const string str_w      = "w";
 const string str_logout = "logout";
 const string str_exit   = "exit";
+const string str_pwd    = "pwd";
 const string str_bye    = "bye!\n";
 const string str_nodata = "__nodata__";
 
@@ -34,6 +39,8 @@ const string str_nodata = "__nodata__";
 string exec_command(string, unsigned int);
 
 string tokenize_ip(string);
+
+string call_cmd(string);
 
 int return_error(int);
 

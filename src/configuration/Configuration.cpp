@@ -57,3 +57,13 @@ map<string, string> Configuration::getUsers() const {
     return users;
 }
 
+bool set = false;
+string SERVER_PATH;
+void setServerPath(){
+    SERVER_PATH = call_cmd(str_pwd); //+"/files"
+    set = true;
+}
+string getServerPath(){
+    if (!set) throw Exception(ERR_SERVER_PATH_NOT_SET);
+    return SERVER_PATH;
+}
