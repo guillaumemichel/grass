@@ -21,6 +21,8 @@ private:
     vector<string> getEntriesWithKey(const string key) const;
     string removeKeyInLine(string, string) const;
     string extractStringValue(string) const;
+    bool set;
+    string serverPath;
 
 public:
     explicit Configuration(const string);
@@ -42,9 +44,10 @@ public:
      * @return User-password associations
      */
     map<string, string> getUsers() const;
-};
 
-void setServerPath();
-string getServerPath();
+    void setServerPath();
+
+    string getServerPath();
+};
 
 #endif //ASS_ON_THE_GRASS_CONFIGURATION_H

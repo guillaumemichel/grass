@@ -42,7 +42,7 @@ public:
   }
 };
 
-Commands::Commands(const Configuration config): auth(config) {}
+Commands::Commands(const Configuration config): conf(config), auth(config) {}
 
 
 /**
@@ -214,7 +214,7 @@ string Commands::cmd_cd(string cmd, unsigned int){
     // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_cd);
   //TODO: sanitize access to non-existing files and filename
   //move "/" to the files folder
-  string server_path = getServerPath();
+  string server_path = conf.getServerPath();
   string new_path = call_cmd(str_cd+" "+cmd+";"+str_pwd);
 
   if (!new_path.compare(0,server_path.size()-1,server_path,0,server_path.size()-1)){

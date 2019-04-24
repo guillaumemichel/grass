@@ -8,7 +8,10 @@
 
 using namespace std;
 
-Configuration::Configuration(const string fileName): fileName(fileName) {}
+Configuration::Configuration(const string fileName): fileName(fileName) {
+    set = false;
+    setServerPath();
+}
 
 vector<string> Configuration::getEntriesWithKey(const string key) const {
     vector<string> lines;
@@ -59,13 +62,11 @@ map<string, string> Configuration::getUsers() const {
     return users;
 }
 
-bool set = false;
-string SERVER_PATH;
-void setServerPath(){
-    SERVER_PATH = Commands::call_cmd(str_pwd); //+"/files"
+void Configuration::setServerPath(){
+    serverPath = Commands::call_cmd(str_pwd); //+"/files"
     set = true;
 }
-string getServerPath(){
+string Configuration::getServerPath(){
     if (!set) throw Exception(ERR_SERVER_PATH_NOT_SET);
-    return SERVER_PATH;
+    return serverPath;
 }

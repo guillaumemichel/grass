@@ -34,7 +34,7 @@ int main() {
         Configuration conf = Configuration("grass.conf");
         Commands commands = Commands(conf);
 
-        setServerPath();
+        conf.setServerPath();
         // Create a server object
         ServerSocket server(conf.getPort());
 

@@ -47,6 +47,8 @@ public:
 
 private:
 
+    Configuration conf;
+
     AuthenticationService auth;
 
     string remove_spaces(string);
