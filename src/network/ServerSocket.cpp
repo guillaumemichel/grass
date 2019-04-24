@@ -9,6 +9,7 @@
 using namespace std;
 
 #include "../../include/ServerSocket.h"
+#include "../../include/Configuration.h"
 
 ServerSocket::ServerSocket(unsigned int port): NetworkSocket(port) {}
 
@@ -37,7 +38,7 @@ void ServerSocket::initiateConnection() {
     }
 }
 
-void ServerSocket::readFromUserSocket(int userSocket) {
+void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
 
     bool stopFlag = false;
 
@@ -118,7 +119,7 @@ void ServerSocket::readFromUserSocket(int userSocket) {
             } else {
                 cout << "Command received : " << buffer << endl;
                 // Execute the command
-                string response = exec_command(command, userSocket);
+                string response = commands.exec(command, userSocket);
                 if (response==str_bye) stopFlag=true;
 
                 try{

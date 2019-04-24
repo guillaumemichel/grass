@@ -5,8 +5,7 @@
 #include "AuthenticationServiceTests.h"
 
 void testShouldAcceptToRegisterOnNewSocket() {
-    FileReader fr("grass.conf");
-    Configuration conf(fr);
+    Configuration conf("grass.conf");
     AuthenticationService s(conf);
     assert(s.registerUser(1, "Xavier"));
     assert(s.registerUser(2, "Guissou"));
@@ -14,8 +13,7 @@ void testShouldAcceptToRegisterOnNewSocket() {
 }
 
 void testShouldRejectToRegisterOnExistingSocket() {
-    FileReader fr("grass.conf");
-    Configuration conf(fr);
+    Configuration conf("grass.conf");
     AuthenticationService s(conf);
     assert(s.registerUser(1, "Xavier"));
     assert(!s.registerUser(1, "Xavier"));
@@ -24,8 +22,7 @@ void testShouldRejectToRegisterOnExistingSocket() {
 }
 
 void testShouldConnectUserWithCorrectCredentials() {
-    FileReader fr("grass.conf");
-    Configuration conf(fr);
+    Configuration conf("grass.conf");
     AuthenticationService s(conf);
     assert(s.registerUser(1, "Alex"));
     assert(s.login(1, "Acidburn", "CrashOverride"));
@@ -33,8 +30,7 @@ void testShouldConnectUserWithCorrectCredentials() {
 }
 
 void testShouldNotConnectUserWithIncorrectCredentials() {
-    FileReader fr("grass.conf");
-    Configuration conf(fr);
+    Configuration conf("grass.conf");
     AuthenticationService s(conf);
     assert(s.registerUser(1, "Alex"));
     assert(!s.login(1, "Alex", "ElFuego"));
@@ -42,8 +38,7 @@ void testShouldNotConnectUserWithIncorrectCredentials() {
 }
 
 void testShouldRemoveUserOnLogout() {
-    FileReader fr("grass.conf");
-    Configuration conf(fr);
+    Configuration conf("grass.conf");
     AuthenticationService s(conf);
     assert(s.registerUser(1, "Alex"));
     s.logout(1);
@@ -56,8 +51,7 @@ void testShouldRemoveUserOnLogout() {
 }
 
 void testShouldReturnCorrectListOfAuthenticatedUsers() {
-    FileReader fr("grass.conf");
-    Configuration conf(fr);
+    Configuration conf("grass.conf");
     AuthenticationService s(conf);
     s.registerUser(1, "Acidburn");
     s.login(1, "Acidburn", "CrashOverride");

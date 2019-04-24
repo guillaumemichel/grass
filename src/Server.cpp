@@ -20,16 +20,17 @@ using namespace std;
  * @param userSocket the socket of the new client
  * @param server the instance of the server
  */
-void connectClient(int userSocket, ServerSocket server) {
+void connectClient(int userSocket, ServerSocket server, Commands commands) {
     // This function exists when the "exit" command is received
-    server.readFromUserSocket(userSocket);
+    server.readFromUserSocket(userSocket, commands);
 
     cout << "Disconnecting client #" << userSocket << endl;
 }
 
 int main() {
     // Parses the configuration file
-    Configuration conf = Configuration(FileReader("grass.conf"));
+    Configuration conf = Configuration("grass.conf");
+    Commands commands = Commands(conf);
 
     // Create a server object
     ServerSocket server(conf.getPort());
@@ -46,7 +47,7 @@ int main() {
             cout << "New client connected : " << userSocket << endl;
 
             // Start a new thread to handle the new client
-            thread t(connectClient, userSocket, server);
+            thread t(connectClient, userSocket, server, commands);
             // Use detach() so that the server can receive and handle clients in parallel
             t.detach();
         }

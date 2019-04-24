@@ -16,13 +16,13 @@ using namespace std;
 
 class Configuration {
 private:
-    const FileReader& fileReader;
+    const string fileName;
     vector<string> getEntriesWithKey(const string key) const;
     string removeKeyInLine(string, string) const;
     string extractStringValue(string) const;
 
 public:
-    Configuration(const FileReader&);
+    explicit Configuration(const string);
 
     /**
      * Get base directory from config file.
