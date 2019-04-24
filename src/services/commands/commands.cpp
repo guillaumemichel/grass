@@ -120,6 +120,13 @@ string sanitize(string full_cmd, unsigned int socket){
   throw Exception(ERR_INVALID_CMD);
 }
 
+void require_parameters(string cmd){
+    if (cmd=="") throw Exception(ERR_INVALID_ARGS);
+}
+void require_no_parameters(string cmd){
+    if (cmd!="") throw Exception(ERR_INVALID_ARGS);
+}
+
 /**
  * Verify the given hostname, throw an invalid argument exception if it contains
  * characters others that "A-Z", "a-z", "0-9", '-' and '.'.
@@ -142,8 +149,8 @@ void check_hostname(string str){
  * Verify the given filename, throw an invalid argument exception if it contains
  * characters others that "A-Z", "a-z", "0-9", '-', '_' and '.'.
  *
- * @method check_hostname
- * @param  str            the given hostname
+ * @method check_filename
+ * @param  str            the given filename
  */
 void check_filename(string str){
   size_t len = strlen((str).c_str());
@@ -157,84 +164,103 @@ void check_filename(string str){
   }
 }
 
-string call_cmd(string str1){
-  str1 += " 2>&1"; // to redirect stderr to stdout
-  const char *str2 = (str1).c_str();
-
-  /* Open the command for reading. */
-  FILE *fp;
-  fp = popen(str2, "r");
-  if (fp == NULL) {
-    throw Exception(ERR_FAIL_CMD);
-  }
-
-  char response[RESPONSE_MAX_SIZE];
-  response[0] = '\0';
-  char tmp[RESPONSE_LINE_SIZE];
-  size_t len = 0;
-
-   /* Read the output a line at a time - output it. */
-  while (fgets(tmp, RESPONSE_LINE_SIZE, fp)) {
-    len += strlen(tmp);
-    if (len >= RESPONSE_MAX_SIZE){
-      throw Exception(ERR_RESPONSE_TOO_LONG);
+void check_path(string str){
+    size_t len = strlen((str).c_str());
+    for(size_t i=0;i < len;++i){
+      char c=str[i];
+      if (!(c == '.' || c == '-' || c == '_' || c == '/' || (c >= '0' && c <= '9') ||
+              (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
+        cout << i << c << endl;
+        throw Exception(ERR_INVALID_ARGS);
+      }
     }
-    strncat(response, tmp, len);
-  }
-  pclose(fp);
-  if (response==NULL) throw Exception(ERR_NULL_POINTER);
-  str1.assign(response, len);
-  return str1;
+}
+
+string call_cmd(string str1){
+    require_parameters(str1);
+    str1 += " 2>&1"; // to redirect stderr to stdout
+    const char *str2 = (str1).c_str();
+    /* Open the command for reading. */
+    FILE *fp;
+    fp = popen(str2, "r");
+    if (fp == NULL) {
+        throw Exception(ERR_FAIL_CMD);
+    }
+
+    char response[RESPONSE_MAX_SIZE];
+    response[0] = '\0';
+    char tmp[RESPONSE_LINE_SIZE];
+    size_t len = 0;
+    /* Read the output a line at a time - output it. */
+    while (fgets(tmp, RESPONSE_LINE_SIZE, fp)) {
+        len += strlen(tmp);
+        if (len >= RESPONSE_MAX_SIZE){
+            throw Exception(ERR_RESPONSE_TOO_LONG);
+        }
+        strncat(response, tmp, len);
+    }
+    pclose(fp);
+    if (response==NULL) throw Exception(ERR_NULL_POINTER);
+    str1.assign(response, len);
+    return str1;
 }
 
 string cmd_login(string cmd, unsigned int socket){
-  return auth.registerUser(socket, cmd) ? "Login successful" : "Unable to login";
+    require_parameters(cmd);
+    return auth.registerUser(socket, cmd) ? "Login successful" : "Unable to login";
 }
 
 string cmd_pass(string cmd, unsigned int socket){
-  return auth.login(socket, auth.getUser(socket).getName(), cmd) ?
-          "Password entered successfully" : "Incorrect password";
+    require_parameters(cmd);
+    return auth.login(socket, auth.getUser(socket).getName(), cmd) ?
+            "Password entered successfully" : "Incorrect password";
 }
 
 string cmd_ping(string cmd, unsigned int){
-    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_ping);
-  if (cmd.size() == str_ping.size()){
-    throw Exception(ERR_INVALID_ARGS);
-  }
-  check_hostname(cmd);
-  string str = str_ping + " -c1 " + cmd;
-  return call_cmd((str).c_str());
+    require_parameters(cmd);
+    check_hostname(cmd);
+    string str = str_ping + " -c1 " + cmd;
+    return call_cmd((str).c_str());
 }
 
-string cmd_ls(string, unsigned int){
-    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_ls);
-  string str = str_ls + " -l";
-  return call_cmd(str);
+string cmd_ls(string cmd, unsigned int){
+    require_no_parameters(cmd);
+    string str = str_ls + " -l";
+    return call_cmd(str);
 }
 
 string cmd_cd(string cmd, unsigned int){
-    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_cd);
-  //TODO: sanitize access to non-existing files and filename
-  //move "/" to the files folder
-  string server_path = getServerPath();
-  string new_path = call_cmd(str_cd+" "+cmd+";"+str_pwd);
+    //TODO: redirect sh error to the client (or hide it from the server)
+    cmd = remove_spaces(cmd);
+    require_parameters(cmd);
+    check_path(cmd);
+    string server_path = getServerPath();
+    server_path = server_path.substr(0,server_path.size()-1);
+    bool dot = (cmd==".");
+    if (cmd[0]=='/'){
+        cmd=server_path + cmd;
+    }
+    string old_path = call_cmd(str_pwd);
+    string new_path = call_cmd(str_cd+" "+cmd+";"+str_pwd);
+    if (old_path==new_path && !dot) throw Exception(ERR_CD);
 
-  if (!new_path.compare(0,server_path.size()-1,server_path,0,server_path.size()-1)){
-      chdir((cmd).c_str());
-      return "";
-  }
-  throw Exception(ERR_ACCESS_DENIED);
+    if (!new_path.compare(0,server_path.size()-1,server_path,0,server_path.size()-1)){
+        chdir((cmd).c_str());
+        return "";
+    }
+    throw Exception(ERR_ACCESS_DENIED);
 }
 
 string cmd_mkdir(string, unsigned int){
-    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_mkdir);
   cout << system("pwd") << endl;
   return "";
 }
 
-string cmd_rm(string, unsigned int){
-    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_rm);
-  return "";
+string cmd_rm(string cmd, unsigned int){
+    cmd = remove_spaces(cmd);
+    require_parameters(cmd);
+    check_filename(cmd);
+    return call_cmd(str_rm+" -r "+cmd);
 }
 
 string cmd_get(string, unsigned int){

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-/*
+/**
  * Error messages associated with the error codes of exception.h
  */
 string ERR_MESSAGES[] = {
@@ -19,6 +19,7 @@ string ERR_MESSAGES[] = {
     "path too long.",
     "file transfer failed.",
     "failed to run command.",
+    "cannot cd there.",
     "server path not defined.",
     "response too long!",
     "invalid address.",
