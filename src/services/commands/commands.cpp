@@ -109,12 +109,12 @@ string Commands::sanitize(string full_cmd, unsigned int socket){
 
   for (int i=0; i < CMD_NB; ++i){
     if (cmd.size()==commands[i].str.size() && !cmd.compare(0, commands[i].str.size(), commands[i].str)){
-      //if(!AuthorizationService(auth.getUser(socket)).hasAccessTo(commands[i].str)) { throw Exception(ERR_LOGIN_REQUIRED); }
-      if (full_cmd.size() <= commands[i].str.size()){
-        return (this->*commands[i].Command::fct)("", socket);
-      } else {
-        return (this->*commands[i].Command::fct)(remove_front_spaces(full_cmd.substr(commands[i].str.size()+1)), socket);
-      }
+        if(!AuthorizationService(auth.getUser(socket)).hasAccessTo(commands[i].str)) { throw Exception(ERR_LOGIN_REQUIRED); }
+        if (full_cmd.size() <= commands[i].str.size()){
+            return (this->*commands[i].Command::fct)("", socket);
+        } else {
+            return (this->*commands[i].Command::fct)(remove_front_spaces(full_cmd.substr(commands[i].str.size()+1)), socket);
+        }
     }
   }
   throw Exception(ERR_INVALID_CMD);
@@ -188,7 +188,7 @@ string Commands::call_cmd(string str1){
 }
 
 string Commands::cmd_login(string cmd, unsigned int socket){
-  return auth.registerUser(socket, cmd) ? "OK. Go on..." : "Unable to login on this socket. Please logout and login again.";
+  return auth.registerUser(socket, cmd) ? "OK. Go on..." : "Unable to login on this socket. Please restart the client.";
 }
 
 string Commands::cmd_pass(string cmd, unsigned int socket){
@@ -211,7 +211,6 @@ string Commands::cmd_ls(string, unsigned int){
 }
 
 string Commands::cmd_cd(string cmd, unsigned int){
-    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_cd);
   //TODO: sanitize access to non-existing files and filename
   //move "/" to the files folder
   string server_path = conf.getServerPath();
