@@ -34,11 +34,11 @@ $(OBJDIR)/%.o: %.cpp
 
 $(BINDIR)/server: $(OBJECTS)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/server $(SRCDIR)/server.cpp $(OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/server $(SRCDIR)/Server.cpp $(OBJECTS)
 
 $(BINDIR)/client: $(OBJECTS)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/client $(SRCDIR)/client.cpp $(OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) $(INCLUDES) -o $(BINDIR)/client $(SRCDIR)/ClientLauncher.cpp $(OBJECTS)
 
 $(TESTDIR): $(OBJECTS)
 	@mkdir -p $(@D)

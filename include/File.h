@@ -1,3 +1,10 @@
+/**
+ * File.h
+ * Header file for File.cpp.
+ *
+ * @author Alexandre Chambet
+ */
+
 #include <string>
 #include <fstream>
 #include <vector>
@@ -15,9 +22,17 @@ using namespace std;
 
 class File {
 public:
+    /**
+     * Computes and returns the size of the file attached to the class.
+     *
+     * @return the size of the file.
+     */
     size_t fileSize() const;
 
 protected:
+    /**
+     * String storing the filename of the file.
+     */
     string filename;
 };
 

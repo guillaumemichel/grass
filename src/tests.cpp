@@ -2,6 +2,7 @@
 #include "../tests/AuthorizationServiceTests.h"
 #include "../tests/AuthenticationServiceTests.h"
 #include "../tests/ExceptionsTests.h"
+#include "../tests/CommandTests.h"
 
 int main(void) {
     // Tests for Configuration

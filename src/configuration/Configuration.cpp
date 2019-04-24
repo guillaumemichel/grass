@@ -1,17 +1,22 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <iostream>
 #include "../../include/Configuration.h"
 #include "../../include/FileReader.h"
 #include "../../include/exception.h"
 
 using namespace std;
 
-Configuration::Configuration(const FileReader& fileReader): fileReader(fileReader) {}
+Configuration::Configuration(const string fileName): fileName(fileName) {
+    set = false;
+    setFilesPath();
+}
 
 vector<string> Configuration::getEntriesWithKey(const string key) const {
     vector<string> lines;
-    fileReader.readFileVector(lines);
+    FileReader fr = FileReader(fileName);
+    fr.readFileVector(lines);
     vector<string> desiredLines;
     for(auto const& line: lines) {
         if(line.rfind(key, 0) == 0 && line.size() > key.size() + 1 && line.find_first_of(" ") == key.size())
@@ -57,3 +62,12 @@ map<string, string> Configuration::getUsers() const {
     return users;
 }
 
+void Configuration::setFilesPath(){
+    string pwd=Commands::call_cmd(str_pwd);
+    filesPath = pwd.substr(0,pwd.size()-1)+filesDir;
+    set = true;
+}
+string Configuration::getFilesPath(){
+    if (!set) throw Exception(ERR_SERVER_PATH_NOT_SET);
+    return filesPath;
+}

@@ -1,8 +1,17 @@
+/**
+ * NetworkSocket.cpp
+ * Implementation of the NetworkSocket.h file.
+ * Superclass implementing common methods for both client and server sockets.
+ *
+ * @author Alexandre Chambet
+ */
+
 #include "../../include/NetworkSocket.h"
 
 using namespace std;
 
-NetworkSocket::NetworkSocket(uint16_t port) {
+NetworkSocket::NetworkSocket(unsigned int port) {
+    // Assigns the port
     this->port = port;
 }
 
@@ -18,12 +27,10 @@ int NetworkSocket::getSocket() {
     return this->sock;
 }
 
-string NetworkSocket::readFrom(int socket) {
-    return NULL;
-}
-
 void NetworkSocket::sendTo(int socket, string msg) {
-    if (-1 == send(socket, msg.data(), msg.size(), 0)) {
+    // Sends the data to the socket
+    if (send(socket, msg.data(), msg.size(), 0) <= 0) {
+        // Throw a write error
         throw Exception(ERR_NETWORK_WRITE_SOCKET);
     }
 }

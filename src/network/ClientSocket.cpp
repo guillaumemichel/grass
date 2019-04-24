@@ -1,16 +1,27 @@
+/**
+ * ClientSocket.cpp
+ * The implementation of the ClientSocket.h file.
+ * Manages all the stuff related to the client network.
+ *
+ * @author Alexandre Chambet
+ */
+
 using namespace std;
 
-#include "../../include/client_socket.h"
+#include "../../include/ClientSocket.h"
 
-Client::Client(uint16_t dstPort) : NetworkSocket(dstPort) {
+
+ClientSocket::ClientSocket(string serverIP, unsigned int dstPort) : NetworkSocket(dstPort) {
+    // TODO : check if IP is correct ?
+    this->serverIP = serverIP;
 }
 
-void Client::initiateConnection() {
+void ClientSocket::initiateConnection() {
     // Common settings to create the socket
     this->commonInitiateConnection();
 
     // Convert IPv4 and IPv6 addresses from text to binary form
-    if (inet_pton(AF_INET, "127.0.0.1", &(this->address).sin_addr) <= 0) {
+    if (inet_pton(AF_INET, this->serverIP.c_str(), &(this->address).sin_addr) <= 0) {
         throw Exception(ERR_NETWORK_BAD_ADDRESS);
     }
 
@@ -20,38 +31,41 @@ void Client::initiateConnection() {
     }
 }
 
-string Client::readCommand() {
+string ClientSocket::readCommand() {
     // Read the command of the user
     string command = "";
 
-    cout << "Enter your command : ";
+    cout << ">>> ";
     getline(cin, command);
-
-    return command;
+    if (command=="") return str_nodata;
+    else return command;
 }
 
-void Client::sendToServer(string toSend) {
+void ClientSocket::sendToServer(string toSend) {
     this->sendTo(this->getSocket(), toSend);
 }
 
-string Client::readFromServer() {
+string ClientSocket::readFromServer() {
     if (this->isSocketInitiated()) {
-        // TODO : replace this by dynamic size
-        char buffer[Client::SOCKET_BUFFER_SIZE] = {0};
+        char buffer[ClientSocket::SOCKET_BUFFER_SIZE] = {0};
 
         // Read data from the server
-        ssize_t valRead = read(this->getSocket(), buffer, Client::SOCKET_BUFFER_SIZE);
+        ssize_t valRead = read(this->getSocket(), buffer, ClientSocket::SOCKET_BUFFER_SIZE);
         if (-1 == valRead) {
             throw Exception(ERR_NETWORK_READ_SOCKET);
         } else {
-            return string(buffer, Client::SOCKET_BUFFER_SIZE);
+            if (!strncmp(buffer,(str_nodata).c_str(),str_nodata.size())){
+              return "";
+            }
+            size_t len = (strlen(buffer)>SOCKET_BUFFER_SIZE) ? SOCKET_BUFFER_SIZE : strlen(buffer);
+            return string(buffer, len);
         }
     } else {
         throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);
     }
 }
 
-void Client::uploadFile(string filename) {
+void ClientSocket::uploadFile(string filename) {
     filename = BASEPATH + filename;
     FileReader fileReader(filename);
 
@@ -71,7 +85,7 @@ void Client::uploadFile(string filename) {
     cout << "File uploaded!" << endl;
 }
 
-void Client::downloadFile(string filename, int size) {
+void ClientSocket::downloadFile(string filename, unsigned int size) {
     // Rewrite the filename to the download directory
     filename = DOWNLOAD_BASEPATH + filename;
 
@@ -81,7 +95,7 @@ void Client::downloadFile(string filename, int size) {
     // Clear the file in case of all data was there
     fw.clearFile();
 
-    // Buffer where we'll store the data sent by the client
+    // Buffer where we'll store the data sent by the ClientSocket
     char *buffer;
 
     // Allocating the memory to the buffer

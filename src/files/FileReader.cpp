@@ -1,3 +1,10 @@
+/**
+ * FileReader.cpp
+ * Implementation of the FileReader.h file. Reads a file and returns it under different forms.
+ *
+ * @author Alexandre Chambet
+ */
+
 #include "../../include/FileReader.h"
 
 using namespace std;
@@ -18,7 +25,7 @@ FileReader::FileReader(string filename) {
 
 void FileReader::readFileVector(std::vector<std::string> &file) const {
     // Open the file
-    std::ifstream in(this->filename.c_str());
+    std::ifstream in(this->filename);
 
     // Check if object is valid
     if (!in) {
@@ -34,19 +41,4 @@ void FileReader::readFileVector(std::vector<std::string> &file) const {
 
     //Close The File
     in.close();
-}
-
-string FileReader::fileToString() const {
-    string str;
-
-    vector<string> vecOfStr;
-    this->readFileVector(vecOfStr);
-
-    vector<string>::iterator it;
-    for (it = vecOfStr.begin(); it != vecOfStr.end(); ++it) {
-        cout << *it << endl;
-        str += *it;
-    }
-
-    return str;
 }
