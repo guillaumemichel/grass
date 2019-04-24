@@ -32,7 +32,7 @@ public:
      *
      * @param dstPort the port where the client should connect to.
      */
-    explicit ClientSocket(unsigned int dstPort);
+    explicit ClientSocket(string serverIP, unsigned int dstPort);
 
     /**
      * Read from the keyboard a command and returns it.
@@ -76,6 +76,9 @@ public:
      * @param size the size of the file
      */
     void downloadFile(string filename, unsigned int size);
+
+private:
+    string serverIP;
 };
 
 

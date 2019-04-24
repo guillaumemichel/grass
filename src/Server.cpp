@@ -39,7 +39,7 @@ int main() {
         // Create the server socket
         server.initiateConnection();
 
-        cout << "Server NetworkSocket initiated" << endl;
+        cout << "Server started on port " << conf.getPort() << endl;
 
         while (true) {
             cout << "Listening for incoming connections..." << endl;

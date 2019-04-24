@@ -9,9 +9,9 @@
 
 using namespace std;
 
-void ClientLauncher::downloadFile(string filename, unsigned int size, unsigned int port) {
+void ClientLauncher::downloadFile(string filename, unsigned int size, string serverIP, unsigned int port) {
     cout << "Starting new thread to receive the file from the server" << endl;
-    ClientSocket client(port);
+    ClientSocket client(serverIP, port);
 
     ClientLauncher::fileTransferConnect(&client);
 
@@ -22,9 +22,9 @@ void ClientLauncher::downloadFile(string filename, unsigned int size, unsigned i
 }
 
 
-void ClientLauncher::uploadFile(string filename, string size, unsigned int port) {
+void ClientLauncher::uploadFile(string filename, string size, string serverIP, unsigned int port) {
     cout << "Starting new thread to send the file to the server" << endl;
-    ClientSocket client(port);
+    ClientSocket client(serverIP, port);
 
     ClientLauncher::fileTransferConnect(&client);
 
@@ -61,9 +61,9 @@ void ClientLauncher::fileTransferConnect(ClientSocket *client) {
     }
 }
 
-void ClientLauncher::startClient(unsigned int serverPort) {
+void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
     // Instantiate a new client
-    ClientSocket client(serverPort);
+    ClientSocket client(serverIP, serverPort);
 
     client.initiateConnection();
 
@@ -95,7 +95,7 @@ void ClientLauncher::startClient(unsigned int serverPort) {
             int port = stoi(read.substr(read.find(":") + 2));
 
             // Upload the file
-            thread t1(ClientLauncher::uploadFile, filename, size, port);
+            thread t1(ClientLauncher::uploadFile, filename, size, serverIP, port);
             t1.detach();
         } else if (command.substr(0, 3) == "get") {
             string removePut = command.substr(command.find(" ") + 1);
@@ -115,7 +115,7 @@ void ClientLauncher::startClient(unsigned int serverPort) {
                 int size = stoi(withoutPort.substr(withoutPort.find(":") + 2));
 
                 // Download the file
-                thread t1(ClientLauncher::downloadFile, filename, size, port);
+                thread t1(ClientLauncher::downloadFile, filename, size, serverIP, port);
                 t1.detach();
             }
         } else {
@@ -130,21 +130,49 @@ void ClientLauncher::startClient(unsigned int serverPort) {
 
 }
 
-int main(void) {
-    // Creates a client starter
-    ClientLauncher launcher;
+int main(int argc, char *argv[]) {
+    // Checks the number of arguments
+    if (argc != 3 && argc != 5) {
+        cout << "Number of arguments specified is not correct" << endl;
+        return -1;
+    }
 
-    // Parses the configuration file
-    Configuration conf = Configuration(FileReader("grass.conf"));
+    // Get the first 2 arguments
+    char *ip = argv[1];
+    int port = atoi(argv[2]);
+
+    // Checks the port
+    if (port <= 0) {
+        cout << "Port is not valid" << endl;
+        return -1;
+    }
+
+    // Casts the port to an unsigned int
+    unsigned int serverPort = (unsigned int) port;
+
+    // Checks the IP
+    if (!ClientLauncher::isValidIpAddress(ip)) {
+        cout << "Server IP provided is not valid" << endl;
+        return -1;
+    }
+
+    string serverIP(ip);
+
+    // If the infile and outfile for automation are also specified
+    if (argc == 5) {
+        // + infile and outfile
+        cout << "Oba oba not imlementa" << endl;
+
+    }
+
+    // Launches a new client with the server port as a target destination
+    ClientLauncher clientLauncher;
 
     try {
-        // Launches a new client with the server port as a target destination
-        launcher.startClient(conf.getPort());
+        clientLauncher.startClient(serverIP, serverPort);
     } catch (Exception &e) {
         e.print_error();
     }
-
-    //cout << "Exiting the client" << endl;
 
     return 0;
 }
