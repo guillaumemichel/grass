@@ -29,9 +29,8 @@ public:
      * Useful for login command.
      * @param socketID A unique identifier for the socket
      * @param name The username of the desired user
-     * @return true iff thr service is ready to accept a user on the given socket
      */
-    bool registerUser(const unsigned int socketID, const string name);
+    void registerUser(const unsigned int socketID, const string name);
 
     /**
      * Actually logs in the user that has been previously registered with the given name and socket.

@@ -12,16 +12,13 @@ AuthenticationService::AuthenticationService(const Configuration &config): confi
     users = {};
 }
 
-bool AuthenticationService::registerUser(unsigned int socketID, string name) {
-   if(users.find(socketID) == users.end()) {
-        User u(name);
-        u.setAuthenticated(false);
-        mtx.lock();
-        users.insert({socketID, u});
-        mtx.unlock();
-        return true;
-   }
-   return false;
+void AuthenticationService::registerUser(unsigned int socketID, string name) {
+   if(users.find(socketID) != users.end()) { logout(socketID); }
+   User u(name);
+   u.setAuthenticated(false);
+   mtx.lock();
+   users.insert({socketID, u});
+   mtx.unlock();
 }
 
 bool AuthenticationService::login(const unsigned int socketID, const string username, const string passwd) {
