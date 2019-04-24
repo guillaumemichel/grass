@@ -17,13 +17,15 @@ using namespace std;
 
 class Configuration {
 private:
-    const FileReader& fileReader;
+    const string fileName;
     vector<string> getEntriesWithKey(const string key) const;
     string removeKeyInLine(string, string) const;
     string extractStringValue(string) const;
+    bool set;
+    string serverPath;
 
 public:
-    Configuration(const FileReader&);
+    explicit Configuration(const string);
 
     /**
      * Get base directory from config file.
@@ -42,9 +44,10 @@ public:
      * @return User-password associations
      */
     map<string, string> getUsers() const;
-};
 
-void setServerPath();
-string getServerPath();
+    void setServerPath();
+
+    string getServerPath();
+};
 
 #endif //ASS_ON_THE_GRASS_CONFIGURATION_H

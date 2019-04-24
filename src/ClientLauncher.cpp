@@ -70,6 +70,7 @@ bool ClientLauncher::isValidIpAddress(char *ipAddress) {
 }
 
 
+// TODO : refactor this with the automated stuff
 void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
     // Instantiate a new client
     ClientSocket client(serverIP, serverPort);
