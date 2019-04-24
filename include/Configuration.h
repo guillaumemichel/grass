@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "FileReader.h"
+#include "commands.h"
 
 #ifndef ASS_ON_THE_GRASS_CONFIGURATION_H
 #define ASS_ON_THE_GRASS_CONFIGURATION_H
@@ -42,5 +43,8 @@ public:
      */
     map<string, string> getUsers() const;
 };
+
+void setServerPath();
+string getServerPath();
 
 #endif //ASS_ON_THE_GRASS_CONFIGURATION_H

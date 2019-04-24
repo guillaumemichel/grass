@@ -138,6 +138,25 @@ void Commands::check_hostname(string str){
   }
 }
 
+/**
+ * Verify the given filename, throw an invalid argument exception if it contains
+ * characters others that "A-Z", "a-z", "0-9", '-', '_' and '.'.
+ *
+ * @method check_hostname
+ * @param  str            the given hostname
+ */
+void check_filename(string str){
+  size_t len = strlen((str).c_str());
+  for(size_t i=0;i < len;++i){
+    char c=str[i];
+    if (!(c == '.' || c == '-' || c == '_' || (c >= '0' && c <= '9') ||
+            (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
+      cout << i << c << endl;
+      throw Exception(ERR_INVALID_ARGS);
+    }
+  }
+}
+
 string Commands::call_cmd(string str1){
   str1 += " 2>&1"; // to redirect stderr to stdout
   const char *str2 = (str1).c_str();
@@ -192,9 +211,17 @@ string Commands::cmd_ls(string, unsigned int){
 }
 
 string Commands::cmd_cd(string cmd, unsigned int){
-  //sanitize to avoid getting out of the root dir
-  chdir((cmd).c_str());
-  return "";
+    // Check access with AuthorizationService(auth.getUser(socket)).hasAccessTo(str_cd);
+  //TODO: sanitize access to non-existing files and filename
+  //move "/" to the files folder
+  string server_path = getServerPath();
+  string new_path = call_cmd(str_cd+" "+cmd+";"+str_pwd);
+
+  if (!new_path.compare(0,server_path.size()-1,server_path,0,server_path.size()-1)){
+      chdir((cmd).c_str());
+      return "";
+  }
+  throw Exception(ERR_ACCESS_DENIED);
 }
 
 string Commands::cmd_mkdir(string, unsigned int){

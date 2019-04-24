@@ -28,19 +28,21 @@ void connectClient(int userSocket, ServerSocket server, Commands commands) {
 }
 
 int main() {
-    // Parses the configuration file
-    Configuration conf = Configuration("grass.conf");
-    Commands commands = Commands(conf);
-
-    // Create a server object
-    ServerSocket server(conf.getPort());
-
-    // Create the server socket
-    server.initiateConnection();
-
-    cout << "Server NetworkSocket initiated" << endl;
-
     try {
+
+        // Parses the configuration file
+        Configuration conf = Configuration("grass.conf");
+        Commands commands = Commands(conf);
+
+        setServerPath();
+        // Create a server object
+        ServerSocket server(conf.getPort());
+
+        // Create the server socket
+        server.initiateConnection();
+
+        cout << "Server NetworkSocket initiated" << endl;
+
         while (true) {
             cout << "Listening for incoming connections..." << endl;
             int userSocket = server.allocateSocketClient();
