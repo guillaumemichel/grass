@@ -62,10 +62,7 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
             string command(buffer, len);
 
             // My command interpreter
-            /*if (0 == strcmp((str_exit).c_str(), buffer)) {
-                cout << "Exiting the client..." << endl;
-                stopFlag = true;
-            } else */if (0 == strncmp(buffer, "put", 3)) {
+            if (0 == strncmp(buffer, "put", 3)) {
                 // Get the filename and the size
                 string removePut = command.substr(command.find(" ") + 1);
                 string filename = removePut.substr(0, removePut.find(" "));
@@ -86,36 +83,31 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
                 thread t1(ServerSocket::receiveFileUpload, filename, size, portNumber);
                 t1.detach();
             } else if (0 == strncmp(buffer, "get", 3)) {
-                // Get the filename and the size
-                string removePut = command.substr(command.find(" ") + 1);
+                // Sanitize the get command
+                string filename = UPLOAD_BASEPATH + commands.exec(command, userSocket);
 
-                // The file must be taken from the upload basepath
-                string filename = UPLOAD_BASEPATH + removePut.substr(0, removePut.find(" "));
+                cout << filename << endl;
 
                 // Check if the file exists
                 try {
                     FileReader fileReader(filename);
-                } catch (exception &e) {
-                    // If the file does not exist, we send to the client an error message
-                    string errorMessage = "File does not exist";
-                    sendToClient(userSocket, errorMessage);
+
+                    // On download we have to start a new thread and a new NetworkSocket
+
+                    // First we send to the client the port number
+                    int portNumber = this->getRandomPort();
+                    string message = "get port: " + to_string(portNumber) + " size: " + to_string(fileReader.fileSize());
+
+                    // Send it to the client
+                    sendToClient(userSocket, message);
+
+                    // Then we start a new thread to receive it
+                    thread t1(ServerSocket::sendFile, filename, portNumber);
+                    t1.detach();
+                } catch (Exception &e) {
+                    // Send the error to the client in case of
+                    sendToClient(userSocket, e.print_error());
                 }
-
-                // TODO : how to not redefine it???
-                FileReader fileReader(filename);
-
-                // On download we have to start a new thread and a new NetworkSocket
-
-                // First we send to the client the port number
-                int portNumber = this->getRandomPort();
-                string message = "get port: " + to_string(portNumber) + " size: " + to_string(fileReader.fileSize());
-
-                // Send it to the client
-                sendToClient(userSocket, message);
-
-                // Then we start a new thread to receive it
-                thread t1(ServerSocket::sendFile, filename, portNumber);
-                t1.detach();
             } else {
                 cout << "Command received : " << buffer << endl;
                 // Execute the command

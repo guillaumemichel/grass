@@ -264,8 +264,18 @@ string Commands::cmd_rm(string cmd, unsigned int){
     return call_cmd(str_rm+" -r "+cmd);
 }
 
-string Commands::cmd_get(string, unsigned int){
-  return "";
+string Commands::cmd_get(string cmd, unsigned int){
+    require_parameters(cmd);
+
+    // Get the filename
+    string seprator = cmd.substr(cmd.find(" ") + 1);
+
+    string filename = seprator.substr(0, removePut.find(" "));
+
+    // Remove the last \n otherwise the filename is invalid
+    filename = filename.substr(0, filename.size()-1);
+
+    return filename;
 }
 
 string Commands::cmd_put(string, unsigned int){

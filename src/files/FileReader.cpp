@@ -13,6 +13,7 @@ FileReader::FileReader(string filename) {
     // Append the basepath to the filename
     // TODO : check if file is accessible (like not something ../../../info.root)
 
+    cout << filename << " -- " << filename.c_str() << endl;
     // Check if file exists
     std::ifstream ifile(filename.c_str());
     if (!(bool) ifile) {

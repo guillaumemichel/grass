@@ -1,6 +1,4 @@
-test
-ls
 login Acidburn
 pass CrashOverride
-ls
+get test.txt
 exit
