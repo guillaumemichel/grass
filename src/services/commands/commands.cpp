@@ -95,7 +95,7 @@ string Commands::sanitize(string full_cmd, unsigned int socket){
             Command(str_rm,     &Commands::cmd_rm),
             Command(str_get,    &Commands::cmd_get),
             Command(str_put,    &Commands::cmd_put),
-            Command(str_get,    &Commands::cmd_get),
+            Command(str_grep,   &Commands::cmd_grep),
             Command(str_date,   &Commands::cmd_date),
             Command(str_whoami, &Commands::cmd_whoami),
             Command(str_w,      &Commands::cmd_w),
@@ -272,8 +272,9 @@ string Commands::cmd_put(string, unsigned int){
   return "";
 }
 
-string Commands::cmd_grep(string, unsigned int){
-    return "";
+string Commands::cmd_grep(string pattern, unsigned int){
+    require_parameters(pattern);
+    return call_cmd((str_grep + " -rl " + pattern + " " + conf.getBase()).c_str());
 }
 
 string Commands::cmd_date(string, unsigned int){
