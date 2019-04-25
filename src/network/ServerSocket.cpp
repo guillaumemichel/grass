@@ -38,7 +38,7 @@ void ServerSocket::initiateConnection() {
     }
 }
 
-void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
+void ServerSocket::readFromUserSocket(int userSocket, Commands &commands) {
 
     bool stopFlag = false;
 
