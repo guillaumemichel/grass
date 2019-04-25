@@ -272,9 +272,9 @@ string Commands::cmd_put(string, unsigned int){
   return "";
 }
 
-string Commands::cmd_grep(string pattern, unsigned int){
+string Commands::cmd_grep(string pattern, unsigned int socket){
     require_parameters(pattern);
-    return call_cmd((str_grep + " -rl " + pattern + " " + conf.getBase()).c_str());
+    return call_cmd((str_grep + " -rl " + pattern + " " + conf.getBase() + "/" + auth.getUser(socket).getName()).c_str());
 }
 
 string Commands::cmd_date(string, unsigned int){
