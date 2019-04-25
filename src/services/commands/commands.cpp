@@ -1,6 +1,7 @@
 #include "../../../include/commands.h"
 #include "../../../include/AuthenticationService.h"
 #include "../../../include/AuthorizationService.h"
+#include <regex>
 
 using namespace std;
 
@@ -273,8 +274,38 @@ string Commands::cmd_put(string, unsigned int){
 }
 
 string Commands::cmd_grep(string pattern, unsigned int socket){
+    // Check and parse regex
     require_parameters(pattern);
-    return call_cmd((str_grep + " -rl " + pattern + " " + conf.getBase() + "/" + auth.getUser(socket).getName()).c_str());
+    regex re;
+    try {
+        re = regex(pattern);
+    }
+    catch(...){
+        throw Exception(ERR_INVALID_ARGS);
+    }
+
+    // List all possible files
+    stringstream matches;
+    string allFiles = call_cmd("find " + conf.getBase() + "/" + auth.getUser(socket).getName() + " -type f");
+    stringstream ss(allFiles);
+    vector<string> files;
+    string tmp;
+    while(getline(ss, tmp, '\n')){
+        files.push_back(tmp);
+    }
+
+    // Filter files for which regex matches
+    for(const auto& file: files) {
+        FileReader fr(file);
+        vector<string> fileLines;
+        stringstream fileContent;
+        fr.readFileVector(fileLines);
+        for(const auto& line: fileLines)
+            fileContent << line;
+        if(regex_match(fileContent.str(), re))
+            matches << file << '\n';
+    }
+    return matches.str().substr(0, matches.str().size()-1);
 }
 
 string Commands::cmd_date(string, unsigned int){
@@ -286,7 +317,7 @@ string Commands::cmd_whoami(string, unsigned int socket){
 }
 
 string Commands::cmd_w(string, unsigned int){
-    std::stringstream users;
+    stringstream users;
     for(const User &u: auth.getAuthenticatedUsers())
         users << u.getName() << endl;
     return users.str().substr(0, users.str().size()-1);
