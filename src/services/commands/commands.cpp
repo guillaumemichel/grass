@@ -5,6 +5,7 @@
 using namespace std;
 
 #define CMD_NB 15
+#define PATH_MAX_LEN 128
 #define RESPONSE_LINE_SIZE 256
 #define RESPONSE_MAX_SIZE RESPONSE_LINE_SIZE*64
 
@@ -127,6 +128,16 @@ void Commands::require_no_parameters(string cmd){
     if (cmd!="") throw Exception(ERR_INVALID_ARGS);
 }
 
+string Commands::get_relative_path(){
+    string current_folder = call_cmd(str_pwd);
+    current_folder = current_folder.substr(0,current_folder.size()-1)+"/";
+    string files_path = conf.getFilesPath();
+    if (current_folder.compare(0,files_path.size(),files_path,0,files_path.size())){
+        throw Exception(ERR_ACCESS_DENIED);
+    }
+    return current_folder.substr(files_path.size());
+}
+
 /**
  * Verify the given hostname, throw an invalid argument exception if it contains
  * characters others that "A-Z", "a-z", "0-9", '-' and '.'.
@@ -221,7 +232,7 @@ string Commands::cmd_ping(string cmd, unsigned int){
     require_parameters(cmd);
     check_hostname(cmd);
     string str = str_ping + " -c1 " + cmd;
-    return call_cmd((str).c_str());
+    return call_cmd(str);
 }
 
 string Commands::cmd_ls(string cmd, unsigned int){
@@ -237,7 +248,6 @@ string Commands::cmd_cd(string cmd, unsigned int){
     check_path(cmd);
     string files_path = conf.getFilesPath();
     files_path = files_path.substr(0,files_path.size());
-    cout << files_path << endl;
     bool dot = (cmd==".");
     if (cmd[0]=='/'){
         cmd=files_path + cmd;
@@ -253,8 +263,15 @@ string Commands::cmd_cd(string cmd, unsigned int){
     throw Exception(ERR_ACCESS_DENIED);
 }
 
-string Commands::cmd_mkdir(string, unsigned int){
-  return "";
+string Commands::cmd_mkdir(string cmd, unsigned int){
+    cmd = remove_front_spaces(cmd);
+    require_parameters(cmd);
+    check_filename(cmd);
+    string current_folder = get_relative_path();
+    if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
+        throw Exception(ERR_PATH_TOO_LONG);
+    }
+    return call_cmd(str_mkdir+" "+cmd);;
 }
 
 string Commands::cmd_rm(string cmd, unsigned int){
@@ -269,6 +286,7 @@ string Commands::cmd_get(string, unsigned int){
 }
 
 string Commands::cmd_put(string, unsigned int){
+    //TODO: path too long check
   return "";
 }
 
@@ -277,7 +295,7 @@ string Commands::cmd_grep(string, unsigned int){
 }
 
 string Commands::cmd_date(string, unsigned int){
-  return call_cmd((str_date).c_str());
+  return call_cmd(str_date);
 }
 
 string Commands::cmd_whoami(string, unsigned int socket){
