@@ -264,22 +264,27 @@ string Commands::cmd_rm(string cmd, unsigned int){
     return call_cmd(str_rm+" -r "+cmd);
 }
 
+// TODO : check correctness of parameters for get and put
 string Commands::cmd_get(string cmd, unsigned int){
     require_parameters(cmd);
 
     // Get the filename
-    string seprator = cmd.substr(cmd.find(" ") + 1);
+    string separator = cmd.substr(cmd.find(" ") + 1);
 
-    string filename = seprator.substr(0, removePut.find(" "));
+    string filename = separator.substr(0, separator.find(" "));
 
     // Remove the last \n otherwise the filename is invalid
-    filename = filename.substr(0, filename.size()-1);
-
     return filename;
 }
 
-string Commands::cmd_put(string, unsigned int){
-  return "";
+string Commands::cmd_put(string cmd, unsigned int){
+  require_parameters(cmd);
+
+  // Get the filename and the size
+  string filename = cmd.substr(0, cmd.find(" "));
+  int size = std::stoi(cmd.substr(cmd.find(" ") + 1));
+
+  return filename + ":" + to_string(size);
 }
 
 string Commands::cmd_grep(string, unsigned int){

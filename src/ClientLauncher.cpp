@@ -94,7 +94,8 @@ void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
 }
 
 
-vector<string> ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, vector <string> commands) {
+vector <string>
+ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, vector <string> commands) {
     cout << "Starting the client in the automated mode" << endl;
 
     // Instantiate a new client
@@ -116,7 +117,9 @@ vector<string> ClientLauncher::startClientAutomated(string serverIP, unsigned in
         string fromServer = processCommand(client, command, serverIP);
 
         // Append it the vector
-        returned.push_back(std::move(fromServer));
+        if (fromServer != "") {
+            returned.push_back(std::move(fromServer));
+        }
     }
 
     cout << "Exiting the automated mode" << endl;
@@ -148,7 +151,8 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         thread t1(ClientLauncher::uploadFile, filename, size, serverIP, port);
         t1.detach();
 
-        return "ouba";
+        // Return empty strings for transfer operation
+        return "";
     } else if (command.substr(0, 3) == "get") {
         string removePut = command.substr(command.find(" ") + 1);
         string filename = removePut.substr(0, removePut.find(" "));
@@ -171,7 +175,8 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
             t1.detach();
         }
 
-        return "oubva1";
+        // Return empty strings for transfer operation
+        return "";
     } else {
         // Send the command to the server
         client.sendToServer(command);
@@ -180,7 +185,7 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         string fromServer = client.readFromServer();
 
         // Remove the "\n" (i.e. shitty fix)
-        fromServer = fromServer.substr(0, fromServer.size()-1);
+        fromServer = fromServer.substr(0, fromServer.size() - 1);
 
         return fromServer;
     }

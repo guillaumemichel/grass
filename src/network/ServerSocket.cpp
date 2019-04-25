@@ -11,7 +11,7 @@ using namespace std;
 #include "../../include/ServerSocket.h"
 #include "../../include/Configuration.h"
 
-ServerSocket::ServerSocket(unsigned int port): NetworkSocket(port) {}
+ServerSocket::ServerSocket(unsigned int port) : NetworkSocket(port) {}
 
 void ServerSocket::initiateConnection() {
     int opt = 1;
@@ -39,7 +39,6 @@ void ServerSocket::initiateConnection() {
 }
 
 void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
-
     bool stopFlag = false;
 
     // Number of errors while reading the socket
@@ -58,17 +57,15 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
             wrongRead = 0;
 
             // Convert the buffer to string
-            size_t len = (strlen(buffer)>SOCKET_BUFFER_SIZE) ? SOCKET_BUFFER_SIZE : strlen(buffer);
+            size_t len = (strlen(buffer) > SOCKET_BUFFER_SIZE) ? SOCKET_BUFFER_SIZE : strlen(buffer);
             string command(buffer, len);
 
             // My command interpreter
             if (0 == strncmp(buffer, "put", 3)) {
-                // Get the filename and the size
-                string removePut = command.substr(command.find(" ") + 1);
-                string filename = removePut.substr(0, removePut.find(" "));
-                int size = std::stoi(removePut.substr(removePut.find(" ") + 1));
+                string returned = commands.exec(command, userSocket);
 
-                // TODO : throw exception if expected values are not present
+                string filename = returned.substr(0, returned.find(":"));
+                int size = atoi(returned.substr(returned.find(":") + 1).c_str());
 
                 // On upload we have to start a new thread and a new NetworkSocket
 
@@ -86,7 +83,8 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
                 // Sanitize the get command
                 string filename = UPLOAD_BASEPATH + commands.exec(command, userSocket);
 
-                cout << filename << endl;
+                // Removing the '\n' char
+                filename = filename.substr(0, filename.size() - 1);
 
                 // Check if the file exists
                 try {
@@ -96,7 +94,8 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
 
                     // First we send to the client the port number
                     int portNumber = this->getRandomPort();
-                    string message = "get port: " + to_string(portNumber) + " size: " + to_string(fileReader.fileSize());
+                    string message =
+                            "get port: " + to_string(portNumber) + " size: " + to_string(fileReader.fileSize());
 
                     // Send it to the client
                     sendToClient(userSocket, message);
@@ -112,15 +111,14 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
                 cout << "Command received : " << buffer << endl;
                 // Execute the command
                 string response = commands.exec(command, userSocket);
-                if (response==str_bye) stopFlag=true;
+                if (response == str_bye) stopFlag = true;
 
-                try{
-                  this->sendToClient(userSocket, response);
-                } catch(Exception e){
-                  e.print_error();
+                try {
+                    this->sendToClient(userSocket, response);
+                } catch (Exception e) {
+                    e.print_error();
                 }
                 cout << "Response sent to client" << endl;
-                //cout << "Response : " << i <<endl;
             }
         } else {
             // Increase the wrong read

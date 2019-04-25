@@ -1,4 +1,5 @@
 login Acidburn
 pass CrashOverride
+put test.txt 30
 get test.txt
 exit
