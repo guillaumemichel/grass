@@ -1,6 +1,7 @@
 #include "../../../include/commands.h"
 #include "../../../include/AuthenticationService.h"
 #include "../../../include/AuthorizationService.h"
+#include "../../../include/StringHelper.h"
 #include <regex>
 
 using namespace std;
@@ -282,23 +283,15 @@ string Commands::cmd_grep(string pattern, unsigned int socket){
 
     // List all possible files
     stringstream matches;
-    string allFiles = call_cmd("find " + conf.getBase() + "/" + auth.getUser(socket).getName() + " -type f");
-    stringstream ss(allFiles);
-    vector<string> files;
-    string tmp;
-    while(getline(ss, tmp, '\n')){
-        files.push_back(tmp);
-    }
+    vector<string> files = StringHelper::split(call_cmd("find " + conf.getBase() + "/" + auth.getUser(socket).getName() + " -type f"), '\n');
 
     // Filter files for which regex matches
     for(const auto& file: files) {
         FileReader fr(file);
         vector<string> fileLines;
-        stringstream fileContent;
         fr.readFileVector(fileLines);
-        for(const auto& line: fileLines)
-            fileContent << line;
-        if(regex_match(fileContent.str(), re))
+        string content = StringHelper::stringify(fileLines);
+        if(regex_match(content, re))
             matches << file << '\n';
     }
     return matches.str().substr(0, matches.str().size()-1);
