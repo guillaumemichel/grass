@@ -146,11 +146,10 @@ string Commands::get_relative_path(){
  * @param  str            the given hostname
  */
 void Commands::check_hostname(string str){
-  size_t len = strlen((str).c_str());
-  for(size_t i=0;i < len;++i){
+  if (str.size()>=128) throw Exception(ERR_PATH_TOO_LONG);
+  for(size_t i=0;i < str.size();++i){
     char c=str[i];
     if (!(c == '.' || c == '-' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
-      cout << i << c << endl;
       throw Exception(ERR_INVALID_ARGS);
     }
   }
@@ -164,24 +163,22 @@ void Commands::check_hostname(string str){
  * @param  str            the given filename
  */
 void Commands::check_filename(string str){
-  size_t len = strlen((str).c_str());
-  for(size_t i=0;i < len;++i){
-    char c=str[i];
-    if (!(c == '.' || c == '-' || c == '_' || (c >= '0' && c <= '9') ||
-            (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
-      cout << i << c << endl;
-      throw Exception(ERR_INVALID_ARGS);
+    if (str.size()>=128) throw Exception(ERR_PATH_TOO_LONG);
+    for(size_t i=0;i < str.size();++i){
+        char c=str[i];
+        if (!(c == '.' || c == '-' || c == '_' || (c >= '0' && c <= '9') ||
+                (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
+            throw Exception(ERR_INVALID_ARGS);
+        }
     }
-  }
 }
 
 void Commands::check_path(string str){
-    size_t len = strlen((str).c_str());
-    for(size_t i=0;i < len;++i){
+    if (str.size()>=128) throw Exception(ERR_PATH_TOO_LONG);
+    for(size_t i=0;i < str.size();++i){
       char c=str[i];
       if (!(c == '.' || c == '-' || c == '_' || c == '/' || (c >= '0' && c <= '9') ||
               (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
-        cout << i << c << endl;
         throw Exception(ERR_INVALID_ARGS);
       }
     }
@@ -271,7 +268,7 @@ string Commands::cmd_mkdir(string cmd, unsigned int){
     if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
         throw Exception(ERR_PATH_TOO_LONG);
     }
-    return call_cmd(str_mkdir+" "+cmd);;
+    return call_cmd(str_mkdir+" "+cmd);
 }
 
 string Commands::cmd_rm(string cmd, unsigned int){
