@@ -277,12 +277,8 @@ string Commands::cmd_grep(string pattern, unsigned int socket){
     // Check and parse regex
     require_parameters(pattern);
     regex re;
-    try {
-        re = regex(pattern);
-    }
-    catch(...){
-        throw Exception(ERR_INVALID_ARGS);
-    }
+    try { re = regex(pattern); }
+    catch(...){ throw Exception(ERR_INVALID_ARGS); }
 
     // List all possible files
     stringstream matches;
