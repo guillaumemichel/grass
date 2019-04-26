@@ -1,6 +1,8 @@
 #include "../../../include/commands.h"
 #include "../../../include/AuthenticationService.h"
 #include "../../../include/AuthorizationService.h"
+#include "../../../include/StringHelper.h"
+#include <regex>
 
 using namespace std;
 
@@ -95,7 +97,7 @@ string Commands::sanitize(string full_cmd, unsigned int socket){
             Command(str_rm,     &Commands::cmd_rm),
             Command(str_get,    &Commands::cmd_get),
             Command(str_put,    &Commands::cmd_put),
-            Command(str_get,    &Commands::cmd_get),
+            Command(str_grep,   &Commands::cmd_grep),
             Command(str_date,   &Commands::cmd_date),
             Command(str_whoami, &Commands::cmd_whoami),
             Command(str_w,      &Commands::cmd_w),
@@ -272,8 +274,27 @@ string Commands::cmd_put(string, unsigned int){
   return "";
 }
 
-string Commands::cmd_grep(string, unsigned int){
-    return "";
+string Commands::cmd_grep(string pattern, unsigned int socket){
+    // Check and parse regex
+    require_parameters(pattern);
+    regex re;
+    try { re = regex(pattern); }
+    catch(...){ throw Exception(ERR_INVALID_ARGS); }
+
+    // List all possible files
+    stringstream matches;
+    vector<string> files = StringHelper::split(call_cmd("find " + conf.getBase() + "/" + auth.getUser(socket).getName() + " -type f"), '\n');
+
+    // Filter files for which regex matches
+    for(const auto& file: files) {
+        FileReader fr(file);
+        vector<string> fileLines;
+        fr.readFileVector(fileLines);
+        string content = StringHelper::stringify(fileLines);
+        if(regex_match(content, re))
+            matches << file << '\n';
+    }
+    return matches.str().substr(0, matches.str().size()-1);
 }
 
 string Commands::cmd_date(string, unsigned int){
@@ -285,7 +306,7 @@ string Commands::cmd_whoami(string, unsigned int socket){
 }
 
 string Commands::cmd_w(string, unsigned int){
-    std::stringstream users;
+    stringstream users;
     for(const User &u: auth.getAuthenticatedUsers())
         users << u.getName() << endl;
     return users.str().substr(0, users.str().size()-1);
