@@ -9,7 +9,7 @@
 #include <sstream>
 #include <algorithm>
 #include <errno.h>
-
+#include <fcntl.h>
 
 #include "exception.h"
 #include "Configuration.h"

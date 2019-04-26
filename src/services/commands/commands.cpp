@@ -1,8 +1,6 @@
 #include "../../../include/commands.h"
 #include "../../../include/AuthenticationService.h"
 #include "../../../include/AuthorizationService.h"
-#include "../../../include/StringHelper.h"
-#include <regex>
 
 using namespace std;
 
@@ -98,7 +96,7 @@ string Commands::sanitize(string full_cmd, unsigned int socket){
             Command(str_rm,     &Commands::cmd_rm),
             Command(str_get,    &Commands::cmd_get),
             Command(str_put,    &Commands::cmd_put),
-            Command(str_grep,   &Commands::cmd_grep),
+            Command(str_get,    &Commands::cmd_get),
             Command(str_date,   &Commands::cmd_date),
             Command(str_whoami, &Commands::cmd_whoami),
             Command(str_w,      &Commands::cmd_w),
@@ -215,6 +213,36 @@ string Commands::call_cmd(string str1){
     return str1;
 }
 
+string call_cmd2(const char* cmd, char * const argv[], char * const envp[]){
+
+    char buffer[RESPONSE_MAX_SIZE] = {0};
+    int pipe0[2];
+    int saved_stdout;
+
+    saved_stdout = dup(STDOUT_FILENO);  // save stdout for display later
+
+    if( pipe(pipe0) != 0 ) {          // make a pipe
+      throw Exception(ERR_FAIL_CMD);
+    }
+
+    if(!fork()){
+        dup2(pipe0[1], STDOUT_FILENO); // redirect stdout to the pipe
+        dup2(pipe0[1], STDERR_FILENO); // redirect stderr to the pipe
+        close(pipe0[0]);
+        fcntl(pipe0[1], F_SETFD, FD_CLOEXEC);
+        execve(cmd, argv, envp);
+        write(pipe0[1], "", 1);
+        _exit(1);
+    } else {
+        fflush(stdout);
+        close(pipe0[1]);
+        read(pipe0[0], buffer, RESPONSE_MAX_SIZE); // read from pipe into buffer
+    }
+
+    dup2(saved_stdout, STDOUT_FILENO);  // reconnect stdout for testing
+    return string(buffer, strlen(buffer));
+}
+
 string Commands::cmd_login(string cmd, unsigned int socket){
     require_parameters(cmd);
     auth.registerUser(socket, cmd);
@@ -230,14 +258,26 @@ string Commands::cmd_pass(string cmd, unsigned int socket){
 string Commands::cmd_ping(string cmd, unsigned int){
     require_parameters(cmd);
     check_hostname(cmd);
-    string str = str_ping + " -c1 " + cmd;
-    return call_cmd(str);
+
+    char command[] = "/bin/ping";
+    char arg0[] = "-c1";
+    char *arg1 = &cmd[0u];
+    char * const argv[] = {command, arg0, arg1, NULL};
+    char * const envp[] = {NULL};
+
+    string ret = call_cmd2(command,argv,envp);
+    ret = ret.substr(0,ret.size()-1); // remove the 2nd '\n'
+    return ret;
 }
 
 string Commands::cmd_ls(string cmd, unsigned int){
     require_no_parameters(cmd);
-    string str = str_ls + " -l";
-    return call_cmd(str);
+    char command[] = "/bin/ls";
+    char arg[] = "-l";
+    char * const argv[] = {command, arg, NULL};
+    char * const envp[] = {NULL};
+
+    return call_cmd2(command,argv,envp);
 }
 
 string Commands::cmd_cd(string cmd, unsigned int){
@@ -270,14 +310,31 @@ string Commands::cmd_mkdir(string cmd, unsigned int){
     if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
         throw Exception(ERR_PATH_TOO_LONG);
     }
-    return call_cmd(str_mkdir+" "+cmd);
+
+    char command[] = "/bin/mkdir";
+    char *arg = &cmd[0u];
+    char * const argv[] = {command, arg, NULL};
+    char * const envp[] = {NULL};
+
+    string ret = call_cmd2(command,argv,envp);
+    if (ret!="") ret = ret.substr(5);
+    return ret;
 }
 
 string Commands::cmd_rm(string cmd, unsigned int){
     cmd = remove_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
-    return call_cmd(str_rm+" -r "+cmd);
+
+    char command[] = "/bin/rm";
+    char arg0[] = "-r";
+    char *arg1 = &cmd[0u];
+    char * const argv[] = {command, arg0, arg1, NULL};
+    char * const envp[] = {NULL};
+
+    string ret = call_cmd2(command,argv,envp);
+    if (ret!="") ret = ret.substr(5);
+    return ret;
 }
 
 string Commands::cmd_get(string, unsigned int){
@@ -289,27 +346,8 @@ string Commands::cmd_put(string, unsigned int){
   return "";
 }
 
-string Commands::cmd_grep(string pattern, unsigned int socket){
-    // Check and parse regex
-    require_parameters(pattern);
-    regex re;
-    try { re = regex(pattern); }
-    catch(...){ throw Exception(ERR_INVALID_ARGS); }
-
-    // List all possible files
-    stringstream matches;
-    vector<string> files = StringHelper::split(call_cmd("find " + conf.getBase() + "/" + auth.getUser(socket).getName() + " -type f"), '\n');
-
-    // Filter files for which regex matches
-    for(const auto& file: files) {
-        FileReader fr(file);
-        vector<string> fileLines;
-        fr.readFileVector(fileLines);
-        string content = StringHelper::stringify(fileLines);
-        if(regex_match(content, re))
-            matches << file << '\n';
-    }
-    return matches.str().substr(0, matches.str().size()-1);
+string Commands::cmd_grep(string, unsigned int){
+    return "";
 }
 
 string Commands::cmd_date(string, unsigned int){
@@ -321,7 +359,7 @@ string Commands::cmd_whoami(string, unsigned int socket){
 }
 
 string Commands::cmd_w(string, unsigned int){
-    stringstream users;
+    std::stringstream users;
     for(const User &u: auth.getAuthenticatedUsers())
         users << u.getName() << endl;
     return users.str().substr(0, users.str().size()-1);
