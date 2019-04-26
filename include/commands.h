@@ -45,6 +45,9 @@ public:
 
     static string call_cmd(string);
 
+    static string call_cmd2(const char*, char * const *, char * const *);
+
+
 private:
 
     Configuration conf;

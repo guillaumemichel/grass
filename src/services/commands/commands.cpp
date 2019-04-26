@@ -129,7 +129,11 @@ void Commands::require_no_parameters(string cmd){
 }
 
 string Commands::get_relative_path(){
-    string current_folder = call_cmd(str_pwd);
+    char command[] = "/bin/pwd";
+    char * const argv[] = {command, NULL};
+    char * const envp[] = {NULL};
+    string current_folder = call_cmd2(command,argv,envp);
+
     current_folder = current_folder.substr(0,current_folder.size()-1)+"/";
     string files_path = conf.getFilesPath();
     if (current_folder.compare(0,files_path.size(),files_path,0,files_path.size())){
@@ -213,7 +217,7 @@ string Commands::call_cmd(string str1){
     return str1;
 }
 
-string call_cmd2(const char* cmd, char * const argv[], char * const envp[]){
+string Commands::call_cmd2(const char* cmd, char * const argv[], char * const envp[]){
 
     char buffer[RESPONSE_MAX_SIZE] = {0};
     int pipe0[2];
@@ -350,8 +354,13 @@ string Commands::cmd_grep(string, unsigned int){
     return "";
 }
 
-string Commands::cmd_date(string, unsigned int){
-  return call_cmd(str_date);
+string Commands::cmd_date(string cmd, unsigned int){
+    require_no_parameters(cmd);
+    char command[] = "/bin/date";
+    char * const argv[] = {command, NULL};
+    char * const envp[] = {NULL};
+
+    return call_cmd2(command,argv,envp);
 }
 
 string Commands::cmd_whoami(string, unsigned int socket){
