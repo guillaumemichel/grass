@@ -149,7 +149,7 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
 
         // Upload the file
         thread t1(ClientLauncher::uploadFile, filename, size, serverIP, port);
-        t1.detach();
+        t1.join();
 
         // Return empty strings for transfer operation
         return "";
@@ -172,7 +172,7 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
 
             // Download the file
             thread t1(ClientLauncher::downloadFile, filename, size, serverIP, port);
-            t1.detach();
+            t1.join();
         }
 
         // Return empty strings for transfer operation
@@ -230,8 +230,8 @@ int main(int argc, char *argv[]) {
 
         try {
             // Checks if infile exists
-            FileReader fr(BASEPATH + inFile);
-            FileWriter fw(BASEPATH + outFile);
+            FileReader fr("./" + inFile);
+            FileWriter fw("./" + outFile);
 
             // Clear the output file
             fw.clearFile();

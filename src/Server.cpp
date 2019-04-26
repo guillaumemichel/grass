@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <iostream>
 #include <string>
+#include <unistd.h>
 #include "../include/grass.h"
 #include "../include/ServerSocket.h"
 #include "../include/Configuration.h"
@@ -21,15 +22,27 @@ using namespace std;
  * @param server the instance of the server
  */
 void connectClient(int userSocket, ServerSocket server, Commands &commands) {
+    Configuration conf = Configuration("grass.conf");
+
+    // Client's dir
+    string dir = conf.getBase() + to_string(userSocket) + "/";
+
+    // Creates a new directory for the client
+    string command = "mkdir " + dir;
+    system(command.c_str());
+
     // This function exists when the "exit" command is received
     server.readFromUserSocket(userSocket, commands);
 
     cout << "Disconnecting client #" << userSocket << endl;
+
+    // Remove the directory of the client
+    command = "rm -rf " + conf.getBase() + to_string(userSocket);
+    system(command.c_str());
 }
 
 int main() {
     try {
-
         // Parses the configuration file
         string path = Commands::call_cmd(str_pwd);
         //cout << path.substr(0,path.size()-1)<<"/grass.conf" << endl;

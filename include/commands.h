@@ -51,6 +51,8 @@ private:
 
     AuthenticationService auth;
 
+    string path;
+
     string remove_spaces(string);
 
     string remove_front_spaces(string);

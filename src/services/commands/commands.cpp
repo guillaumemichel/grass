@@ -1,6 +1,7 @@
 #include "../../../include/commands.h"
 #include "../../../include/AuthenticationService.h"
 #include "../../../include/AuthorizationService.h"
+#include <unistd.h>
 
 using namespace std;
 
@@ -42,7 +43,9 @@ public:
   }
 };
 
-Commands::Commands(const Configuration config): conf(config), auth(config) {}
+Commands::Commands(const Configuration config): conf(config), auth(config) {
+  this->path = config.getBase();
+}
 
 
 /**
@@ -53,9 +56,24 @@ Commands::Commands(const Configuration config): conf(config), auth(config) {}
  * @return              0 for success, 1 for exit, <0 for failure
  */
 string Commands::exec(string cmd, unsigned int socket){
+    // Volatile otherwise it will be (wrongly) optimized
+    volatile bool cleared = true;
+
   try{
     if (cmd==str_nodata) return cmd;
+
+    // TODO : waw
+    if (strncmp(cmd.c_str(), str_login.c_str(), str_login.size()) != 0 && strncmp(cmd.c_str(), str_pass.c_str(), str_pass.size()) != 0) {
+        chdir((this->path + to_string(socket) + "/").c_str());
+        cleared = false;
+    }
     string response = sanitize(cmd, socket);
+
+    if (strncmp(cmd.c_str(), str_login.c_str(), str_login.size()) != 0 && strncmp(cmd.c_str(), str_pass.c_str(), str_pass.size()) != 0) {
+        chdir("../../");
+        cleared = true;
+    }
+
     if (response=="") {
       return str_nodata;
     }
@@ -63,6 +81,9 @@ string Commands::exec(string cmd, unsigned int socket){
     return response;
   }
   catch(Exception& e){
+      if (!cleared) {
+          chdir("../../");
+      }
     return e.print_error();
   }
 }

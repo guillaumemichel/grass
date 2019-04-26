@@ -64,7 +64,8 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands &commands) {
             if (0 == strncmp(buffer, "put", 3)) {
                 string returned = commands.exec(command, userSocket);
 
-                string filename = returned.substr(0, returned.find(":"));
+                string filename = this->getDirOnServer(userSocket) + returned.substr(0, returned.find(":"));
+
                 int size = atoi(returned.substr(returned.find(":") + 1).c_str());
 
                 // On upload we have to start a new thread and a new NetworkSocket
@@ -78,10 +79,10 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands &commands) {
 
                 // Then we start a new thread to receive it
                 thread t1(ServerSocket::receiveFileUpload, filename, size, portNumber);
-                t1.detach();
+                t1.join();
             } else if (0 == strncmp(buffer, "get", 3)) {
                 // Sanitize the get command
-                string filename = UPLOAD_BASEPATH + commands.exec(command, userSocket);
+                string filename = this->getDirOnServer(userSocket) + commands.exec(command, userSocket);
 
                 // Removing the '\n' char
                 filename = filename.substr(0, filename.size() - 1);
@@ -102,7 +103,7 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands &commands) {
 
                     // Then we start a new thread to receive it
                     thread t1(ServerSocket::sendFile, filename, portNumber);
-                    t1.detach();
+                    t1.join();
                 } catch (Exception &e) {
                     // Send the error to the client in case of
                     sendToClient(userSocket, e.print_error());
@@ -155,48 +156,48 @@ void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigne
 
     cout << "File transfer started" << endl;
 
-    // ==== READ THE FILE ==== //
+    // ==== WRITE THE FILE ==== //
+    try {
+        // Create a file writer to write the file
+        FileWriter fw(filename);
 
-    // Rewrite the filename to the upload directory
-    filename = UPLOAD_BASEPATH + filename;
+        // Clear the file in case of all data was there
+        fw.clearFile();
 
-    // Create a file writer to write the file
-    FileWriter fw(filename);
+        // Buffer where we'll store the data sent by the client
+        char *buffer;
 
-    // Clear the file in case of all data was there
-    fw.clearFile();
+        // Allocating the memory to the buffer
+        buffer = (char *) malloc(size);
 
-    // Buffer where we'll store the data sent by the client
-    char *buffer;
+        // Check if buffer was correctly allocated
+        if (buffer == nullptr) {
+            throw Exception(ERR_MEMORY_MALLOC);
+        } else {
+            // Clean the buffer
+            memset(buffer, 0, size);
 
-    // Allocating the memory to the buffer
-    buffer = (char *) malloc(size);
+            // Now we can read the data
+            if (read(receivingSocket, buffer, size) <= 0) {
+                throw new Exception(ERR_NETWORK_READ_SOCKET);
+            }
 
-    // Check if buffer was correctly allocated
-    if (buffer == nullptr) {
-        throw Exception(ERR_MEMORY_MALLOC);
-    } else {
-        // Clean the buffer
-        memset(buffer, 0, size);
+            // Create the string and write it to the file
+            string line(buffer, size);
+            fw.writeLine(line);
 
-        // Now we can read the data
-        if (read(receivingSocket, buffer, size) <= 0) {
-            throw new Exception(ERR_NETWORK_READ_SOCKET);
+            // Finally we clean and free the buffer
+            memset(buffer, 0, size);
+            free(buffer);
         }
 
-        // Create the string and write it to the file
-        string line(buffer, size);
-        fw.writeLine(line);
+        // Once the file transfer is done, we close the NetworkSocket
+        close(receivingSocket);
 
-        // Finally we clean and free the buffer
-        memset(buffer, 0, size);
-        free(buffer);
+        cout << "File transfer done" << endl;
+    } catch (Exception &e) {
+        cout << e.print_error() << endl;
     }
-
-    // Once the file transfer is done, we close the NetworkSocket
-    close(receivingSocket);
-
-    cout << "File transfer done" << endl;
 }
 
 void ServerSocket::sendToClient(int socket, string message) {

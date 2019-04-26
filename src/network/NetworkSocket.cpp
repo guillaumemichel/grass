@@ -45,3 +45,17 @@ void NetworkSocket::commonInitiateConnection() {
     (this->address).sin_family = AF_INET;
     (this->address).sin_port = htons(this->port);
 }
+
+string NetworkSocket::getServerDir() {
+    Configuration conf = Configuration("grass.conf");
+    return conf.getBase();
+}
+
+string NetworkSocket::getClientDir() {
+    return NULL;
+}
+
+string NetworkSocket::getDirOnServer(unsigned int userSocket) {
+    Configuration conf = Configuration("grass.conf");
+    return conf.getBase() + to_string(userSocket) + "/";
+}

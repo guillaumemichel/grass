@@ -13,6 +13,7 @@
 #include <string.h>
 #include <iostream>
 #include <arpa/inet.h>
+#include "Configuration.h"
 #include "exception.h"
 
 #ifndef ASS_ON_THE_GRASS_SOCKET_H
@@ -66,6 +67,22 @@ protected:
      * @param msg the string to be sent
      */
     void sendTo(int socket, string msg);
+
+    /**
+     * Returns the path where the server's directory is.
+     *
+     * @return the server's directory path
+     */
+    static string getServerDir();
+
+    static string getDirOnServer(unsigned int userSocket);
+
+    /**
+     * Returns the path where the client's directory is.
+     *
+     * @return the client's directory path
+     */
+    static string getClientDir();
 
     /**
      * The socket.
