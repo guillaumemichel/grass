@@ -61,7 +61,6 @@ int main() {
         while (true) {
             cout << "Listening for incoming connections..." << endl;
             int userSocket = server.allocateSocketClient();
-            //chdir((conf.getFilesPath()).c_str());
             cout << "New client connected : " << userSocket << endl;
 
             // Start a new thread to handle the new client

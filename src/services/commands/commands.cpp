@@ -289,7 +289,9 @@ string Commands::cmd_rm(string cmd, unsigned int){
 
 // TODO : check correctness of parameters for get and put
 string Commands::cmd_get(string cmd, unsigned int){
+    cmd = remove_front_spaces(cmd);
     require_parameters(cmd);
+    check_filename(cmd);
 
     // Get the filename
     string separator = cmd.substr(cmd.find(" ") + 1);
@@ -301,13 +303,20 @@ string Commands::cmd_get(string cmd, unsigned int){
 }
 
 string Commands::cmd_put(string cmd, unsigned int){
-  require_parameters(cmd);
+    cmd = remove_front_spaces(cmd);
+    require_parameters(cmd);
+    check_filename(cmd);
 
-  // Get the filename and the size
-  string filename = cmd.substr(0, cmd.find(" "));
-  int size = std::stoi(cmd.substr(cmd.find(" ") + 1));
+    string current_folder = get_relative_path();
+    if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
+        throw Exception(ERR_PATH_TOO_LONG);
+    }
 
-  return filename + ":" + to_string(size);
+    // Get the filename and the size
+    string filename = cmd.substr(0, cmd.find(" "));
+    int size = std::stoi(cmd.substr(cmd.find(" ") + 1));
+
+    return filename + ":" + to_string(size);
 }
 
 string Commands::cmd_grep(string pattern, unsigned int socket){
