@@ -327,12 +327,9 @@ string Commands::cmd_cd(string cmd, unsigned int){
     while(full_path[full_path.size()-1]=='/'){
         full_path = full_path.substr(0, full_path.size()-1);
     }
-    //cout << "full path" << full_path << endl;
     size_t divider = full_path.find_last_of("/");
     string curr_dir = full_path.substr(0,divider);
     string name = full_path.substr(divider+1);
-    //cout << "curr dir " << curr_dir << endl;
-    //cout << "name " << name << endl;
     string tmp_dir=conf.getFilesPath();
     if (full_path.size()<tmp_dir.size() || full_path.compare(0,files_path.size(),files_path)){
         throw Exception(ERR_ACCESS_DENIED);
@@ -340,15 +337,21 @@ string Commands::cmd_cd(string cmd, unsigned int){
     string tmp_end;
     if (full_path==tmp_dir) tmp_end = "/";
     else tmp_end=full_path.substr(tmp_dir.size()+1)+"/";
+    while(tmp_end[0]=='/'){
+        tmp_end = tmp_end.substr(1);
+    }
     string tmp_name;
-
-    //cout << "tmp_dir : " << tmp_dir << endl;
-    //cout << "tmp_end : " << tmp_end << endl;
 
     int index;
     while ((index=tmp_end.find_first_of("/"))>0){
+        while(tmp_end[0]=='/'){
+            tmp_end = tmp_end.substr(1);
+        }
         tmp_name = "/"+tmp_end.substr(0,index);
         tmp_end = tmp_end.substr(index+1);
+        while(tmp_end[0]=='/'){
+            tmp_end = tmp_end.substr(1);
+        }
         if (tmp_name != "/" && !dir_exists(tmp_dir,tmp_name.substr(1))){
             return "Error: No directory doesn't exist "+cmd;
         }
@@ -360,50 +363,8 @@ string Commands::cmd_cd(string cmd, unsigned int){
         if (tmp_dir.compare(0,files_path.size(),files_path)){
             throw Exception(ERR_ACCESS_DENIED);
         }
-
-
-        //cout << "tmp_name : " << tmp_name << endl;
-        //cout << "tmp_dir : " << tmp_dir << endl;
-        //cout << "tmp_end : " << tmp_end << endl;
     }
 
-    char command1[] = "/bin/ls";
-    char arg10[] = "-al";
-    char * arg11 = &curr_dir[0u];
-    char * const argv1[] = {command1, arg10, arg11, NULL};
-    char * const envp1[] = {NULL};
-
-    string ls = call_cmd2(command1,argv1,envp1);
-    int hit = ls.find(" "+name+"\n");
-    if (hit<0){
-        return "Error: no such file or directory: "+cmd;
-    }
-    index = ls.substr(0,hit).find_last_of("\n")+1;
-    if (ls[index]!='d'){
-        return "Error: not a directory: "+cmd;
-    }
-
-    /*int count =0;
-    while((index = full_path.find("/.."))>=0){
-        if (index==0) full_path = "/";
-        else {
-            if (full_path.size() > (unsigned int)index+3){
-                full_path = full_path.substr(0,index) + full_path.substr(index+3);
-            } else full_path = full_path.substr(0,index);
-        }
-        cout << full_path << endl;
-        ++count;
-    }
-    cout << "count : " << count << endl;
-
-    while(count--){
-        full_path=full_path.substr(0,full_path.find_last_of("/"));
-    }
-    */
-
-    //full_path = full_path+"/";
-
-    //cout << "full path : " << full_path << endl;
     if (!full_path.compare(0,files_path.size(),files_path)){
         chdir((tmp_dir).c_str());
         return "";
