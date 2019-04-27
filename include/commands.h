@@ -33,7 +33,7 @@ const string str_w      = "w";
 const string str_logout = "logout";
 const string str_exit   = "exit";
 const string str_pwd    = "pwd";
-const string str_bye    = "bye!\n";
+const string str_bye    = "bye!";
 const string str_nodata = "__nodata__";
 
 class Commands {
@@ -50,6 +50,8 @@ private:
     Configuration conf;
 
     AuthenticationService auth;
+
+    string path;
 
     string remove_spaces(string);
 

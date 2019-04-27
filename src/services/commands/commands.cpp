@@ -3,6 +3,7 @@
 #include "../../../include/AuthorizationService.h"
 #include "../../../include/StringHelper.h"
 #include <regex>
+#include <unistd.h>
 
 using namespace std;
 
@@ -45,7 +46,9 @@ public:
   }
 };
 
-Commands::Commands(const Configuration config): conf(config), auth(config) {}
+Commands::Commands(const Configuration config): conf(config), auth(config) {
+  this->path = config.getBase();
+}
 
 
 /**
@@ -56,9 +59,24 @@ Commands::Commands(const Configuration config): conf(config), auth(config) {}
  * @return              0 for success, 1 for exit, <0 for failure
  */
 string Commands::exec(string cmd, unsigned int socket){
+    // Volatile otherwise it will be (wrongly) optimized
+    volatile bool cleared = true;
+
   try{
     if (cmd==str_nodata) return cmd;
+
+    // TODO : waw
+    if (strncmp(cmd.c_str(), str_login.c_str(), str_login.size()) != 0 && strncmp(cmd.c_str(), str_pass.c_str(), str_pass.size()) != 0) {
+        chdir((this->path + to_string(socket) + "/").c_str());
+        cleared = false;
+    }
     string response = sanitize(cmd, socket);
+
+    if (strncmp(cmd.c_str(), str_login.c_str(), str_login.size()) != 0 && strncmp(cmd.c_str(), str_pass.c_str(), str_pass.size()) != 0) {
+        chdir("../");
+        cleared = true;
+    }
+
     if (response=="") {
       return str_nodata;
     }
@@ -66,6 +84,9 @@ string Commands::exec(string cmd, unsigned int socket){
     return response;
   }
   catch(Exception& e){
+      if (!cleared) {
+          chdir("../");
+      }
     return e.print_error();
   }
 }
@@ -280,13 +301,40 @@ string Commands::cmd_rm(string cmd, unsigned int){
     return call_cmd(str_rm+" -r "+cmd);
 }
 
-string Commands::cmd_get(string, unsigned int){
-  return "";
+// TODO : check correctness of parameters for get and put
+string Commands::cmd_get(string cmd, unsigned int){
+    cmd = remove_front_spaces(cmd);
+    require_parameters(cmd);
+    check_filename(cmd);
+
+    // Get the filename
+    string separator = cmd.substr(cmd.find(" ") + 1);
+
+    string filename = separator.substr(0, separator.find(" "));
+
+    // Remove the last \n otherwise the filename is invalid
+    return filename;
 }
 
-string Commands::cmd_put(string, unsigned int){
-    //TODO: path too long check
-  return "";
+string Commands::cmd_put(string cmd, unsigned int){
+  // TODO : check if space is present for substr
+
+  cmd = remove_front_spaces(cmd);
+  require_parameters(cmd);
+  // Get the filename and checks if its correct
+  string filename = cmd.substr(0, cmd.find(" "));
+  check_filename(filename);
+
+  // TODO : marche pas
+  /*string current_folder = get_relative_path();
+  if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
+      throw Exception(ERR_PATH_TOO_LONG);
+  }*/
+
+  // Get the size
+  int size = std::stoi(cmd.substr(cmd.find(" ") + 1));
+
+  return filename + ":" + to_string(size);
 }
 
 string Commands::cmd_grep(string pattern, unsigned int socket){

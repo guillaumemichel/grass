@@ -11,7 +11,7 @@ using namespace std;
 #include "../../include/ServerSocket.h"
 #include "../../include/Configuration.h"
 
-ServerSocket::ServerSocket(unsigned int port): NetworkSocket(port) {}
+ServerSocket::ServerSocket(unsigned int port) : NetworkSocket(port) {}
 
 void ServerSocket::initiateConnection() {
     int opt = 1;
@@ -38,8 +38,7 @@ void ServerSocket::initiateConnection() {
     }
 }
 
-void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
-
+void ServerSocket::readFromUserSocket(int userSocket, Commands &commands) {
     bool stopFlag = false;
 
     // Number of errors while reading the socket
@@ -58,20 +57,16 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
             wrongRead = 0;
 
             // Convert the buffer to string
-            size_t len = (strlen(buffer)>SOCKET_BUFFER_SIZE) ? SOCKET_BUFFER_SIZE : strlen(buffer);
+            size_t len = (strlen(buffer) > SOCKET_BUFFER_SIZE) ? SOCKET_BUFFER_SIZE : strlen(buffer);
             string command(buffer, len);
 
             // My command interpreter
-            /*if (0 == strcmp((str_exit).c_str(), buffer)) {
-                cout << "Exiting the client..." << endl;
-                stopFlag = true;
-            } else */if (0 == strncmp(buffer, "put", 3)) {
-                // Get the filename and the size
-                string removePut = command.substr(command.find(" ") + 1);
-                string filename = removePut.substr(0, removePut.find(" "));
-                int size = std::stoi(removePut.substr(removePut.find(" ") + 1));
+            if (0 == strncmp(buffer, "put", 3)) {
+                string returned = commands.exec(command, userSocket);
 
-                // TODO : throw exception if expected values are not present
+                string filename = this->getDirOnServer(userSocket) + returned.substr(0, returned.find(":"));
+
+                int size = atoi(returned.substr(returned.find(":") + 1).c_str());
 
                 // On upload we have to start a new thread and a new NetworkSocket
 
@@ -84,51 +79,47 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands commands) {
 
                 // Then we start a new thread to receive it
                 thread t1(ServerSocket::receiveFileUpload, filename, size, portNumber);
-                t1.detach();
+                t1.join();
             } else if (0 == strncmp(buffer, "get", 3)) {
-                // Get the filename and the size
-                string removePut = command.substr(command.find(" ") + 1);
+                // Sanitize the get command
+                string filename = this->getDirOnServer(userSocket) + commands.exec(command, userSocket);
 
-                // The file must be taken from the upload basepath
-                string filename = UPLOAD_BASEPATH + removePut.substr(0, removePut.find(" "));
+                // Removing the '\n' char
+                filename = filename.substr(0, filename.size() - 1);
 
                 // Check if the file exists
                 try {
                     FileReader fileReader(filename);
-                } catch (exception &e) {
-                    // If the file does not exist, we send to the client an error message
-                    string errorMessage = "File does not exist";
-                    sendToClient(userSocket, errorMessage);
+
+                    // On download we have to start a new thread and a new NetworkSocket
+
+                    // First we send to the client the port number
+                    int portNumber = this->getRandomPort();
+                    string message =
+                            "get port: " + to_string(portNumber) + " size: " + to_string(fileReader.fileSize());
+
+                    // Send it to the client
+                    sendToClient(userSocket, message);
+
+                    // Then we start a new thread to receive it
+                    thread t1(ServerSocket::sendFile, filename, portNumber);
+                    t1.join();
+                } catch (Exception &e) {
+                    // Send the error to the client in case of
+                    sendToClient(userSocket, e.print_error());
                 }
-
-                // TODO : how to not redefine it???
-                FileReader fileReader(filename);
-
-                // On download we have to start a new thread and a new NetworkSocket
-
-                // First we send to the client the port number
-                int portNumber = this->getRandomPort();
-                string message = "get port: " + to_string(portNumber) + " size: " + to_string(fileReader.fileSize());
-
-                // Send it to the client
-                sendToClient(userSocket, message);
-
-                // Then we start a new thread to receive it
-                thread t1(ServerSocket::sendFile, filename, portNumber);
-                t1.detach();
             } else {
                 cout << "Command received : " << buffer << endl;
                 // Execute the command
                 string response = commands.exec(command, userSocket);
-                if (response==str_bye) stopFlag=true;
+                if (response == str_bye) stopFlag = true;
 
-                try{
-                  this->sendToClient(userSocket, response);
-                } catch(Exception e){
-                  e.print_error();
+                try {
+                    this->sendToClient(userSocket, response);
+                } catch (Exception e) {
+                    e.print_error();
                 }
                 cout << "Response sent to client" << endl;
-                //cout << "Response : " << i <<endl;
             }
         } else {
             // Increase the wrong read
@@ -165,48 +156,48 @@ void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigne
 
     cout << "File transfer started" << endl;
 
-    // ==== READ THE FILE ==== //
+    // ==== WRITE THE FILE ==== //
+    try {
+        // Create a file writer to write the file
+        FileWriter fw(filename);
 
-    // Rewrite the filename to the upload directory
-    filename = UPLOAD_BASEPATH + filename;
+        // Clear the file in case of all data was there
+        fw.clearFile();
 
-    // Create a file writer to write the file
-    FileWriter fw(filename);
+        // Buffer where we'll store the data sent by the client
+        char *buffer;
 
-    // Clear the file in case of all data was there
-    fw.clearFile();
+        // Allocating the memory to the buffer
+        buffer = (char *) malloc(size);
 
-    // Buffer where we'll store the data sent by the client
-    char *buffer;
+        // Check if buffer was correctly allocated
+        if (buffer == nullptr) {
+            throw Exception(ERR_MEMORY_MALLOC);
+        } else {
+            // Clean the buffer
+            memset(buffer, 0, size);
 
-    // Allocating the memory to the buffer
-    buffer = (char *) malloc(size);
+            // Now we can read the data
+            if (read(receivingSocket, buffer, size) <= 0) {
+                throw new Exception(ERR_NETWORK_READ_SOCKET);
+            }
 
-    // Check if buffer was correctly allocated
-    if (buffer == nullptr) {
-        throw Exception(ERR_MEMORY_MALLOC);
-    } else {
-        // Clean the buffer
-        memset(buffer, 0, size);
+            // Create the string and write it to the file
+            string line(buffer, size);
+            fw.writeLine(line);
 
-        // Now we can read the data
-        if (read(receivingSocket, buffer, size) <= 0) {
-            throw new Exception(ERR_NETWORK_READ_SOCKET);
+            // Finally we clean and free the buffer
+            memset(buffer, 0, size);
+            free(buffer);
         }
 
-        // Create the string and write it to the file
-        string line(buffer, size);
-        fw.writeLine(line);
+        // Once the file transfer is done, we close the NetworkSocket
+        close(receivingSocket);
 
-        // Finally we clean and free the buffer
-        memset(buffer, 0, size);
-        free(buffer);
+        cout << "File transfer done" << endl;
+    } catch (Exception &e) {
+        cout << e.print_error() << endl;
     }
-
-    // Once the file transfer is done, we close the NetworkSocket
-    close(receivingSocket);
-
-    cout << "File transfer done" << endl;
 }
 
 void ServerSocket::sendToClient(int socket, string message) {

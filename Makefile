@@ -15,6 +15,7 @@ SRC      :=                                     \
 	$(wildcard src/services/commands/*.cpp)       \
 	$(wildcard src/configuration/*.cpp)           \
 	$(wildcard src/network/*.cpp)                 \
+	$(wildcard src/helpers/*.cpp)                 \
 	$(wildcard src/files/*.cpp)                 \
 	$(wildcard src/user/*.cpp)				            \
 	$(wildcard src/grass.cpp)                     \
