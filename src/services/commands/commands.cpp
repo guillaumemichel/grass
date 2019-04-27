@@ -188,6 +188,27 @@ void Commands::check_path(string str){
     }
 }
 
+bool Commands::dir_exists(string dir, string name){
+    char command[] = "/bin/ls";
+    char arg0[] = "-al";
+    char * arg1 = &dir[0u];
+    char * const argv[] = {command, arg0, arg1, NULL};
+    char * const envp[] = {NULL};
+
+    string ls = call_cmd2(command,argv,envp);
+
+    int hit = ls.find(" "+name+"\n");
+    cout << hit << endl;
+    if (hit<0){
+        return false;
+    }
+    int index = ls.substr(0,hit).find_last_of("\n")+1;
+    if (ls[index]=='d'){
+        return true;
+    }
+    return false;
+}
+
 string Commands::call_cmd(string str1){
     //require_parameters(str1);
     str1 += " 2>&1"; // to redirect stderr to stdout
@@ -285,28 +306,162 @@ string Commands::cmd_ls(string cmd, unsigned int){
 }
 
 string Commands::cmd_cd(string cmd, unsigned int){
-    //TODO: redirect sh error to the client (or hide it from the server)
     cmd = remove_spaces(cmd);
-    require_parameters(cmd);
+    if (cmd=="") cmd = "/";
     check_path(cmd);
     string files_path = conf.getFilesPath();
-    files_path = files_path.substr(0,files_path.size());
-    bool dot = (cmd==".");
-    if (cmd[0]=='/'){
-        cmd=files_path + cmd;
-    }
-    string old_path = call_cmd(str_pwd);
-    string new_path = call_cmd(str_cd+" "+cmd+";"+str_pwd);
-    if (old_path==new_path && !dot) throw Exception(ERR_CD);
+    string full_path;
+    if (cmd==".") return ""; // no need to do anything if 'cd .'
+    else if (cmd == "/") {
+        full_path = files_path;
+    } else if (cmd[0]=='/'){
+        full_path=files_path + cmd;
+    } else {
+        char command0[] = "/bin/pwd";
+        char * const argv0[] = {command0, NULL};
+        char * const envp0[] = {NULL};
 
-    if (!new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
-        chdir((cmd).c_str());
+        string pwd = call_cmd2(command0,argv0,envp0);
+        full_path=pwd.substr(0,pwd.size()-1)+"/"+cmd;
+    }
+    while(full_path[full_path.size()-1]=='/'){
+        full_path = full_path.substr(0, full_path.size()-1);
+    }
+    //cout << "full path" << full_path << endl;
+    size_t divider = full_path.find_last_of("/");
+    string curr_dir = full_path.substr(0,divider);
+    string name = full_path.substr(divider+1);
+    //cout << "curr dir " << curr_dir << endl;
+    //cout << "name " << name << endl;
+    string tmp_dir=conf.getFilesPath();
+    if (full_path.size()<tmp_dir.size() || full_path.compare(0,files_path.size(),files_path)){
+        throw Exception(ERR_ACCESS_DENIED);
+    }
+    string tmp_end;
+    if (full_path==tmp_dir) tmp_end = "/";
+    else tmp_end=full_path.substr(tmp_dir.size()+1)+"/";
+    string tmp_name;
+
+    //cout << "tmp_dir : " << tmp_dir << endl;
+    //cout << "tmp_end : " << tmp_end << endl;
+
+    int index;
+    while ((index=tmp_end.find_first_of("/"))>0){
+        tmp_name = "/"+tmp_end.substr(0,index);
+        tmp_end = tmp_end.substr(index+1);
+        if (tmp_name != "/" && !dir_exists(tmp_dir,tmp_name.substr(1))){
+            return "Error: No directory doesn't exist "+cmd;
+        }
+        if (tmp_name == "/.."){
+            tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
+        } else {
+            tmp_dir = tmp_dir + tmp_name;
+        }
+        if (tmp_dir.compare(0,files_path.size(),files_path)){
+            throw Exception(ERR_ACCESS_DENIED);
+        }
+
+
+        //cout << "tmp_name : " << tmp_name << endl;
+        //cout << "tmp_dir : " << tmp_dir << endl;
+        //cout << "tmp_end : " << tmp_end << endl;
+    }
+
+    char command1[] = "/bin/ls";
+    char arg10[] = "-al";
+    char * arg11 = &curr_dir[0u];
+    char * const argv1[] = {command1, arg10, arg11, NULL};
+    char * const envp1[] = {NULL};
+
+    string ls = call_cmd2(command1,argv1,envp1);
+    int hit = ls.find(" "+name+"\n");
+    if (hit<0){
+        return "Error: no such file or directory: "+cmd;
+    }
+    index = ls.substr(0,hit).find_last_of("\n")+1;
+    if (ls[index]!='d'){
+        return "Error: not a directory: "+cmd;
+    }
+
+    /*int count =0;
+    while((index = full_path.find("/.."))>=0){
+        if (index==0) full_path = "/";
+        else {
+            if (full_path.size() > (unsigned int)index+3){
+                full_path = full_path.substr(0,index) + full_path.substr(index+3);
+            } else full_path = full_path.substr(0,index);
+        }
+        cout << full_path << endl;
+        ++count;
+    }
+    cout << "count : " << count << endl;
+
+    while(count--){
+        full_path=full_path.substr(0,full_path.find_last_of("/"));
+    }
+    */
+
+    //full_path = full_path+"/";
+
+    //cout << "full path : " << full_path << endl;
+    if (!full_path.compare(0,files_path.size(),files_path)){
+        chdir((tmp_dir).c_str());
         return "";
     }
     throw Exception(ERR_ACCESS_DENIED);
 }
 
+string Commands::cmd_cd_old(string cmd, unsigned int){
+    cmd = remove_spaces(cmd);
+    if (cmd=="") cmd = "/";
+    check_path(cmd);
+    string files_path = conf.getFilesPath();
+    files_path = files_path.substr(0,files_path.size());
+    if (cmd==".") return ""; // no need to do anything if 'cd .'
+    if (cmd[0]=='/'){
+        cmd=files_path + cmd;
+    }
+    cout << cmd << endl;
+    string arg = "`cd "+cmd+";pwd`";
+    cout << arg << endl;
+    char command0[] = "/bin/sh";
+    char arg00[] = "-c";
+    char *arg01 = &arg[0u];
+    char * const argv0[] = {command0, arg00, arg01, NULL};
+    char * const envp0[] = {NULL};
+
+    string res = call_cmd2(command0,argv0,envp0);
+    cout << res << endl;
+    const char* cd_error = "/bin/sh: 1: cd:";
+
+    if (!res.compare(0,strlen(cd_error),cd_error)){
+        string ret = "Error :"+res.substr(strlen(cd_error),res.find_first_of("\n"));
+        return ret;
+    }
+    const char * prep = "/bin/sh: 1: ";
+    if (!res.compare(0,strlen(prep),prep)){
+
+        char command1[] = "/bin/pwd";
+        char * const argv1[] = {command1, NULL};
+        char * const envp1[] = {NULL};
+
+        string old_path = call_cmd2(command1,argv1,envp1);
+        cout << "old path " << old_path << endl;
+        chdir((cmd).c_str());
+        string new_path = call_cmd2(command1,argv1,envp1);
+
+        //if (old_path==new_path) throw Exception(ERR_CD);
+
+        if (!new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
+            return "";
+        }
+        chdir((old_path).c_str());
+        throw Exception(ERR_ACCESS_DENIED);
+    } throw Exception(ERR_CD);
+}
+
 string Commands::cmd_mkdir(string cmd, unsigned int){
+    //TODO: correct error not accurate
     cmd = remove_front_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
@@ -321,11 +476,12 @@ string Commands::cmd_mkdir(string cmd, unsigned int){
     char * const envp[] = {NULL};
 
     string ret = call_cmd2(command,argv,envp);
-    if (ret!="") ret = ret.substr(5);
+    if (ret!="") ret = "Error :"+ret.substr(strlen(command)+1);
     return ret;
 }
 
 string Commands::cmd_rm(string cmd, unsigned int){
+    //TODO: correct error not accurate
     cmd = remove_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
@@ -337,7 +493,7 @@ string Commands::cmd_rm(string cmd, unsigned int){
     char * const envp[] = {NULL};
 
     string ret = call_cmd2(command,argv,envp);
-    if (ret!="") ret = ret.substr(5);
+    if (ret!="") ret = "Error :"+ret.substr(strlen(command)+1);
     return ret;
 }
 

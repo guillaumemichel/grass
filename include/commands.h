@@ -72,6 +72,8 @@ private:
 
     void check_path(string);
 
+    bool dir_exists(string, string);
+
     int return_error(int);
 
     string cmd_login(string cmd, unsigned int);
@@ -83,6 +85,8 @@ private:
     string cmd_ls(string, unsigned int);
 
     string cmd_cd(string cmd, unsigned int);
+
+    string cmd_cd_old(string cmd, unsigned int);
 
     string cmd_mkdir(string, unsigned int);
 
