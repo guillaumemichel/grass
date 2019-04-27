@@ -96,7 +96,7 @@ string Commands::sanitize(string full_cmd, unsigned int socket){
             Command(str_rm,     &Commands::cmd_rm),
             Command(str_get,    &Commands::cmd_get),
             Command(str_put,    &Commands::cmd_put),
-            Command(str_get,    &Commands::cmd_get),
+            Command(str_grep,    &Commands::cmd_grep),
             Command(str_date,   &Commands::cmd_date),
             Command(str_whoami, &Commands::cmd_whoami),
             Command(str_w,      &Commands::cmd_w),
@@ -400,7 +400,7 @@ string Commands::cmd_whoami(string, unsigned int socket){
 }
 
 string Commands::cmd_w(string, unsigned int){
-    std::stringstream users;
+    stringstream users;
     for(const User &u: auth.getAuthenticatedUsers())
         users << u.getName() << endl;
     return users.str().substr(0, users.str().size()-1);
