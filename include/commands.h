@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <errno.h>
 #include <fcntl.h>
+#include <regex>
 
 #include "exception.h"
 #include "Configuration.h"
