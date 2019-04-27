@@ -1,8 +1,5 @@
 login Acidburn
 pass CrashOverride
-ls
 put test.txt 30
-ls
-get test.txt
 ls
 exit
