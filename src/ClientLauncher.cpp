@@ -85,62 +85,17 @@ void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
         // Read the command
         command = client.readCommand();
 
-        // TODO : refactor put & get command (same stuff)
-        // TODO : create constant for command names
-        // If a file must be upload
-        if (command.substr(0, 3) == "put") {
-            string removePut = command.substr(command.find(" ") + 1);
-            string filename = removePut.substr(0, removePut.find(" "));
-            string size = removePut.substr(
-                    removePut.find(" ") + 1); // TODO : what if the size is not the same size of the file?
+        // Process it
+        returned = processCommand(client, command, serverIP);
 
-            // Send the command to the server
-            client.sendToServer(command);
-
-            // Wait for the server answer
-            string read = client.readFromServer();
-
-            // Parse the port number
-            cout << read << endl;
-            int port = stoi(read.substr(read.find(":") + 2));
-
-            // Upload the file
-            thread t1(ClientLauncher::uploadFile, filename, size, serverIP, port);
-            t1.detach();
-        } else if (command.substr(0, 3) == "get") {
-            string removePut = command.substr(command.find(" ") + 1);
-            string filename = removePut.substr(0, removePut.find(" "));
-
-            // Send the command to the server
-            client.sendToServer(command);
-
-            // Wait for the server answer
-            string read = client.readFromServer();
-
-            cout << read << endl;
-            // Check if the message has the expected form
-            if (read.substr(0, 3) == "get") {
-                int port = stoi(read.substr(read.find(":") + 2));
-                string withoutPort = read.substr(read.find(":") + 1);
-                int size = stoi(withoutPort.substr(withoutPort.find(":") + 2));
-
-                // Download the file
-                thread t1(ClientLauncher::downloadFile, filename, size, serverIP, port);
-                t1.detach();
-            }
-        } else {
-            // Send the command to the server
-            client.sendToServer(command);
-
-            // Read and print the result from the server
-            returned = client.readFromServer();
-            cout << returned;
-        }
+        // Print the result to the client
+        if (returned != "") cout << returned << endl;
     } while (returned.compare(str_bye));
 }
 
 
-vector<string> ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, vector <string> commands) {
+vector <string>
+ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, vector <string> commands) {
     cout << "Starting the client in the automated mode" << endl;
 
     // Instantiate a new client
@@ -158,60 +113,11 @@ vector<string> ClientLauncher::startClientAutomated(string serverIP, unsigned in
         // Get the command
         string command = *it;
 
-        // TODO : refactor put & get command (same stuff)
-        // TODO : create constant for command names
-        // If a file must be upload
-        if (command.substr(0, 3) == "put") {
-            string removePut = command.substr(command.find(" ") + 1);
-            string filename = removePut.substr(0, removePut.find(" "));
-            string size = removePut.substr(
-                    removePut.find(" ") + 1); // TODO : what if the size is not the same size of the file?
+        // Process the command
+        string fromServer = processCommand(client, command, serverIP);
 
-            // Send the command to the server
-            client.sendToServer(command);
-
-            // Wait for the server answer
-            string read = client.readFromServer();
-
-            // Parse the port number
-            cout << read << endl;
-            int port = stoi(read.substr(read.find(":") + 2));
-
-            // Upload the file
-            thread t1(ClientLauncher::uploadFile, filename, size, serverIP, port);
-            t1.detach();
-        } else if (command.substr(0, 3) == "get") {
-            string removePut = command.substr(command.find(" ") + 1);
-            string filename = removePut.substr(0, removePut.find(" "));
-
-            // Send the command to the server
-            client.sendToServer(command);
-
-            // Wait for the server answer
-            string read = client.readFromServer();
-
-            cout << read << endl;
-            // Check if the message has the expected form
-            if (read.substr(0, 3) == "get") {
-                int port = stoi(read.substr(read.find(":") + 2));
-                string withoutPort = read.substr(read.find(":") + 1);
-                int size = stoi(withoutPort.substr(withoutPort.find(":") + 2));
-
-                // Download the file
-                thread t1(ClientLauncher::downloadFile, filename, size, serverIP, port);
-                t1.detach();
-            }
-        } else {
-            // Send the command to the server
-            client.sendToServer(command);
-
-            // Read and print the result from the server
-            string fromServer = client.readFromServer();
-
-            // Remove the "\n" (i.e. shitty fix)
-            fromServer = fromServer.substr(0, fromServer.size()-1);
-
-            // Append it the vector
+        // Append it the vector
+        if (fromServer != "") {
             returned.push_back(std::move(fromServer));
         }
     }
@@ -219,6 +125,70 @@ vector<string> ClientLauncher::startClientAutomated(string serverIP, unsigned in
     cout << "Exiting the automated mode" << endl;
 
     return returned;
+}
+
+string ClientLauncher::processCommand(ClientSocket client, string command, string serverIP) {
+    // TODO : refactor put & get command (same stuff)
+    // TODO : create constant for command names
+    // If a file must be upload
+    if (command.substr(0, 3) == "put") {
+        string removePut = command.substr(command.find(" ") + 1);
+        string filename = removePut.substr(0, removePut.find(" "));
+        string size = removePut.substr(
+                removePut.find(" ") + 1); // TODO : what if the size is not the same size of the file?
+
+        // Send the command to the server
+        client.sendToServer(command);
+
+        // Wait for the server answer
+        string read = client.readFromServer();
+
+        // Parse the port number
+        cout << read << endl;
+        int port = stoi(read.substr(read.find(":") + 2));
+
+        // Upload the file
+        thread t1(ClientLauncher::uploadFile, filename, size, serverIP, port);
+        t1.join();
+
+        // Return empty strings for transfer operation
+        return "";
+    } else if (command.substr(0, 3) == "get") {
+        string removePut = command.substr(command.find(" ") + 1);
+        string filename = removePut.substr(0, removePut.find(" "));
+
+        // Send the command to the server
+        client.sendToServer(command);
+
+        // Wait for the server answer
+        string read = client.readFromServer();
+
+        cout << read << endl;
+        // Check if the message has the expected form
+        if (read.substr(0, 3) == "get") {
+            int port = stoi(read.substr(read.find(":") + 2));
+            string withoutPort = read.substr(read.find(":") + 1);
+            int size = stoi(withoutPort.substr(withoutPort.find(":") + 2));
+
+            // Download the file
+            thread t1(ClientLauncher::downloadFile, filename, size, serverIP, port);
+            t1.join();
+        }
+
+        // Return empty strings for transfer operation
+        return "";
+    } else {
+        // Send the command to the server
+        client.sendToServer(command);
+
+        // Read and print the result from the server
+        string fromServer = client.readFromServer();
+
+        // Remove the "\n" (i.e. shitty fix)
+        fromServer = fromServer.substr(0, fromServer.size() - 1);
+
+        return fromServer;
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -260,8 +230,8 @@ int main(int argc, char *argv[]) {
 
         try {
             // Checks if infile exists
-            FileReader fr(BASEPATH + inFile);
-            FileWriter fw(BASEPATH + outFile);
+            FileReader fr("./" + inFile);
+            FileWriter fw("./" + outFile);
 
             // Clear the output file
             fw.clearFile();
