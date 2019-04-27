@@ -188,7 +188,7 @@ void Commands::check_path(string str){
     }
 }
 
-bool Commands::dir_exists(string dir, string name){
+void Commands::dir_exists(string dir, string name){
     char command[] = "/bin/ls";
     char arg0[] = "-al";
     char * arg1 = &dir[0u];
@@ -198,15 +198,13 @@ bool Commands::dir_exists(string dir, string name){
     string ls = call_cmd2(command,argv,envp);
 
     int hit = ls.find(" "+name+"\n");
-    cout << hit << endl;
     if (hit<0){
-        return false;
+        throw Exception(ERR_CD);
     }
     int index = ls.substr(0,hit).find_last_of("\n")+1;
-    if (ls[index]=='d'){
-        return true;
+    if (ls[index]!='d'){
+        throw Exception(ERR_CD);
     }
-    return false;
 }
 
 string Commands::call_cmd(string str1){
@@ -352,9 +350,8 @@ string Commands::cmd_cd(string cmd, unsigned int){
         while(tmp_end[0]=='/'){
             tmp_end = tmp_end.substr(1);
         }
-        if (tmp_name != "/" && !dir_exists(tmp_dir,tmp_name.substr(1))){
-            return "Error: No directory doesn't exist "+cmd;
-        }
+        if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1));
+
         if (tmp_name == "/.."){
             tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
         } else {
@@ -365,11 +362,8 @@ string Commands::cmd_cd(string cmd, unsigned int){
         }
     }
 
-    if (!full_path.compare(0,files_path.size(),files_path)){
-        chdir((tmp_dir).c_str());
-        return "";
-    }
-    throw Exception(ERR_ACCESS_DENIED);
+    chdir((tmp_dir).c_str());
+    return "";
 }
 
 string Commands::cmd_cd_old(string cmd, unsigned int){

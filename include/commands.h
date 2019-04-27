@@ -72,7 +72,7 @@ private:
 
     void check_path(string);
 
-    bool dir_exists(string, string);
+    void dir_exists(string, string);
 
     int return_error(int);
 
