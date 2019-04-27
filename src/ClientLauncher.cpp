@@ -22,7 +22,7 @@ void ClientLauncher::downloadFile(string filename, unsigned int size, string ser
 }
 
 
-void ClientLauncher::uploadFile(string filename, string size, string serverIP, unsigned int port) {
+void ClientLauncher::uploadFile(string filename, string serverIP, unsigned int port) {
     cout << "Starting new thread to send the file to the server" << endl;
     ClientSocket client(serverIP, port);
 
@@ -134,8 +134,21 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
     if (command.substr(0, 3) == "put") {
         string removePut = command.substr(command.find(" ") + 1);
         string filename = removePut.substr(0, removePut.find(" "));
-        string size = removePut.substr(
-                removePut.find(" ") + 1); // TODO : what if the size is not the same size of the file?
+        int size = stoi(removePut.substr(removePut.find(" ") + 1));
+
+        // If size is below 0, then there is for sure a problem
+        if (size < 0) {
+            throw Exception(ERR_WRONG_FILE_SIZE);
+        }
+
+        // Cast into uint to be able to compare them with size_t
+        unsigned int apero = (unsigned int) size;
+
+        // Checks if the size given is the same as the one in the file
+        FileReader fr(filename);
+        if (fr.fileSize() != apero) {
+            throw Exception(ERR_WRONG_FILE_SIZE);
+        }
 
         // Send the command to the server
         client.sendToServer(command);
@@ -148,7 +161,7 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         int port = stoi(read.substr(read.find(":") + 2));
 
         // Upload the file
-        thread t1(ClientLauncher::uploadFile, filename, size, serverIP, port);
+        thread t1(ClientLauncher::uploadFile, filename, serverIP, port);
         t1.join();
 
         // Return empty strings for transfer operation

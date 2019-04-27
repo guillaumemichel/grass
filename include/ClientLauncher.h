@@ -44,7 +44,7 @@ public:
      * @param size the size of the file
      * @param port the port where the file should be send
      */
-    static void uploadFile(string filename, string size, string serverIP, unsigned int port);
+    static void uploadFile(string filename, string serverIP, unsigned int port);
 
     /**
      * Utils method to manage common stuff from upload and download such as connecting to the server, creating a new socket on the right port and much more.

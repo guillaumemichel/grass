@@ -184,7 +184,6 @@ void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigne
 
             // Create the string and write it to the file
             string line(buffer, size);
-            cout << " ---> " << line << endl;
             fw.writeLine(line, true);
 
             // Finally we clean and free the buffer

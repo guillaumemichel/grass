@@ -66,6 +66,7 @@ string ClientSocket::readFromServer() {
 }
 
 void ClientSocket::uploadFile(string filename) {
+    // TODO : change by conf.getPath()
     filename = "./" + filename;
     FileReader fileReader(filename);
 

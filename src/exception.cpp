@@ -20,6 +20,7 @@ string ERR_MESSAGES[] = {
     "file transfer failed.",
     "failed to run command.",
     "cannot cd there.",
+    "given size does not correspond to real size",
     "server path not defined.",
     "response too long!",
     "invalid address.",
