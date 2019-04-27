@@ -5,6 +5,8 @@
 #include <exception>
 #include <string>
 
+
+using namespace std;
 /*
  * - MAN to use custom exceptions
  * -- Throw excpetion with:
@@ -40,6 +42,9 @@ enum error_codes {
     ERR_TRANSFER_FAIL,
     ERR_FAIL_CMD,
     ERR_CD,
+    ERR_CD_NOT_DIR,
+    ERR_NO_FILE_DIR,
+    ERR_FILE_ALREADY_EXISTS,
     ERR_SERVER_PATH_NOT_SET,
     ERR_RESPONSE_TOO_LONG,
     ERR_NETWORK_BAD_ADDRESS,
@@ -60,10 +65,12 @@ class Exception : public std::exception
 {
 private:
   int code;
+  string message;
 
 public:
   Exception(int);
-  std::string print_error();
+  Exception(int, string);
+  string print_error();
 };
 
 #endif

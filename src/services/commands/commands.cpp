@@ -129,10 +129,7 @@ void Commands::require_no_parameters(string cmd){
 }
 
 string Commands::get_relative_path(){
-    char command[] = "/bin/pwd";
-    char * const argv[] = {command, NULL};
-    char * const envp[] = {NULL};
-    string current_folder = call_cmd2(command,argv,envp);
+    string current_folder = cmd_pwd();
 
     current_folder = current_folder.substr(0,current_folder.size()-1)+"/";
     string files_path = conf.getFilesPath();
@@ -188,55 +185,26 @@ void Commands::check_path(string str){
     }
 }
 
-void Commands::dir_exists(string dir, string name){
+void Commands::dir_exists(string dir, string name, string cmd){
     char command[] = "/bin/ls";
     char arg0[] = "-al";
     char * arg1 = &dir[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
 
-    string ls = call_cmd2(command,argv,envp);
+    string ls = call_cmd(command,argv,envp);
 
     int hit = ls.find(" "+name+"\n");
     if (hit<0){
-        throw Exception(ERR_CD);
+        throw Exception(ERR_NO_FILE_DIR,cmd);
     }
     int index = ls.substr(0,hit).find_last_of("\n")+1;
     if (ls[index]!='d'){
-        throw Exception(ERR_CD);
+        throw Exception(ERR_CD_NOT_DIR,cmd);
     }
 }
 
-string Commands::call_cmd(string str1){
-    //require_parameters(str1);
-    str1 += " 2>&1"; // to redirect stderr to stdout
-    const char *str2 = (str1).c_str();
-    /* Open the command for reading. */
-    FILE *fp;
-    fp = popen(str2, "r");
-    if (fp == NULL) {
-        throw Exception(ERR_FAIL_CMD);
-    }
-
-    char response[RESPONSE_MAX_SIZE];
-    response[0] = '\0';
-    char tmp[RESPONSE_LINE_SIZE];
-    size_t len = 0;
-    /* Read the output a line at a time - output it. */
-    while (fgets(tmp, RESPONSE_LINE_SIZE, fp)) {
-        len += strlen(tmp);
-        if (len >= RESPONSE_MAX_SIZE){
-            throw Exception(ERR_RESPONSE_TOO_LONG);
-        }
-        strncat(response, tmp, len);
-    }
-    pclose(fp);
-    if (response==NULL) throw Exception(ERR_NULL_POINTER);
-    str1.assign(response, len);
-    return str1;
-}
-
-string Commands::call_cmd2(const char* cmd, char * const argv[], char * const envp[]){
+string Commands::call_cmd(const char* cmd, char * const argv[], char * const envp[]){
 
     char buffer[RESPONSE_MAX_SIZE] = {0};
     int pipe0[2];
@@ -266,6 +234,14 @@ string Commands::call_cmd2(const char* cmd, char * const argv[], char * const en
     return string(buffer, strlen(buffer));
 }
 
+string Commands::cmd_pwd(){
+    char command[] = "/bin/pwd";
+    char * const argv[] = {command, NULL};
+    char * const envp[] = {NULL};
+
+    return Commands::call_cmd(command,argv,envp);
+}
+
 string Commands::cmd_login(string cmd, unsigned int socket){
     require_parameters(cmd);
     auth.registerUser(socket, cmd);
@@ -288,7 +264,7 @@ string Commands::cmd_ping(string cmd, unsigned int){
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
 
-    string ret = call_cmd2(command,argv,envp);
+    string ret = call_cmd(command,argv,envp);
     ret = ret.substr(0,ret.size()-1); // remove the 2nd '\n'
     return ret;
 }
@@ -300,7 +276,7 @@ string Commands::cmd_ls(string cmd, unsigned int){
     char * const argv[] = {command, arg, NULL};
     char * const envp[] = {NULL};
 
-    return call_cmd2(command,argv,envp);
+    return call_cmd(command,argv,envp);
 }
 
 string Commands::cmd_cd(string cmd, unsigned int){
@@ -315,11 +291,7 @@ string Commands::cmd_cd(string cmd, unsigned int){
     } else if (cmd[0]=='/'){
         full_path=files_path + cmd;
     } else {
-        char command0[] = "/bin/pwd";
-        char * const argv0[] = {command0, NULL};
-        char * const envp0[] = {NULL};
-
-        string pwd = call_cmd2(command0,argv0,envp0);
+        string pwd = cmd_pwd();
         full_path=pwd.substr(0,pwd.size()-1)+"/"+cmd;
     }
     while(full_path[full_path.size()-1]=='/'){
@@ -350,7 +322,7 @@ string Commands::cmd_cd(string cmd, unsigned int){
         while(tmp_end[0]=='/'){
             tmp_end = tmp_end.substr(1);
         }
-        if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1));
+        if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1),cmd);
 
         if (tmp_name == "/.."){
             tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
@@ -362,61 +334,11 @@ string Commands::cmd_cd(string cmd, unsigned int){
         }
     }
 
-    chdir((tmp_dir).c_str());
+    if (chdir((tmp_dir).c_str()) < 0) throw Exception(ERR_CD);
     return "";
 }
 
-string Commands::cmd_cd_old(string cmd, unsigned int){
-    cmd = remove_spaces(cmd);
-    if (cmd=="") cmd = "/";
-    check_path(cmd);
-    string files_path = conf.getFilesPath();
-    files_path = files_path.substr(0,files_path.size());
-    if (cmd==".") return ""; // no need to do anything if 'cd .'
-    if (cmd[0]=='/'){
-        cmd=files_path + cmd;
-    }
-    cout << cmd << endl;
-    string arg = "`cd "+cmd+";pwd`";
-    cout << arg << endl;
-    char command0[] = "/bin/sh";
-    char arg00[] = "-c";
-    char *arg01 = &arg[0u];
-    char * const argv0[] = {command0, arg00, arg01, NULL};
-    char * const envp0[] = {NULL};
-
-    string res = call_cmd2(command0,argv0,envp0);
-    cout << res << endl;
-    const char* cd_error = "/bin/sh: 1: cd:";
-
-    if (!res.compare(0,strlen(cd_error),cd_error)){
-        string ret = "Error :"+res.substr(strlen(cd_error),res.find_first_of("\n"));
-        return ret;
-    }
-    const char * prep = "/bin/sh: 1: ";
-    if (!res.compare(0,strlen(prep),prep)){
-
-        char command1[] = "/bin/pwd";
-        char * const argv1[] = {command1, NULL};
-        char * const envp1[] = {NULL};
-
-        string old_path = call_cmd2(command1,argv1,envp1);
-        cout << "old path " << old_path << endl;
-        chdir((cmd).c_str());
-        string new_path = call_cmd2(command1,argv1,envp1);
-
-        //if (old_path==new_path) throw Exception(ERR_CD);
-
-        if (!new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
-            return "";
-        }
-        chdir((old_path).c_str());
-        throw Exception(ERR_ACCESS_DENIED);
-    } throw Exception(ERR_CD);
-}
-
 string Commands::cmd_mkdir(string cmd, unsigned int){
-    //TODO: correct error not accurate
     cmd = remove_front_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
@@ -430,13 +352,12 @@ string Commands::cmd_mkdir(string cmd, unsigned int){
     char * const argv[] = {command, arg, NULL};
     char * const envp[] = {NULL};
 
-    string ret = call_cmd2(command,argv,envp);
-    if (ret!="") ret = "Error :"+ret.substr(strlen(command)+1);
+    string ret = call_cmd(command,argv,envp);
+    if (ret!="") throw Exception(ERR_FILE_ALREADY_EXISTS,cmd);
     return ret;
 }
 
 string Commands::cmd_rm(string cmd, unsigned int){
-    //TODO: correct error not accurate
     cmd = remove_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
@@ -447,8 +368,8 @@ string Commands::cmd_rm(string cmd, unsigned int){
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
 
-    string ret = call_cmd2(command,argv,envp);
-    if (ret!="") ret = "Error :"+ret.substr(strlen(command)+1);
+    string ret = call_cmd(command,argv,envp);
+    if (ret!="") throw Exception(ERR_NO_FILE_DIR, cmd);
     return ret;
 }
 
@@ -471,7 +392,7 @@ string Commands::cmd_date(string cmd, unsigned int){
     char * const argv[] = {command, NULL};
     char * const envp[] = {NULL};
 
-    return call_cmd2(command,argv,envp);
+    return call_cmd(command,argv,envp);
 }
 
 string Commands::cmd_whoami(string, unsigned int socket){

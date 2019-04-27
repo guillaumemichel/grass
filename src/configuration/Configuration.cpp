@@ -63,7 +63,7 @@ map<string, string> Configuration::getUsers() const {
 }
 
 void Configuration::setFilesPath(){
-    string pwd=Commands::call_cmd(str_pwd);
+    string pwd = Commands::cmd_pwd();
     filesPath = pwd.substr(0,pwd.size()-1)+filesDir;
     set = true;
 }

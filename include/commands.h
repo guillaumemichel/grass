@@ -43,10 +43,9 @@ public:
 
     string exec(string, unsigned int);
 
-    static string call_cmd(string);
+    static string call_cmd(const char*, char * const *, char * const *);
 
-    static string call_cmd2(const char*, char * const *, char * const *);
-
+    static string cmd_pwd();
 
 private:
 
@@ -72,7 +71,7 @@ private:
 
     void check_path(string);
 
-    void dir_exists(string, string);
+    void dir_exists(string, string, string);
 
     int return_error(int);
 
@@ -85,8 +84,6 @@ private:
     string cmd_ls(string, unsigned int);
 
     string cmd_cd(string cmd, unsigned int);
-
-    string cmd_cd_old(string cmd, unsigned int);
 
     string cmd_mkdir(string, unsigned int);
 
