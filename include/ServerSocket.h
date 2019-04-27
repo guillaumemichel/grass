@@ -43,7 +43,7 @@ public:
      * @param userSocket the socket to read the commands from
      * @param conf the configuration of the server
      */
-    void readFromUserSocket(int userSocket, Commands commands);
+    void readFromUserSocket(int userSocket, Commands &commands);
 
     /**
      * Sends a message to a socket.

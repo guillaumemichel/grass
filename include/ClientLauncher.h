@@ -81,4 +81,7 @@ public:
      * @return a vector of string containing what the server returned
      */
     vector<string> startClientAutomated(string serverIP, unsigned int port, vector<string> commands);
+
+private:
+    string processCommand(ClientSocket client, string command, string serverIP);
 };

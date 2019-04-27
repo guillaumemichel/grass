@@ -8,9 +8,6 @@
 #include "../../include/FileWriter.h"
 
 FileWriter::FileWriter(string filename) {
-    // Add the basepath to the filename
-
-    // TODO : what to do if the file already exists ? Destroy it and create a new one?
     this->filename = std::move(filename);
 }
 
@@ -47,7 +44,8 @@ void FileWriter::clearFile() {
     ofstream file(this->filename);
 
     // Check the file was properly opened
-    if (!file) {
+    if (!file.is_open()) {
+        perror("open");
         throw Exception(ERR_CANNOT_OPEN_FILE);
     }
 

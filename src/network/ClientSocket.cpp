@@ -66,7 +66,7 @@ string ClientSocket::readFromServer() {
 }
 
 void ClientSocket::uploadFile(string filename) {
-    filename = BASEPATH + filename;
+    filename = "./" + filename;
     FileReader fileReader(filename);
 
     // We first read the file

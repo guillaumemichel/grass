@@ -16,9 +16,7 @@ using namespace std;
 
 
 // TODO : replace by constant
-#define BASEPATH "/home/alex/Documents/EPFL/SoftSec/Project/ass_on_the_grass/"
-#define UPLOAD_BASEPATH "/home/alex/Documents/EPFL/SoftSec/Project/ass_on_the_grass/upload/"
-#define DOWNLOAD_BASEPATH "/home/alex/Documents/EPFL/SoftSec/Project/ass_on_the_grass/download/"
+#define DOWNLOAD_BASEPATH "./download/"
 
 class File {
 public:
@@ -28,7 +26,6 @@ public:
      * @return the size of the file.
      */
     size_t fileSize() const;
-
 protected:
     /**
      * String storing the filename of the file.
