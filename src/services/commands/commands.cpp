@@ -303,7 +303,9 @@ string Commands::cmd_rm(string cmd, unsigned int){
 
 // TODO : check correctness of parameters for get and put
 string Commands::cmd_get(string cmd, unsigned int){
+    cmd = remove_front_spaces(cmd);
     require_parameters(cmd);
+    check_filename(cmd);
 
     // Get the filename
     string separator = cmd.substr(cmd.find(" ") + 1);

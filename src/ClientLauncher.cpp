@@ -89,7 +89,7 @@ void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
         returned = processCommand(client, command, serverIP);
 
         // Print the result to the client
-        cout << returned << endl;
+        if (returned != "") cout << returned << endl;
     } while (returned.compare(str_bye));
 }
 
