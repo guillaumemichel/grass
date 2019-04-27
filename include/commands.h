@@ -63,6 +63,8 @@ private:
 
     void require_no_parameters(string);
 
+    string get_relative_path();
+
     void check_hostname(string);
 
     void check_filename(string);
