@@ -112,7 +112,7 @@ void ClientSocket::downloadFile(string filename, unsigned int size) {
         if (read(this->sock, buffer, size) > 0) {
             // Create the string and write it to the file
             string line(buffer, size);
-            fw.writeLine(line);
+            fw.writeLine(line, true);
         } else {
             throw Exception(ERR_NETWORK_READ_SOCKET);
         }

@@ -85,11 +85,18 @@ void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
         // Read the command
         command = client.readCommand();
 
-        // Process it
-        returned = processCommand(client, command, serverIP);
+        try {
+            // Tries to process it
+            returned = processCommand(client, command, serverIP);
 
-        // Print the result to the client
-        if (returned != "") cout << returned << endl;
+            // Print the result to the client
+            if (returned != "") {
+                cout << returned << endl;
+            }
+        } catch (Exception &e) {
+            e.print_error();
+        }
+
     } while (returned.compare(str_bye));
 }
 
@@ -113,12 +120,20 @@ ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, v
         // Get the command
         string command = *it;
 
-        // Process the command
-        string fromServer = processCommand(client, command, serverIP);
+        try {
+            // Process the command
+            string fromServer = processCommand(client, command, serverIP);
 
-        // Append it the vector
-        if (fromServer != "") {
-            returned.push_back(std::move(fromServer));
+            // Append it the vector
+            if (fromServer != "") {
+                returned.push_back(std::move(fromServer));
+            }
+        } catch (Exception &e) {
+            // TODO : append error to file or not?
+            string ex = e.print_error();
+            // Remove the \n
+            ex = ex.substr(0, ex.size() - 1);
+            returned.push_back(std::move(ex));
         }
     }
 
