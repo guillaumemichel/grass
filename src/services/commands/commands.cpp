@@ -52,18 +52,15 @@ Commands::Commands(const Configuration config): conf(config), auth(config) {
     string pwd = cmd_pwd();
     pwd = pwd.substr(0,pwd.size()-1);
     //TODO: check empty base
-    cout << "base : " << base << endl;
     if (base == "") path = pwd;
     else {
         if (base[0]=='/') base = base.substr(1);
         if (base[base.size()-1]=='/') base = base.substr(0,base.size()-1);
-        cout << "base : " << base << endl;
         if (base==".") path = pwd;
         else {
             path = pwd + "/" + base;
         }
     }
-    cout << "base : " << path << endl;
 }
 
 string Commands::exec(string cmd, unsigned int socket){
@@ -221,12 +218,9 @@ void Commands::set_user_path(string new_path, unsigned int socket){
 string Commands::get_relative_path(unsigned int socket){
     string full_path = get_full_path(socket);
     string files_path = get_files_path(socket);
-    cout << "full_path : " << full_path << endl;
-    cout << "files_path : " << files_path << endl;
     if (full_path.compare(0,files_path.size(),files_path,0,files_path.size())){
         throw Exception(ERR_ACCESS_DENIED);
     }
-    cout << "ok" << endl;
     if (full_path==files_path) return "";
     return full_path.substr(files_path.size());
 }
@@ -319,7 +313,6 @@ string Commands::cmd_ls(string cmd, unsigned int socket){
     require_no_parameters(cmd);
     char command[] = "/bin/ls";
     string full_path = get_full_path(socket);
-    cout << full_path << endl;
     char arg0[] = "-l";
     char *arg1 = &full_path[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
@@ -388,13 +381,10 @@ string Commands::cmd_mkdir(string cmd, unsigned int socket){
     cmd = remove_front_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
-    cout << "ok" << endl;
     string current_folder = get_relative_path(socket);
-    cout << "ok" << endl;
     if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
         throw Exception(ERR_PATH_TOO_LONG);
     }
-    cout << "ok" << endl;
     string curr_path = get_full_path(socket)+"/"+cmd;
     char command[] = "/bin/mkdir";
     char *arg = &curr_path[0u];
@@ -402,7 +392,6 @@ string Commands::cmd_mkdir(string cmd, unsigned int socket){
     char * const envp[] = {NULL};
 
     string ret = call_cmd(command,argv,envp);
-    cout << "ok" << endl;
 
     if (ret!="") throw Exception(ERR_FILE_ALREADY_EXISTS,cmd);
     return ret;
