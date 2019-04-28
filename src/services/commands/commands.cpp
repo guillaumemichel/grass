@@ -151,10 +151,6 @@ string Commands::get_full_path(int socket){
 
 void Commands::set_user_path(string new_path, int socket){
     User user = auth.getUser(socket);
-    if (testUser == NULL)
-      testUser = &user;
-    else if (testUser != &user)
-      cerr << "erreur set";
 
     string files_path = getFilesPath(socket);
     if (new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
@@ -162,11 +158,12 @@ void Commands::set_user_path(string new_path, int socket){
     }
     if (files_path == new_path){
         user.setPath(user.getFilesPath());
+        auth.setUser(socket, user);
     } else {
         new_path = new_path.substr(path.size());
         user.setPath(new_path);
+        auth.setUser(socket, user);
     }
-
 }
 
 void Commands::require_parameters(string cmd){

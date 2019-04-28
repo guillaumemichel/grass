@@ -6,7 +6,7 @@ using namespace std;
 User::User(const string name, unsigned int socketID): name(name) {
     authenticated = false;
     path = "/" + to_string(socketID);
-    files_path=path;
+    files_path = path;
 }
 
 void User::setAuthenticated(bool status) {
@@ -22,13 +22,11 @@ string User::getName() const {
 }
 
 void User::setPath(string new_path) {
-    this->path = new_path;
-    cout << this->path << endl;
+    path = new_path;
 }
 
-string User::getPath(){
-    cout << this->path << endl;
-    return this->path;
+string User::getPath() {
+    return path;
 }
 
 string User::getFilesPath() {

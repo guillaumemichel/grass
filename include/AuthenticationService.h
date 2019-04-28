@@ -55,6 +55,13 @@ public:
     User getUser(const unsigned int socketID);
 
     /**
+     * Updates the user at the given socketID.
+     * @param socketID The socket identifier we want to update the user to
+     * @param user The new user
+     */
+    void setUser(const unsigned int socketID, User user);
+
+    /**
      * Returns all connected users.
      * This means all users that have been registered to the authentication service and that have been successfully logged in.
      * @return The list of all logged in users
