@@ -35,8 +35,9 @@ public:
      * Appends a line to the file.
      *
      * @param line to be written
+     * @param true if a "\n" must be appended to the line and false if not
      */
-    void writeLine(string line);
+    void writeLine(string line, bool = false);
 
     /**
      * Empties the file.

@@ -22,7 +22,7 @@ void ClientLauncher::downloadFile(string filename, unsigned int size, string ser
 }
 
 
-void ClientLauncher::uploadFile(string filename, string size, string serverIP, unsigned int port) {
+void ClientLauncher::uploadFile(string filename, string serverIP, unsigned int port) {
     cout << "Starting new thread to send the file to the server" << endl;
     ClientSocket client(serverIP, port);
 
@@ -85,11 +85,18 @@ void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
         // Read the command
         command = client.readCommand();
 
-        // Process it
-        returned = processCommand(client, command, serverIP);
+        try {
+            // Tries to process it
+            returned = processCommand(client, command, serverIP);
 
-        // Print the result to the client
-        if (returned != "") cout << returned << endl;
+            // Print the result to the client
+            if (returned != "") {
+                cout << returned << endl;
+            }
+        } catch (Exception &e) {
+            e.print_error();
+        }
+
     } while (returned.compare(str_bye));
 }
 
@@ -113,12 +120,20 @@ ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, v
         // Get the command
         string command = *it;
 
-        // Process the command
-        string fromServer = processCommand(client, command, serverIP);
+        try {
+            // Process the command
+            string fromServer = processCommand(client, command, serverIP);
 
-        // Append it the vector
-        if (fromServer != "") {
-            returned.push_back(std::move(fromServer));
+            // Append it the vector
+            if (fromServer != "") {
+                returned.push_back(std::move(fromServer));
+            }
+        } catch (Exception &e) {
+            // TODO : append error to file or not?
+            string ex = e.print_error();
+            // Remove the \n
+            ex = ex.substr(0, ex.size() - 1);
+            returned.push_back(std::move(ex));
         }
     }
 
@@ -134,8 +149,21 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
     if (command.substr(0, 3) == "put") {
         string removePut = command.substr(command.find(" ") + 1);
         string filename = removePut.substr(0, removePut.find(" "));
-        string size = removePut.substr(
-                removePut.find(" ") + 1); // TODO : what if the size is not the same size of the file?
+        int size = stoi(removePut.substr(removePut.find(" ") + 1));
+
+        // If size is below 0, then there is for sure a problem
+        if (size < 0) {
+            throw Exception(ERR_WRONG_FILE_SIZE);
+        }
+
+        // Cast into uint to be able to compare them with size_t
+        unsigned int apero = (unsigned int) size;
+
+        // Checks if the size given is the same as the one in the file
+        FileReader fr(filename);
+        if (fr.fileSize() != apero) {
+            throw Exception(ERR_WRONG_FILE_SIZE);
+        }
 
         // Send the command to the server
         client.sendToServer(command);
@@ -148,7 +176,7 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         int port = stoi(read.substr(read.find(":") + 2));
 
         // Upload the file
-        thread t1(ClientLauncher::uploadFile, filename, size, serverIP, port);
+        thread t1(ClientLauncher::uploadFile, filename, serverIP, port);
         t1.join();
 
         // Return empty strings for transfer operation
