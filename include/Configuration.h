@@ -18,12 +18,10 @@ using namespace std;
 class Configuration {
 private:
     const string fileName;
-    const string filesDir="/files";
     vector<string> getEntriesWithKey(const string key) const;
     string removeKeyInLine(string, string) const;
     string extractStringValue(string) const;
     bool set;
-    string filesPath;
 
 public:
     explicit Configuration(const string);
@@ -45,10 +43,6 @@ public:
      * @return User-password associations
      */
     map<string, string> getUsers() const;
-
-    void setFilesPath();
-
-    string getFilesPath();
 };
 
 #endif //ASS_ON_THE_GRASS_CONFIGURATION_H
