@@ -95,6 +95,8 @@ void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
             }
         } catch (Exception &e) {
             e.print_error();
+        } catch (exception &e) {
+            cout << "Error: invalid arguments." << endl;
         }
 
     } while (returned.compare(str_bye));
@@ -134,6 +136,8 @@ ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, v
             // Remove the \n
             ex = ex.substr(0, ex.size() - 1);
             returned.push_back(std::move(ex));
+        } catch (exception &e) {
+            cout << "Error: invalid arguments." << endl;
         }
     }
 
@@ -157,11 +161,11 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         }
 
         // Cast into uint to be able to compare them with size_t
-        unsigned int apero = (unsigned int) size;
+        unsigned int size_u = (unsigned int) size;
 
         // Checks if the size given is the same as the one in the file
         FileReader fr(filename);
-        if (fr.fileSize() != apero) {
+        if (fr.fileSize() != size_u) {
             throw Exception(ERR_WRONG_FILE_SIZE);
         }
 
@@ -182,8 +186,11 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         // Return empty strings for transfer operation
         return "";
     } else if (command.substr(0, 3) == "get") {
-        string removePut = command.substr(command.find(" ") + 1);
-        string filename = removePut.substr(0, removePut.find(" "));
+        string removeGet = command.substr(command.find(" ") + 1);
+        if (removeGet == "" || removeGet == "get") {
+            throw Exception(ERR_INVALID_ARGS);
+        }
+        string filename = removeGet.substr(0, removeGet.find(" "));
 
         // Send the command to the server
         client.sendToServer(command);
@@ -283,6 +290,8 @@ int main(int argc, char *argv[]) {
             clientLauncher.startClient(serverIP, serverPort);
         } catch (Exception &e) {
             e.print_error();
+        } catch (exception &e) {
+            cout << "An unknown error has happened." << endl;
         }
     }
     return 0;
