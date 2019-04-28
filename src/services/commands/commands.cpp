@@ -49,13 +49,15 @@ Commands::Commands(const Configuration config): conf(config), auth(config) {
     //TODO: merge with cd to have a correct path
     //base should not end with a /
     string base = config.getBase();
-    //TODO: check empty base
-    if (base[0]=='/') base = base.substr(1);
-    if (base[base.size()-1]=='/') base = base.substr(0,base.size()-1);
     string pwd = cmd_pwd();
-    pwd = pwd.substr(0,pwd.size()-1);
-    if (base==".") path = pwd;
-    else path = pwd + "/" + base;
+    //TODO: check empty base
+    if (base == "" || base==".") path = pwd;
+    else {
+        if (base[0]=='/') base = base.substr(1);
+        if (base[base.size()-1]=='/') base = base.substr(0,base.size()-1);
+        pwd = pwd.substr(0,pwd.size()-1);
+        path = pwd + "/" + base;
+    }
 }
 
 string Commands::exec(string cmd, unsigned int socket){
