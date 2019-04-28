@@ -18,7 +18,6 @@ using namespace std;
 class Configuration {
 private:
     const string fileName;
-    const string filesDir="/files";
     vector<string> getEntriesWithKey(const string key) const;
     string removeKeyInLine(string, string) const;
     string extractStringValue(string) const;
@@ -48,7 +47,7 @@ public:
 
     void setFilesPath();
 
-    string getFilesPath();
+    string getFilesPath(int);
 };
 
 #endif //ASS_ON_THE_GRASS_CONFIGURATION_H

@@ -64,10 +64,10 @@ map<string, string> Configuration::getUsers() const {
 
 void Configuration::setFilesPath(){
     string pwd = Commands::cmd_pwd();
-    filesPath = pwd.substr(0,pwd.size()-1)+filesDir;
+    filesPath = pwd.substr(0,pwd.size()-1);
     set = true;
 }
-string Configuration::getFilesPath(){
+string Configuration::getFilesPath(int socket){
     if (!set) throw Exception(ERR_SERVER_PATH_NOT_SET);
-    return filesPath;
+    return filesPath+"/"+to_string(socket);
 }

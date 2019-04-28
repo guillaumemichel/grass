@@ -38,14 +38,24 @@ public:
   string (Commands::*fct)(string, unsigned int);
 
   Command(string str0, string (Commands::*fct0)(string, unsigned int)){
-  //Command(string str0, string (*fct0)(string, unsigned int)){
     str = str0;
     fct = fct0;
   }
 };
 
 Commands::Commands(const Configuration config): conf(config), auth(config) {
-  this->path = config.getBase();
+
+    //TODO: merge with cd to have a correct path
+    //base should not end with a /
+    string base = config.getBase();
+    //TODO: check empty base
+    if (base[0]=='/') base = base.substr(1);
+    if (base[base.size()-1]=='/') base = base.substr(0,base.size()-1);
+    string pwd = cmd_pwd();
+    pwd = pwd.substr(0,pwd.size()-1);
+    if (base==".") path = pwd;
+    else path = pwd + "/" + base;
+    cout << path << endl;
 }
 
 
@@ -57,36 +67,33 @@ Commands::Commands(const Configuration config): conf(config), auth(config) {
  * @return              0 for success, 1 for exit, <0 for failure
  */
 string Commands::exec(string cmd, unsigned int socket){
-    // Volatile otherwise it will be (wrongly) optimized
-    volatile bool cleared = true;
 
-  try{
-    if (cmd==str_nodata) return cmd;
+    try{
+        if (cmd==str_nodata) return cmd;
 
+    /*
     // TODO : waw
     if (strncmp(cmd.c_str(), str_login.c_str(), str_login.size()) != 0 && strncmp(cmd.c_str(), str_pass.c_str(), str_pass.size()) != 0) {
         chdir((this->path + to_string(socket) + "/").c_str());
+        cout << cmd_pwd()<<endl;
         cleared = false;
     }
-    string response = sanitize(cmd, socket);
 
     if (strncmp(cmd.c_str(), str_login.c_str(), str_login.size()) != 0 && strncmp(cmd.c_str(), str_pass.c_str(), str_pass.size()) != 0) {
         chdir("../");
         cleared = true;
-    }
+    }*/
 
-    if (response=="") {
-      return str_nodata;
+    string response = sanitize(cmd, socket);
+
+        if (response=="") {
+            return str_nodata;
+        }
+        if (response[response.size()-1]!='\n') response += '\n';
+        return response;
+    } catch(Exception& e) {
+        return e.print_error();
     }
-    if (response[response.size()-1]!='\n') response += '\n';
-    return response;
-  }
-  catch(Exception& e){
-      if (!cleared) {
-          chdir("../");
-      }
-    return e.print_error();
-  }
 }
 
 string Commands::remove_spaces(string input){
@@ -125,7 +132,6 @@ string Commands::sanitize(string full_cmd, unsigned int socket){
             Command(str_exit,   &Commands::cmd_exit)
     };
 
-  //full_cmd = full_cmd.substr(0, full_cmd.find_first_of('\0'));
   int pos = full_cmd.find_first_of((break_characters).c_str(),0);
   string cmd = full_cmd.substr(0,pos);
 
@@ -142,6 +148,14 @@ string Commands::sanitize(string full_cmd, unsigned int socket){
   throw Exception(ERR_INVALID_CMD);
 }
 
+string Commands::getFilesPath(int socket){
+    return this->path + to_string(socket);
+}
+
+string Commands::get_full_path(int socket){
+    return path + auth.getUser(socket).getPath();
+}
+
 void Commands::require_parameters(string cmd){
     if (cmd=="") throw Exception(ERR_INVALID_ARGS);
 }
@@ -149,11 +163,11 @@ void Commands::require_no_parameters(string cmd){
     if (cmd!="") throw Exception(ERR_INVALID_ARGS);
 }
 
-string Commands::get_relative_path(){
+string Commands::get_relative_path(int socket){
     string current_folder = cmd_pwd();
 
     current_folder = current_folder.substr(0,current_folder.size()-1)+"/";
-    string files_path = conf.getFilesPath();
+    string files_path = conf.getFilesPath(socket);
     if (current_folder.compare(0,files_path.size(),files_path,0,files_path.size())){
         throw Exception(ERR_ACCESS_DENIED);
     }
@@ -290,21 +304,22 @@ string Commands::cmd_ping(string cmd, unsigned int){
     return ret;
 }
 
-string Commands::cmd_ls(string cmd, unsigned int){
+string Commands::cmd_ls(string cmd, unsigned int socket){
     require_no_parameters(cmd);
     char command[] = "/bin/ls";
-    char arg[] = "-l";
-    char * const argv[] = {command, arg, NULL};
+    string path = get_full_path(socket);
+    char arg0[] = "-l";
+    char *arg1 = &path[0u];
+    char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
-
     return call_cmd(command,argv,envp);
 }
 
-string Commands::cmd_cd(string cmd, unsigned int){
+string Commands::cmd_cd(string cmd, unsigned int socket){
     cmd = remove_spaces(cmd);
     if (cmd=="") cmd = "/";
     check_path(cmd);
-    string files_path = conf.getFilesPath();
+    string files_path = conf.getFilesPath(socket);
     string full_path;
     if (cmd==".") return ""; // no need to do anything if 'cd .'
     else if (cmd == "/") {
@@ -321,7 +336,7 @@ string Commands::cmd_cd(string cmd, unsigned int){
     size_t divider = full_path.find_last_of("/");
     string curr_dir = full_path.substr(0,divider);
     string name = full_path.substr(divider+1);
-    string tmp_dir=conf.getFilesPath();
+    string tmp_dir = conf.getFilesPath(socket);
     if (full_path.size()<tmp_dir.size() || full_path.compare(0,files_path.size(),files_path)){
         throw Exception(ERR_ACCESS_DENIED);
     }
@@ -332,7 +347,6 @@ string Commands::cmd_cd(string cmd, unsigned int){
         tmp_end = tmp_end.substr(1);
     }
     string tmp_name;
-
     int index;
     while ((index=tmp_end.find_first_of("/"))>0){
         while(tmp_end[0]=='/'){
@@ -354,16 +368,17 @@ string Commands::cmd_cd(string cmd, unsigned int){
             throw Exception(ERR_ACCESS_DENIED);
         }
     }
-
-    if (chdir((tmp_dir).c_str()) < 0) throw Exception(ERR_CD);
+    cout  << tmp_dir << endl;
+    this->path = tmp_dir;
+    //if (chdir((tmp_dir).c_str()) < 0) throw Exception(ERR_CD);
     return "";
 }
 
-string Commands::cmd_mkdir(string cmd, unsigned int){
+string Commands::cmd_mkdir(string cmd, unsigned int socket){
     cmd = remove_front_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
-    string current_folder = get_relative_path();
+    string current_folder = get_relative_path(socket);
     if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
         throw Exception(ERR_PATH_TOO_LONG);
     }
@@ -409,7 +424,7 @@ string Commands::cmd_get(string cmd, unsigned int){
     return filename;
 }
 
-string Commands::cmd_put(string cmd, unsigned int){
+string Commands::cmd_put(string cmd, unsigned int socket){
   // TODO : check if space is present for substr
 
   cmd = remove_front_spaces(cmd);
@@ -419,7 +434,7 @@ string Commands::cmd_put(string cmd, unsigned int){
   check_filename(filename);
 
   // TODO : marche pas
-  /*string current_folder = get_relative_path();
+  /*string current_folder = get_relative_path(socket);
   if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
       throw Exception(ERR_PATH_TOO_LONG);
   }*/

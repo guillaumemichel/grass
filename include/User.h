@@ -11,7 +11,7 @@ using namespace std;
 
 class User {
 public:
-    User(const string name);
+    User(const string name, unsigned int socketID);
 
     /**
      * Sets the authentication status of the user.
@@ -31,8 +31,22 @@ public:
      */
     string getName() const;
 
+    /**
+     * Set the current path of the user
+     * @param  new_path the new path that will replace the old once
+     */
+    void setPath(string new_path);
+
+    /**
+     * Get the current path of the user
+     * @return the current path of the user
+     */
+    string getPath();
+
+
 private:
     bool authenticated;
     const string name;
+    string path;
 };
 #endif

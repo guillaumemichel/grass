@@ -56,17 +56,21 @@ private:
 
     string path;
 
+    string getFilesPath(int);
+
+    string get_full_path(int);
+
     string remove_spaces(string);
 
     string remove_front_spaces(string);
 
-    string sanitize(string full_cmd, unsigned int socket);
+    string sanitize(string, unsigned int);
 
     void require_parameters(string);
 
     void require_no_parameters(string);
 
-    string get_relative_path();
+    string get_relative_path(int);
 
     void check_hostname(string);
 

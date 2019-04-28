@@ -12,9 +12,9 @@ AuthenticationService::AuthenticationService(const Configuration &config): confi
     users = {};
 }
 
-void AuthenticationService::registerUser(unsigned int socketID, string name) {
+    void AuthenticationService::registerUser(unsigned int socketID, string name) {
    if(users.find(socketID) != users.end()) { logout(socketID); }
-   User u(name);
+   User u(name,socketID);
    u.setAuthenticated(false);
    mtx.lock();
    users.insert({socketID, u});
@@ -44,7 +44,7 @@ User AuthenticationService::getUser(const unsigned int socketID) {
     if(users.find(socketID) != users.end()) {
         return users.find(socketID)->second;
     }
-    return User("Anonymous");
+    return User("Anonymous",socketID);
 }
 
 vector<User> AuthenticationService::getAuthenticatedUsers() {

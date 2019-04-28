@@ -29,6 +29,7 @@ void connectClient(int userSocket, ServerSocket server, Commands &commands) {
 
     // Creates a new directory for the client
     string command = "mkdir " + dir;
+    //TODO: remove system
     system(command.c_str());
 
     // This function exists when the "exit" command is received
@@ -38,6 +39,7 @@ void connectClient(int userSocket, ServerSocket server, Commands &commands) {
 
     // Remove the directory of the client
     command = "rm -rf " + conf.getBase() + to_string(userSocket);
+    //TODO: remove system
     system(command.c_str());
 }
 
