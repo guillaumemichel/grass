@@ -135,8 +135,6 @@ void Commands::set_user_path(string new_path, int socket){
         new_path = new_path.substr(path.size());
         user.setPath(new_path);
         auth.setUser(socket, user);
-    }
-
 string Commands::remove_front_spaces(string input){
   size_t len = strlen((input).c_str());
   size_t i=0;
