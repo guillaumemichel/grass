@@ -173,7 +173,7 @@ private:
      * @param  string        the new path to update to old one
      * @param  socketID      the socket identifier to identify the user
      */
-    void set_user_path(string, unsigned int socketID);
+    void set_user_path(string new_path, unsigned int socketID);
 
     /**
      * Return the current path of the user relative to the user's files directory

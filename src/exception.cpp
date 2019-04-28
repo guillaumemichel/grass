@@ -23,6 +23,7 @@ string ERR_MESSAGES[] = {
     "not a directory",
     "no such file or directory",
     "file already exists",
+    "given size does not correspond to real size",
     "server path not defined.",
     "response too long!",
     "invalid address.",

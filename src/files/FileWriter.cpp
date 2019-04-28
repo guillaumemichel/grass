@@ -20,7 +20,7 @@ void FileWriter::write(std::vector <std::string> data) {
     }
 }
 
-void FileWriter::writeLine(string line) {
+void FileWriter::writeLine(string line, bool bypassNewLine) {
     // Create a file that is writable
     // Using the ios::app to make data appendable
     ofstream file(this->filename, ios::app);
@@ -31,7 +31,9 @@ void FileWriter::writeLine(string line) {
     }
 
     // Add the return otherwise it just overwrites the file
-    line += "\n";
+    if (!bypassNewLine) {
+        line += "\n";
+    }
 
     // Write it to the file
     file << line;

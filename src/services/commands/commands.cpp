@@ -122,11 +122,17 @@ string Commands::remove_spaces(string input){
   return output;
 }
 
-<<<<<<< HEAD
-void Commands::set_user_path(string new_path, int socket){
+string Commands::remove_front_spaces(string input){
+  size_t len = strlen((input).c_str());
+  size_t i=0;
+  for (; i < len && isspace(input[i]); ++i){}
+  return input.substr(i);
+}
+
+/*void Commands::set_user_path(string new_path, unsigned int socket){
     User user = auth.getUser(socket);
 
-    string files_path = getFilesPath(socket);
+    string files_path = get_files_path(socket);
     if (new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
         throw Exception(ERR_ACCESS_DENIED);
     }
@@ -137,12 +143,8 @@ void Commands::set_user_path(string new_path, int socket){
         new_path = new_path.substr(path.size());
         user.setPath(new_path);
         auth.setUser(socket, user);
-string Commands::remove_front_spaces(string input){
-  size_t len = strlen((input).c_str());
-  size_t i=0;
-  for (; i < len && isspace(input[i]); ++i){}
-  return input.substr(i);
-}
+    }
+}*/
 
 void Commands::require_parameters(string cmd){
     if (cmd=="") throw Exception(ERR_INVALID_ARGS);
@@ -194,16 +196,12 @@ string Commands::get_full_path(unsigned int socket){
     if (testUser == NULL)
       testUser = &user;
     else if (testUser != &user)
-      cerr << "erreur get";
+      cerr << "error get";
     return path + user.getPath();
 }
 
 void Commands::set_user_path(string new_path, unsigned int socket){
     User user = auth.getUser(socket);
-    if (testUser == NULL)
-      testUser = &user;
-    else if (testUser != &user)
-      cerr << "erreur set";
 
     string files_path = get_files_path(socket);
     if (new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
@@ -211,12 +209,14 @@ void Commands::set_user_path(string new_path, unsigned int socket){
     }
     if (files_path == new_path){
         user.setPath(user.getFilesPath());
+        auth.setUser(socket, user);
     } else {
         new_path = new_path.substr(path.size());
         user.setPath(new_path);
+        auth.setUser(socket, user);
     }
-
 }
+
 
 string Commands::get_relative_path(unsigned int socket){
     string full_path = get_full_path(socket);
