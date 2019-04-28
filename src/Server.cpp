@@ -12,6 +12,7 @@
 #include "../include/grass.h"
 #include "../include/ServerSocket.h"
 #include "../include/Configuration.h"
+#include "../include/commands.h"
 
 using namespace std;
 
@@ -28,8 +29,12 @@ void connectClient(int userSocket, ServerSocket server, Commands &commands) {
     string dir = conf.getBase() + to_string(userSocket) + "/";
 
     // Creates a new directory for the client
-    string command = "mkdir " + dir;
-    system(command.c_str());
+    char command0[] = "/bin/mkdir";
+    char *arg0 = &dir[0u];
+    char * const argv0[] = {command0, arg0, NULL};
+    char * const envp[] = {NULL};
+    Commands::call_cmd(command0,argv0,envp);
+
 
     // This function exists when the "exit" command is received
     server.readFromUserSocket(userSocket, commands);
@@ -37,16 +42,19 @@ void connectClient(int userSocket, ServerSocket server, Commands &commands) {
     cout << "Disconnecting client #" << userSocket << endl;
 
     // Remove the directory of the client
-    command = "rm -rf " + conf.getBase() + to_string(userSocket);
-    system(command.c_str());
+    dir = conf.getBase() + to_string(userSocket);
+    char command1[] = "/bin/rm";
+    char arg1[] = "-rf";
+    char *arg2 = &dir[0u];
+    char * const argv1[] = {command1, arg1, arg2, NULL};
+    Commands::call_cmd(command1,argv1,envp);
+
 }
 
 int main() {
     try {
         // Parses the configuration file
-        string path = Commands::call_cmd(str_pwd);
-        //cout << path.substr(0,path.size()-1)<<"/grass.conf" << endl;
-        //Configuration conf = Configuration(path.substr(0,path.size()-1)+"/grass.conf");
+
         Configuration conf = Configuration("grass.conf");
         Commands commands = Commands(conf);
 

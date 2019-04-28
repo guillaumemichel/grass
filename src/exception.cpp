@@ -20,6 +20,9 @@ string ERR_MESSAGES[] = {
     "file transfer failed.",
     "failed to run command.",
     "cannot cd there.",
+    "not a directory",
+    "no such file or directory",
+    "file already exists",
     "given size does not correspond to real size",
     "server path not defined.",
     "response too long!",
@@ -40,17 +43,25 @@ string ERR_MESSAGES[] = {
  */
 Exception::Exception(int c){
   code = c;
+  message = "";
+}
+
+Exception::Exception(int c, string str){
+    code = c;
+    message = str;
 }
 
 /**
  * Print and return the message error associated with the exception
  * @method Exception::print_error
  */
-std::string Exception::print_error(){
+string Exception::print_error(){
   if (code <= ERR_FIRST || code >= ERR_LAST){
     code = ERR_ERR_NOT_FOUND;
   }
-  string err_str = "Error: " + ERR_MESSAGES[code - ERR_FIRST] + "\n";
+  string err_str = "Error: " + ERR_MESSAGES[code - ERR_FIRST];
+  if (message != "") err_str += " : '" + message+"'";
+  err_str += "\n";
   cout << err_str;
   return err_str;
 }

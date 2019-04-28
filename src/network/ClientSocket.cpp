@@ -38,6 +38,7 @@ string ClientSocket::readCommand() {
     cout << ">>> ";
     getline(cin, command);
     if (command=="") return str_nodata;
+    else if(command==str_nodata) return "invalid";
     else return command;
 }
 
