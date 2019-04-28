@@ -10,7 +10,6 @@ using namespace std;
 
 Configuration::Configuration(const string fileName): fileName(fileName) {
     set = false;
-    setFilesPath();
 }
 
 vector<string> Configuration::getEntriesWithKey(const string key) const {
@@ -60,14 +59,4 @@ map<string, string> Configuration::getUsers() const {
         }
     }
     return users;
-}
-
-void Configuration::setFilesPath(){
-    string pwd = Commands::cmd_pwd();
-    filesPath = pwd.substr(0,pwd.size()-1);
-    set = true;
-}
-string Configuration::getFilesPath(int socket){
-    if (!set) throw Exception(ERR_SERVER_PATH_NOT_SET);
-    return filesPath+"/"+to_string(socket);
 }

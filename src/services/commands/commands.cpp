@@ -6,9 +6,10 @@
 using namespace std;
 
 #define CMD_NB 15
+// maximum path length accepted by the system
 #define PATH_MAX_LEN 128
-#define RESPONSE_LINE_SIZE 256
-#define RESPONSE_MAX_SIZE RESPONSE_LINE_SIZE*64
+// maximum length of the output of a command called by execve
+#define RESPONSE_MAX_SIZE 16384
 
 /*
  * The 15 different commands recognized by the server
@@ -57,14 +58,6 @@ Commands::Commands(const Configuration config): conf(config), auth(config) {
     else path = pwd + "/" + base;
 }
 
-
-/**
- * Sanitize and try to execute a given command
- * @method exec_command
- * @param  cmd          The given command
- * @param  p            The permission level of the user who try to execute the command
- * @return              0 for success, 1 for exit, <0 for failure
- */
 string Commands::exec(string cmd, unsigned int socket){
 
     try{
@@ -80,22 +73,6 @@ string Commands::exec(string cmd, unsigned int socket){
     } catch(Exception& e) {
         return e.print_error();
     }
-}
-
-string Commands::remove_spaces(string input){
-  string output;
-  size_t i;
-  for(i = 0;i < input.size();++i){
-    if(!isspace(input[i])) output += input[i];
-  }
-  return output;
-}
-
-string Commands::remove_front_spaces(string input){
-  size_t len = strlen((input).c_str());
-  size_t i=0;
-  for (; i < len && isspace(input[i]); ++i){}
-  return input.substr(i);
 }
 
 string Commands::sanitize(string full_cmd, unsigned int socket){
@@ -134,67 +111,31 @@ string Commands::sanitize(string full_cmd, unsigned int socket){
   throw Exception(ERR_INVALID_CMD);
 }
 
-string Commands::getFilesPath(int socket){
-    return path + auth.getUser(socket).getFilesPath();
+string Commands::remove_spaces(string input){
+  string output;
+  size_t i;
+  for(i = 0;i < input.size();++i){
+    if(!isspace(input[i])) output += input[i];
+  }
+  return output;
 }
 
-User *testUser = NULL;
-
-string Commands::get_full_path(int socket){
-    User user = auth.getUser(socket);
-    if (testUser == NULL)
-      testUser = &user;
-    else if (testUser != &user)
-      cerr << "erreur get";
-    return path + user.getPath();
-}
-
-void Commands::set_user_path(string new_path, int socket){
-    User user = auth.getUser(socket);
-    if (testUser == NULL)
-      testUser = &user;
-    else if (testUser != &user)
-      cerr << "erreur set";
-
-    string files_path = getFilesPath(socket);
-    if (new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
-        throw Exception(ERR_ACCESS_DENIED);
-    }
-    if (files_path == new_path){
-        user.setPath(user.getFilesPath());
-    } else {
-        new_path = new_path.substr(path.size());
-        user.setPath(new_path);
-    }
-
+string Commands::remove_front_spaces(string input){
+  size_t len = strlen((input).c_str());
+  size_t i=0;
+  for (; i < len && isspace(input[i]); ++i){}
+  return input.substr(i);
 }
 
 void Commands::require_parameters(string cmd){
     if (cmd=="") throw Exception(ERR_INVALID_ARGS);
 }
+
 void Commands::require_no_parameters(string cmd){
     if (cmd!="") throw Exception(ERR_INVALID_ARGS);
 }
 
-string Commands::get_relative_path(int socket){
-    string full_path = get_full_path(socket);
-    string files_path = getFilesPath(socket);
-    if (full_path.compare(0,files_path.size(),files_path,0,files_path.size())){
-        throw Exception(ERR_ACCESS_DENIED);
-    }
-    if (full_path==files_path) return "";
-    return path.substr(files_path.size());
-}
-
-/**
- * Verify the given hostname, throw an invalid argument exception if it contains
- * characters others that "A-Z", "a-z", "0-9", '-' and '.'.
- *
- * @method check_hostname
- * @param  str            the given hostname
- */
 void Commands::check_hostname(string str){
-  if (str.size()>=128) throw Exception(ERR_PATH_TOO_LONG);
   for(size_t i=0;i < str.size();++i){
     char c=str[i];
     if (!(c == '.' || c == '-' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
@@ -203,13 +144,6 @@ void Commands::check_hostname(string str){
   }
 }
 
-/**
- * Verify the given filename, throw an invalid argument exception if it contains
- * characters others that "A-Z", "a-z", "0-9", '-', '_' and '.'.
- *
- * @method check_filename
- * @param  str            the given filename
- */
 void Commands::check_filename(string str){
     if (str.size()>=128) throw Exception(ERR_PATH_TOO_LONG);
     for(size_t i=0;i < str.size();++i){
@@ -230,6 +164,51 @@ void Commands::check_path(string str){
         throw Exception(ERR_INVALID_ARGS);
       }
     }
+}
+
+string Commands::get_files_path(unsigned int socket){
+    return path + auth.getUser(socket).getFilesPath();
+}
+
+User *testUser = NULL;
+
+string Commands::get_full_path(unsigned int socket){
+    User user = auth.getUser(socket);
+    if (testUser == NULL)
+      testUser = &user;
+    else if (testUser != &user)
+      cerr << "erreur get";
+    return path + user.getPath();
+}
+
+void Commands::set_user_path(string new_path, unsigned int socket){
+    User user = auth.getUser(socket);
+    if (testUser == NULL)
+      testUser = &user;
+    else if (testUser != &user)
+      cerr << "erreur set";
+
+    string files_path = get_files_path(socket);
+    if (new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
+        throw Exception(ERR_ACCESS_DENIED);
+    }
+    if (files_path == new_path){
+        user.setPath(user.getFilesPath());
+    } else {
+        new_path = new_path.substr(path.size());
+        user.setPath(new_path);
+    }
+
+}
+
+string Commands::get_relative_path(unsigned int socket){
+    string full_path = get_full_path(socket);
+    string files_path = get_files_path(socket);
+    if (full_path.compare(0,files_path.size(),files_path,0,files_path.size())){
+        throw Exception(ERR_ACCESS_DENIED);
+    }
+    if (full_path==files_path) return "";
+    return path.substr(files_path.size());
 }
 
 void Commands::dir_exists(string dir, string name, string cmd){
@@ -332,7 +311,7 @@ string Commands::cmd_cd(string cmd, unsigned int socket){
     //the home directory is considered to be "/"
     if (cmd=="") cmd = "/";
     check_path(cmd);
-    string files_path = getFilesPath(socket);
+    string files_path = get_files_path(socket);
     string full_path;
     if (cmd==".") return ""; // no need to do anything if 'cd .'
     else if (cmd == "/") {
@@ -348,7 +327,7 @@ string Commands::cmd_cd(string cmd, unsigned int socket){
     size_t divider = full_path.find_last_of("/");
     string curr_dir = full_path.substr(0,divider);
     string name = full_path.substr(divider+1);
-    string tmp_dir = getFilesPath(socket);
+    string tmp_dir = get_files_path(socket);
     if (full_path.size()<tmp_dir.size() || full_path.compare(0,files_path.size(),files_path)){
         throw Exception(ERR_ACCESS_DENIED);
     }
