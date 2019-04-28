@@ -1,9 +1,12 @@
 #include <string>
 #include "../../include/User.h"
 
+using namespace std;
+
 User::User(const string name, unsigned int socketID): name(name) {
     authenticated = false;
     path = "/" + to_string(socketID);
+    files_path=path;
 }
 
 void User::setAuthenticated(bool status) {
@@ -19,9 +22,15 @@ string User::getName() const {
 }
 
 void User::setPath(string new_path) {
-    path = new_path;
+    this->path = new_path;
+    cout << this->path << endl;
 }
 
 string User::getPath(){
-    return path;
+    cout << this->path << endl;
+    return this->path;
+}
+
+string User::getFilesPath() {
+    return files_path;
 }

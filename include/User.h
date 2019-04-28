@@ -7,6 +7,7 @@
 #define USER
 
 #include <string>
+#include <iostream>
 using namespace std;
 
 class User {
@@ -43,10 +44,17 @@ public:
      */
     string getPath();
 
+    /**
+     * Get the base directory of the user aka file path
+     * @return the file path
+     */
+    string getFilesPath();
+
 
 private:
     bool authenticated;
     const string name;
     string path;
+    string files_path;
 };
 #endif

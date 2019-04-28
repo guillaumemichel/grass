@@ -60,6 +60,8 @@ private:
 
     string get_full_path(int);
 
+    void set_user_path(string, int);
+
     string remove_spaces(string);
 
     string remove_front_spaces(string);

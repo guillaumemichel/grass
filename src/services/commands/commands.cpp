@@ -55,7 +55,6 @@ Commands::Commands(const Configuration config): conf(config), auth(config) {
     pwd = pwd.substr(0,pwd.size()-1);
     if (base==".") path = pwd;
     else path = pwd + "/" + base;
-    cout << path << endl;
 }
 
 
@@ -71,20 +70,7 @@ string Commands::exec(string cmd, unsigned int socket){
     try{
         if (cmd==str_nodata) return cmd;
 
-    /*
-    // TODO : waw
-    if (strncmp(cmd.c_str(), str_login.c_str(), str_login.size()) != 0 && strncmp(cmd.c_str(), str_pass.c_str(), str_pass.size()) != 0) {
-        chdir((this->path + to_string(socket) + "/").c_str());
-        cout << cmd_pwd()<<endl;
-        cleared = false;
-    }
-
-    if (strncmp(cmd.c_str(), str_login.c_str(), str_login.size()) != 0 && strncmp(cmd.c_str(), str_pass.c_str(), str_pass.size()) != 0) {
-        chdir("../");
-        cleared = true;
-    }*/
-
-    string response = sanitize(cmd, socket);
+        string response = sanitize(cmd, socket);
 
         if (response=="") {
             return str_nodata;
@@ -149,11 +135,39 @@ string Commands::sanitize(string full_cmd, unsigned int socket){
 }
 
 string Commands::getFilesPath(int socket){
-    return this->path + to_string(socket);
+    return path + auth.getUser(socket).getFilesPath();
 }
 
+User *testUser = NULL;
+
 string Commands::get_full_path(int socket){
-    return path + auth.getUser(socket).getPath();
+    User user = auth.getUser(socket);
+    if (testUser == NULL)
+      testUser = &user;
+    else if (testUser != &user)
+      cerr << "erreur get";
+    return path + user.getPath();
+}
+
+void Commands::set_user_path(string new_path, int socket){
+    User user = auth.getUser(socket);
+    if (testUser == NULL)
+      testUser = &user;
+    else if (testUser != &user)
+      cerr << "erreur set";
+
+    string files_path = getFilesPath(socket);
+    if (new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
+        throw Exception(ERR_ACCESS_DENIED);
+    }
+    if (files_path == new_path){
+        user.setPath(user.getFilesPath());
+    } else {
+        new_path = new_path.substr(path.size());
+        cout << new_path << endl;
+        user.setPath(new_path);
+    }
+
 }
 
 void Commands::require_parameters(string cmd){
@@ -164,14 +178,13 @@ void Commands::require_no_parameters(string cmd){
 }
 
 string Commands::get_relative_path(int socket){
-    string current_folder = cmd_pwd();
-
-    current_folder = current_folder.substr(0,current_folder.size()-1)+"/";
-    string files_path = conf.getFilesPath(socket);
-    if (current_folder.compare(0,files_path.size(),files_path,0,files_path.size())){
+    string full_path = get_full_path(socket);
+    string files_path = getFilesPath(socket);
+    if (full_path.compare(0,files_path.size(),files_path,0,files_path.size())){
         throw Exception(ERR_ACCESS_DENIED);
     }
-    return current_folder.substr(files_path.size());
+    if (full_path==files_path) return "";
+    return path.substr(files_path.size());
 }
 
 /**
@@ -307,9 +320,10 @@ string Commands::cmd_ping(string cmd, unsigned int){
 string Commands::cmd_ls(string cmd, unsigned int socket){
     require_no_parameters(cmd);
     char command[] = "/bin/ls";
-    string path = get_full_path(socket);
+    string full_path = get_full_path(socket);
+    cout << full_path << endl;
     char arg0[] = "-l";
-    char *arg1 = &path[0u];
+    char *arg1 = &full_path[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
     return call_cmd(command,argv,envp);
@@ -317,9 +331,10 @@ string Commands::cmd_ls(string cmd, unsigned int socket){
 
 string Commands::cmd_cd(string cmd, unsigned int socket){
     cmd = remove_spaces(cmd);
+    //the home directory is considered to be "/"
     if (cmd=="") cmd = "/";
     check_path(cmd);
-    string files_path = conf.getFilesPath(socket);
+    string files_path = getFilesPath(socket);
     string full_path;
     if (cmd==".") return ""; // no need to do anything if 'cd .'
     else if (cmd == "/") {
@@ -327,8 +342,7 @@ string Commands::cmd_cd(string cmd, unsigned int socket){
     } else if (cmd[0]=='/'){
         full_path=files_path + cmd;
     } else {
-        string pwd = cmd_pwd();
-        full_path=pwd.substr(0,pwd.size()-1)+"/"+cmd;
+        full_path=get_full_path(socket)+"/"+cmd;
     }
     while(full_path[full_path.size()-1]=='/'){
         full_path = full_path.substr(0, full_path.size()-1);
@@ -336,7 +350,7 @@ string Commands::cmd_cd(string cmd, unsigned int socket){
     size_t divider = full_path.find_last_of("/");
     string curr_dir = full_path.substr(0,divider);
     string name = full_path.substr(divider+1);
-    string tmp_dir = conf.getFilesPath(socket);
+    string tmp_dir = getFilesPath(socket);
     if (full_path.size()<tmp_dir.size() || full_path.compare(0,files_path.size(),files_path)){
         throw Exception(ERR_ACCESS_DENIED);
     }
@@ -369,8 +383,7 @@ string Commands::cmd_cd(string cmd, unsigned int socket){
         }
     }
     cout  << tmp_dir << endl;
-    this->path = tmp_dir;
-    //if (chdir((tmp_dir).c_str()) < 0) throw Exception(ERR_CD);
+    set_user_path(tmp_dir.substr(0,tmp_dir.size()),socket);
     return "";
 }
 
@@ -382,9 +395,9 @@ string Commands::cmd_mkdir(string cmd, unsigned int socket){
     if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
         throw Exception(ERR_PATH_TOO_LONG);
     }
-
+    string curr_path = get_full_path(socket)+"/"+cmd;
     char command[] = "/bin/mkdir";
-    char *arg = &cmd[0u];
+    char *arg = &curr_path[0u];
     char * const argv[] = {command, arg, NULL};
     char * const envp[] = {NULL};
 
@@ -393,14 +406,15 @@ string Commands::cmd_mkdir(string cmd, unsigned int socket){
     return ret;
 }
 
-string Commands::cmd_rm(string cmd, unsigned int){
+string Commands::cmd_rm(string cmd, unsigned int socket){
     cmd = remove_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
+    string path = get_full_path(socket) + "/" + cmd;
 
     char command[] = "/bin/rm";
     char arg0[] = "-r";
-    char *arg1 = &cmd[0u];
+    char *arg1 = &path[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
 
@@ -425,8 +439,6 @@ string Commands::cmd_get(string cmd, unsigned int){
 }
 
 string Commands::cmd_put(string cmd, unsigned int socket){
-  // TODO : check if space is present for substr
-
   cmd = remove_front_spaces(cmd);
   require_parameters(cmd);
   // Get the filename and checks if its correct
