@@ -54,9 +54,7 @@ void connectClient(int userSocket, ServerSocket server, Commands &commands) {
 int main() {
     try {
         // Parses the configuration file
-        string path = Commands::cmd_pwd();
-        //cout << path.substr(0,path.size()-1)<<"/grass.conf" << endl;
-        //Configuration conf = Configuration(path.substr(0,path.size()-1)+"/grass.conf");
+
         Configuration conf = Configuration("grass.conf");
         Commands commands = Commands(conf);
 

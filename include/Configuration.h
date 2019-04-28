@@ -22,7 +22,6 @@ private:
     string removeKeyInLine(string, string) const;
     string extractStringValue(string) const;
     bool set;
-    string filesPath;
 
 public:
     explicit Configuration(const string);
@@ -44,10 +43,6 @@ public:
      * @return User-password associations
      */
     map<string, string> getUsers() const;
-
-    void setFilesPath();
-
-    string getFilesPath(int);
 };
 
 #endif //ASS_ON_THE_GRASS_CONFIGURATION_H
