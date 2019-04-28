@@ -1,3 +1,10 @@
+/**
+ * commands.h
+ * Handle the sanitization and commands of the system
+ * @author: Guillaume Michel
+ */
+
+
 #ifndef COMMANDS_H
 #define COMMANDS_H
 

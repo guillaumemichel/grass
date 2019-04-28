@@ -164,7 +164,6 @@ void Commands::set_user_path(string new_path, int socket){
         user.setPath(user.getFilesPath());
     } else {
         new_path = new_path.substr(path.size());
-        cout << new_path << endl;
         user.setPath(new_path);
     }
 
@@ -321,7 +320,6 @@ string Commands::cmd_ls(string cmd, unsigned int socket){
     require_no_parameters(cmd);
     char command[] = "/bin/ls";
     string full_path = get_full_path(socket);
-    cout << full_path << endl;
     char arg0[] = "-l";
     char *arg1 = &full_path[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
@@ -382,7 +380,6 @@ string Commands::cmd_cd(string cmd, unsigned int socket){
             throw Exception(ERR_ACCESS_DENIED);
         }
     }
-    cout  << tmp_dir << endl;
     set_user_path(tmp_dir.substr(0,tmp_dir.size()),socket);
     return "";
 }
@@ -445,11 +442,10 @@ string Commands::cmd_put(string cmd, unsigned int socket){
   string filename = cmd.substr(0, cmd.find(" "));
   check_filename(filename);
 
-  // TODO : marche pas
-  /*string current_folder = get_relative_path(socket);
+  string current_folder = get_relative_path(socket);
   if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
       throw Exception(ERR_PATH_TOO_LONG);
-  }*/
+  }
 
   // Get the size
   int size = std::stoi(cmd.substr(cmd.find(" ") + 1));
