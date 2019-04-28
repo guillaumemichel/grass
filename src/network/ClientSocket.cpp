@@ -88,8 +88,11 @@ void ClientSocket::uploadFile(string filename) {
 }
 
 void ClientSocket::downloadFile(string filename, unsigned int size) {
+    // Get the base path
+    Configuration conf = Configuration("grass.conf");
+
     // Rewrite the filename to the download directory
-    filename = DOWNLOAD_BASEPATH + filename;
+    filename = conf.getBase() + filename;
 
     // Create a file writer to write the file
     FileWriter fw(filename);
