@@ -447,8 +447,44 @@ string Commands::cmd_put(string cmd, unsigned int socket){
   return filename + ":" + to_string(size);
 }
 
-string Commands::cmd_grep(string, unsigned int){
-    return "";
+string Commands::cmd_grep(string pattern, unsigned int socket){
+    // Check and parse regex
+    require_parameters(pattern);
+    regex re;
+    try {
+        re = regex(pattern);
+    }
+    catch(...){
+        throw Exception(ERR_INVALID_ARGS);
+    }
+
+    // List all possible files
+    stringstream matches;
+    char command[] = "/usr/bin/find";
+    string arg0 = get_full_path(socket) + "/";
+    char arg1[] = "-type";
+    char arg2[] = "f";
+    char * const argv[] = {command, &arg0[0u], arg1, arg2,  NULL};
+    char * const envp[] = {NULL};
+    string allFiles = call_cmd(command, argv, envp);
+    stringstream ss(allFiles);
+    vector<string> files;
+    string tmp;
+    while(getline(ss, tmp, '\n')){
+        files.push_back(tmp);
+    }
+    // Filter files for which regex matches
+    for(const auto& file: files) {
+        FileReader fr(file);
+        vector<string> fileLines;
+        stringstream fileContent;
+        fr.readFileVector(fileLines);
+        for(const auto& line: fileLines)
+            fileContent << line;
+        if(regex_match(fileContent.str(), re))
+            matches << file.substr(get_full_path(socket).size(), file.size()) << '\n';
+    }
+    return matches.str().substr(0, matches.str().size()-1);
 }
 
 string Commands::cmd_date(string cmd, unsigned int){
