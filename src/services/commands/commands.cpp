@@ -415,7 +415,7 @@ string Commands::cmd_rm(string cmd, unsigned int socket){
 }
 
 // TODO : check correctness of parameters for get and put
-string Commands::cmd_get(string cmd, unsigned int){
+string Commands::cmd_get(string cmd, unsigned int socket){
     cmd = remove_front_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
@@ -425,6 +425,14 @@ string Commands::cmd_get(string cmd, unsigned int){
 
     string filename = separator.substr(0, separator.find(" "));
 
+    // Get the current dir path of the user (i.e. if he made mkdir + cd)
+    string dirPath = auth.getUser(socket).getPath();
+
+    // Check if the user is in its basepath, otheriwe rewrite the filename to upload in the right folder
+    if (dirPath != auth.getUser(socket).getFilesPath()) {
+        filename = dirPath.substr(dirPath.find("/", 1) + 1, dirPath.size()) + "/" + filename;
+    }
+
     // Remove the last \n otherwise the filename is invalid
     return filename;
 }
@@ -432,9 +440,19 @@ string Commands::cmd_get(string cmd, unsigned int){
 string Commands::cmd_put(string cmd, unsigned int socket){
   cmd = remove_front_spaces(cmd);
   require_parameters(cmd);
+
   // Get the filename and checks if its correct
   string filename = cmd.substr(0, cmd.find(" "));
+
   check_filename(filename);
+
+  // Get the current dir path of the user (i.e. if he made mkdir + cd)
+  string dirPath = auth.getUser(socket).getPath();
+
+  // Check if the user is in its basepath, otheriwe rewrite the filename to upload in the right folder
+  if (dirPath != auth.getUser(socket).getFilesPath()) {
+      filename = dirPath.substr(dirPath.find("/", 1) + 1, dirPath.size()) + "/" + filename;
+  }
 
   string current_folder = get_relative_path(socket);
   if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
