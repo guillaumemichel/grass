@@ -147,11 +147,21 @@ ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, v
 }
 
 string ClientLauncher::processCommand(ClientSocket client, string command, string serverIP) {
+    // The command without arguments
+    string cmdWithoutArgs = command.substr(0, command.find(" "));
+
     // TODO : refactor put & get command (same stuff)
     // TODO : create constant for command names
     // If a file must be upload
-    if (command.substr(0, 3) == "put") {
+    if (cmdWithoutArgs == "put") {
+        // Get the args of the command
         string removePut = command.substr(command.find(" ") + 1);
+
+        // If no args, we throw an exception
+        if (removePut == "" || removePut == "put") {
+            throw Exception(ERR_INVALID_ARGS);
+        }
+
         string filename = removePut.substr(0, removePut.find(" "));
         int size = stoi(removePut.substr(removePut.find(" ") + 1));
 
@@ -185,11 +195,15 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
 
         // Return empty strings for transfer operation
         return "";
-    } else if (command.substr(0, 3) == "get") {
+    } else if (cmdWithoutArgs == "get") {
+        // Get the args of the command
         string removeGet = command.substr(command.find(" ") + 1);
+
+        // If no args, throw an exception
         if (removeGet == "" || removeGet == "get") {
             throw Exception(ERR_INVALID_ARGS);
         }
+
         string filename = removeGet.substr(0, removeGet.find(" "));
 
         // Send the command to the server
@@ -201,6 +215,7 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         cout << read << endl;
         // Check if the message has the expected form
         if (read.substr(0, 3) == "get") {
+            // Not too much precaution here on the parsing because we assume the server sends the right stuff
             int port = stoi(read.substr(read.find(":") + 2));
             string withoutPort = read.substr(read.find(":") + 1);
             int size = stoi(withoutPort.substr(withoutPort.find(":") + 2));

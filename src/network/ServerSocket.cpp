@@ -240,13 +240,20 @@ void ServerSocket::sendFile(string filename, unsigned int port) {
     vector <string> vecOfStr;
     fileReader.readFileVector(vecOfStr);
 
-    // Then we send the lines 1 by 1
+    // Then we read the lines 1 by 1
     vector<string>::iterator it;
+
+    // The big string in which we'll store the file (yes it's not efficient I know)
+    string big = "";
+
     for (it = vecOfStr.begin(); it != vecOfStr.end(); ++it) {
         // Mandatory appending \n
         string toSend = *it + "\n";
-        server.sendToClient(userSocket, toSend);
+
+        big += toSend;
     }
+
+    server.sendToClient(userSocket, big);
 
     cout << "File send to the client!" << endl;
 
