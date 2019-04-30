@@ -47,7 +47,6 @@ public:
 Commands::Commands(const Configuration config): conf(config), auth(config) {
     try {
         path = get_files_path(config);
-        cout << path << endl;
     } catch (Exception e){
         e.print_error();
         cout << "Base directory in the config is wrong!" << endl;
@@ -438,7 +437,7 @@ string Commands::cmd_grep(string pattern, unsigned int socket){
     // List all possible files
     stringstream matches;
     char command[] = "/usr/bin/find";
-    string arg0 = get_full_path(socket) + "/";
+    string arg0 = get_full_path(socket);
     char arg1[] = "-type";
     char arg2[] = "f";
     char * const argv[] = {command, &arg0[0u], arg1, arg2,  NULL};
@@ -458,8 +457,8 @@ string Commands::cmd_grep(string pattern, unsigned int socket){
         fr.readFileVector(fileLines);
         for(const auto& line: fileLines)
             fileContent << line;
-        if(regex_match(fileContent.str(), re))
-            matches << file.substr(get_full_path(socket).size(), file.size()) << '\n';
+        if(regex_match(fileContent.str(), re) && file.size()>=arg0.size())
+            matches << file.substr(arg0.size(), file.size()) << '\n';
     }
     return matches.str().substr(0, matches.str().size()-1);
 }
