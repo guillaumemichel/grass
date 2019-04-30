@@ -10,7 +10,6 @@
 using namespace std;
 
 void ClientLauncher::downloadFile(string filename, unsigned int size, string serverIP, unsigned int port) {
-    cout << "Starting new thread to receive the file from the server" << endl;
     ClientSocket client(serverIP, port);
 
     ClientLauncher::fileTransferConnect(&client);
@@ -23,7 +22,6 @@ void ClientLauncher::downloadFile(string filename, unsigned int size, string ser
 
 
 void ClientLauncher::uploadFile(string filename, string serverIP, unsigned int port) {
-    cout << "Starting new thread to send the file to the server" << endl;
     ClientSocket client(serverIP, port);
 
     ClientLauncher::fileTransferConnect(&client);
@@ -185,13 +183,18 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         // Wait for the server answer
         string read = client.readFromServer();
 
-        // Parse the port number
-        cout << read << endl;
-        int port = stoi(read.substr(read.find(":") + 2));
+        // Check if the receive string is good, otherwise there was an error on the server side
+        if (read.substr(0, 3) == "put") {
+            // Parse the port number
+            int port = stoi(read.substr(read.find(":") + 2));
 
-        // Upload the file
-        thread t1(ClientLauncher::uploadFile, filename, serverIP, port);
-        t1.join();
+            // Upload the file
+            thread t1(ClientLauncher::uploadFile, filename, serverIP, port);
+            t1.join();
+        } else {
+            // Display the error
+            cout << read;
+        }
 
         // Return empty strings for transfer operation
         return "";
@@ -212,7 +215,6 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         // Wait for the server answer
         string read = client.readFromServer();
 
-        cout << read << endl;
         // Check if the message has the expected form
         if (read.substr(0, 3) == "get") {
             // Not too much precaution here on the parsing because we assume the server sends the right stuff
@@ -223,6 +225,9 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
             // Download the file
             thread t1(ClientLauncher::downloadFile, filename, size, serverIP, port);
             t1.join();
+        } else {
+            // Display the error
+            cout << read;
         }
 
         // Return empty strings for transfer operation
