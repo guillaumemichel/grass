@@ -47,6 +47,7 @@ public:
 Commands::Commands(const Configuration config): conf(config), auth(config) {
     try {
         path = get_files_path(config);
+        cout << path << endl;
     } catch (Exception e){
         e.print_error();
         cout << "Base directory in the config is wrong!" << endl;
@@ -164,7 +165,7 @@ void Commands::check_path(string str){
 string Commands::get_files_path(const Configuration config){
     string pwd = cmd_pwd();
     pwd = pwd.substr(0,pwd.size()-1);
-    string base = deal_with_path(config.getBase(),pwd,pwd);
+    string base = deal_with_path(config.getBase(),pwd,pwd,"/");
     return base+"/"+files_dir;
 }
 
@@ -218,7 +219,7 @@ void Commands::dir_exists(string dir, string name, string cmd){
     }
 }
 
-string Commands::deal_with_path(string param, string curr_location, string files_path){
+string Commands::deal_with_path(string param, string curr_location, string files_path, string condition){
     param = remove_spaces(param);
     //the home directory is considered to be "/"
     if (param=="") param = "/";
@@ -239,7 +240,7 @@ string Commands::deal_with_path(string param, string curr_location, string files
     string curr_dir = full_path.substr(0,divider);
     string name = full_path.substr(divider+1);
     string tmp_dir = files_path;
-    if (full_path.size()<tmp_dir.size() || full_path.compare(0,files_path.size(),files_path)){
+    if (full_path.size()<condition.size() || full_path.compare(0,condition.size(),condition)){
         throw Exception(ERR_ACCESS_DENIED);
     }
     string tmp_end;
@@ -266,7 +267,7 @@ string Commands::deal_with_path(string param, string curr_location, string files
         } else {
             tmp_dir = tmp_dir + tmp_name;
         }
-        if (tmp_dir.compare(0,files_path.size(),files_path)){
+        if (tmp_dir.compare(0,condition.size(),condition)){
             throw Exception(ERR_ACCESS_DENIED);
         }
     }
@@ -350,7 +351,7 @@ string Commands::cmd_ls(string cmd, unsigned int socket){
 }
 
 string Commands::cmd_cd(string cmd, unsigned int socket){
-    set_user_path(deal_with_path(cmd,get_full_path(socket),path),socket);
+    set_user_path(deal_with_path(cmd,get_full_path(socket),path,path),socket);
     return "";
 }
 

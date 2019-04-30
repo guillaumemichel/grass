@@ -2,7 +2,6 @@ SRCDIR   := src
 BINDIR   := bin
 INCLUDES := -Iinclude/
 OBJDIR   := .build
-FILESDIR := files
 TESTDIR  := $(BINDIR)/tests
 
 CC       := g++
@@ -51,7 +50,6 @@ $(TESTDIR): $(OBJECTS)
 build:
 	@mkdir -p $(BINDIR)
 	@mkdir -p $(OBJDIR)
-	@mkdir -p $(FILESDIR)
 
 debug: CFLAGS += -DDEBUG -g
 debug: all
