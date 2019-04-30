@@ -37,7 +37,6 @@ int main() {
         Configuration conf = Configuration("grass.conf");
         Commands commands = Commands(conf);
         string files_path = Commands::get_files_path(conf);
-        cout << files_path << endl;
 
         //Clean the past file directory if it exists
         char command0[] = "/bin/rm";

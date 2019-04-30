@@ -47,7 +47,6 @@ public:
 Commands::Commands(const Configuration config): conf(config), auth(config) {
     try {
         path = get_files_path(config);
-        cout << path << endl;
     } catch (Exception e){
         e.print_error();
         cout << "Base directory in the config is wrong!" << endl;
