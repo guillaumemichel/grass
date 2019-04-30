@@ -23,32 +23,11 @@ using namespace std;
  * @param server the instance of the server
  */
 void connectClient(int userSocket, ServerSocket server, Commands &commands) {
-    Configuration conf = Configuration("grass.conf");
-
-    // Client's dir
-    string dir = conf.getBase() + to_string(userSocket) + "/";
-
-    // Creates a new directory for the client
-    char command0[] = "/bin/mkdir";
-    char *arg0 = &dir[0u];
-    char * const argv0[] = {command0, arg0, NULL};
-    char * const envp[] = {NULL};
-    Commands::call_cmd(command0,argv0,envp);
-
 
     // This function exists when the "exit" command is received
     server.readFromUserSocket(userSocket, commands);
 
     cout << "Disconnecting client #" << userSocket << endl;
-
-    // Remove the directory of the client
-    dir = conf.getBase() + to_string(userSocket);
-    char command1[] = "/bin/rm";
-    char arg1[] = "-rf";
-    char *arg2 = &dir[0u];
-    char * const argv1[] = {command1, arg1, arg2, NULL};
-    Commands::call_cmd(command1,argv1,envp);
-
 }
 
 int main() {
@@ -57,6 +36,20 @@ int main() {
 
         Configuration conf = Configuration("grass.conf");
         Commands commands = Commands(conf);
+        string files_path = Commands::get_files_path(conf);
+
+        //Clean the past file directory if it exists
+        char command0[] = "/bin/rm";
+        char arg0[] = "-rf";
+        char *arg1 = &files_path[0u];
+        char * const argv0[] = {command0, arg0, arg1, NULL};
+        char * const envp[] = {NULL};
+        Commands::call_cmd(command0,argv0,envp);
+
+        //Create a new empty file directory for the clients
+        char command1[] = "/bin/mkdir";
+        char * const argv1[] = {command0, arg1, NULL};
+        Commands::call_cmd(command1,argv1,envp);
 
         // Create a server object
         ServerSocket server(conf.getPort());

@@ -3,7 +3,7 @@
 #include "../include/AuthorizationService.h"
 
 void testsForAuthenticatedUser() {
-    User u("",0);
+    User u("");
     u.setAuthenticated(true);
     AuthorizationService service(u);
     assert(service.hasAccessTo("login"));
@@ -25,7 +25,7 @@ void testsForAuthenticatedUser() {
 }
 
 void testsForUnauthenticatedUser() {
-    User u("",0);
+    User u("");
     u.setAuthenticated(false);
     AuthorizationService service(u);
     assert(service.hasAccessTo("login"));

@@ -44,9 +44,21 @@ const string str_pwd    = "pwd";
 const string str_bye    = "bye!";
 const string str_nodata = "__nodata__";
 
+const string files_dir = "files";
+
 class Commands {
 public:
     explicit Commands(const Configuration config);
+
+    /**
+     * Get the path to the home file directory of the current user. The path is
+     * given from the root of the host machine
+     * @method get_files_path
+     * @param  config         the config with informations to the files path
+     * @return                the path to the home file directory of the given user
+     */
+    static string get_files_path(const Configuration config);
+
 
     /**
      * Sanitize the given command and either execute it and returns the output
@@ -69,7 +81,6 @@ public:
      * @return          the output of the system call
      */
     static string call_cmd(const char* command, char * const * argv, char * const * envp);
-
 
 private:
 
@@ -94,7 +105,7 @@ private:
      * @param  input         given input
      * @return               the given input without any space character
      */
-    string remove_spaces(string input);
+    static string remove_spaces(string input);
 
     /**
      * Remove the space characters (space, tab, newline, etc.) that are in front
@@ -104,7 +115,7 @@ private:
      * @return               the given input without the space characters in front
      * of the text
      */
-    string remove_front_spaces(string input);
+    static string remove_front_spaces(string input);
 
     /**
      * Verifies if the given string is empty, and throws an invalid arguments
@@ -129,7 +140,7 @@ private:
      * @method check_hostname
      * @param  str            the given hostname
      */
-    void check_hostname(string hostname);
+    static void check_hostname(string hostname);
 
     /**
      * Verify the given filename, throw an invalid argument exception if it contains
@@ -138,7 +149,7 @@ private:
      * @method check_filename
      * @param  filename       the given filename
      */
-    void check_filename(string filename);
+    static void check_filename(string filename);
 
     /**
      * Verify the given path, throw an invalid argument exception if it contains
@@ -147,16 +158,7 @@ private:
      * @method check_path
      * @param  path       the given path
      */
-    void check_path(string path);
-
-    /**
-     * Get the path to the home file directory of the current user. The path is
-     * given from the root of the host machine
-     * @method get_files_path
-     * @param  socketID       the socket identifier to identify the user
-     * @return                the path to the home file directory of the given user
-     */
-    string get_files_path(unsigned int socketID);
+    static void check_path(string path);
 
     /**
      * Get the current path of the given user. Each user has its current relative
@@ -192,15 +194,27 @@ private:
      * @param  message    message containing the full path of the directory that
      * the user wants to access to throw the exception
      */
-    void dir_exists(string dir, string name, string message);
+    static void dir_exists(string dir, string name, string message);
 
+    /**
+     * Takes a path that can be relative or absolute and contains, "..", ".", "/"
+     * etc. and return the absolute path without ".." etc., throws an exception
+     * if the path cannot be access or doesn't exist
+     * @method deal_with_path
+     * @param  param          path to be changed
+     * @param  curr_location  current location in the filesystem
+     * @param  files_path     path where the files are stored
+     * @param  condition      restriction path that cannot be exit
+     * @return                the changed path or throws an exception
+     */
+    static string deal_with_path(string param, string curr_location, string files_path, string condition);
     /**
      * Execute the command pwd to get the path to the location where the program
      * is being run
      * @method  cmd_pwd
      * @return  the output of the command pwd
      */
-    string cmd_pwd();
+    static string cmd_pwd();
 
     /**
      * Executes the login command

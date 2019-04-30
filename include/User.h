@@ -3,16 +3,19 @@
  * Defines the notion of user within the system.
  * @author: Xavier Pantet
  */
+
+#include "commands.h"
+
 #ifndef USER
 #define USER
 
 #include <string>
-#include <iostream>
+
 using namespace std;
 
 class User {
 public:
-    User(const string name, unsigned int socketID);
+    User(const string name);
 
     /**
      * Sets the authentication status of the user.
@@ -44,17 +47,9 @@ public:
      */
     string getPath();
 
-    /**
-     * Get the base directory of the user aka file path
-     * @return the file path
-     */
-    string getFilesPath();
-
-
 private:
     bool authenticated;
     const string name;
     string path;
-    string files_path;
 };
 #endif
