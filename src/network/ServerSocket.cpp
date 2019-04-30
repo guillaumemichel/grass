@@ -62,33 +62,41 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands &commands) {
 
             // My command interpreter
             if (0 == strncmp(buffer, "put", 3)) {
-                string returned = commands.exec(command, userSocket);
+                try {
+                    string returned = commands.exec(command, userSocket);
 
-                string filename = this->getDirOnServer(userSocket) + returned.substr(0, returned.find(":"));
+                    string filename = returned.substr(0, returned.find(":"));
 
-                int size = atoi(returned.substr(returned.find(":") + 1).c_str());
+                    int size = atoi(returned.substr(returned.find(":") + 1).c_str());
 
-                // On upload we have to start a new thread and a new NetworkSocket
+                    // On upload we have to start a new thread and a new NetworkSocket
 
-                // First we send to the client the port number
-                int portNumber = this->getRandomPort();
-                string message = "put port: " + to_string(portNumber);
+                    // First we send to the client the port number
+                    int portNumber = this->getRandomPort();
+                    string message = "put port: " + to_string(portNumber);
 
-                // Send it to the client
-                sendToClient(userSocket, message);
+                    // Send it to the client
+                    sendToClient(userSocket, message);
 
-                // Then we start a new thread to receive it
-                thread t1(ServerSocket::receiveFileUpload, filename, size, portNumber);
-                t1.join();
+                    // Then we start a new thread to receive it
+                    thread t1(ServerSocket::receiveFileUpload, filename, size, portNumber);
+                    t1.join();
+                } catch (Exception &e) {
+                    // Send the error to the client in case of
+                    sendToClient(userSocket, e.print_error());
+                } catch (exception &e) {
+                    // Send the error to the client in case of
+                    sendToClient(userSocket, e.what());
+                }
             } else if (0 == strncmp(buffer, "get", 3)) {
-                // Sanitize the get command
-                string filename = this->getDirOnServer(userSocket) + commands.exec(command, userSocket);
-
-                // Removing the '\n' char
-                filename = filename.substr(0, filename.size() - 1);
-
                 // Check if the file exists
                 try {
+                    // Sanitize the get command
+                    string filename = commands.exec(command, userSocket);
+
+                    // Removing the '\n' char
+                    filename = filename.substr(0, filename.size() - 1);
+
                     FileReader fileReader(filename);
 
                     // On download we have to start a new thread and a new NetworkSocket
@@ -107,17 +115,25 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands &commands) {
                 } catch (Exception &e) {
                     // Send the error to the client in case of
                     sendToClient(userSocket, e.print_error());
+                } catch (exception &e) {
+                    // Send the error to the client in case of
+                    sendToClient(userSocket, e.what());
                 }
             } else {
                 cout << "Command received : " << buffer << endl;
-                // Execute the command
-                string response = commands.exec(command, userSocket);
-                if (response == str_bye) stopFlag = true;
 
                 try {
+                    // Execute the command
+                    string response = commands.exec(command, userSocket);
+                    if (response == str_bye) {
+                        stopFlag = true;
+                    }
+
                     this->sendToClient(userSocket, response);
-                } catch (Exception e) {
-                    e.print_error();
+                } catch (Exception &e) {
+                    this->sendToClient(userSocket, e.print_error());
+                } catch (exception &e) {
+                    this->sendToClient(userSocket, e.what());
                 }
                 cout << "Response sent to client" << endl;
             }

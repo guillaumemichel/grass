@@ -55,20 +55,16 @@ Commands::Commands(const Configuration config): conf(config), auth(config) {
 }
 
 string Commands::exec(string cmd, unsigned int socket){
+    if (cmd==str_nodata) return cmd;
 
-    try{
-        if (cmd==str_nodata) return cmd;
+    string response = sanitize(cmd, socket);
 
-        string response = sanitize(cmd, socket);
-
-        if (response=="") {
-            return str_nodata;
-        }
-        if (response[response.size()-1]!='\n') response += '\n';
-        return response;
-    } catch(Exception& e) {
-        return e.print_error();
+    if (response=="") {
+        return str_nodata;
     }
+    if (response[response.size()-1]!='\n') response += '\n';
+
+    return response;
 }
 
 string Commands::sanitize(string full_cmd, unsigned int socket){
@@ -400,15 +396,16 @@ string Commands::cmd_get(string cmd, unsigned int){
     // Get the filename
     string separator = cmd.substr(cmd.find(" ") + 1);
 
-    string filename = separator.substr(0, separator.find(" "));
+    // Extract filename and prepend basepath
+    string filename = "./" + files_dir + "/" + separator.substr(0, separator.find(" "));
 
-    // Remove the last \n otherwise the filename is invalid
     return filename;
 }
 
 string Commands::cmd_put(string cmd, unsigned int socket){
   cmd = remove_front_spaces(cmd);
   require_parameters(cmd);
+
   // Get the filename and checks if its correct
   string filename = cmd.substr(0, cmd.find(" "));
   check_filename(filename);
@@ -417,6 +414,9 @@ string Commands::cmd_put(string cmd, unsigned int socket){
   if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
       throw Exception(ERR_PATH_TOO_LONG);
   }
+
+  // Append the base path to the filename
+  filename = "./" + files_dir + "/" + filename;
 
   // Get the size
   int size = std::stoi(cmd.substr(cmd.find(" ") + 1));
