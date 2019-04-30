@@ -45,9 +45,12 @@ public:
 };
 
 Commands::Commands(const Configuration config): conf(config), auth(config) {
-
-    path = get_files_path(config);
-    cout << path << endl;
+    try {
+        path = get_files_path(config);
+    } catch (Exception e){
+        e.print_error();
+        cout << "Base directory in the config is wrong!" << endl;
+    }
 }
 
 string Commands::exec(string cmd, unsigned int socket){
@@ -159,23 +162,10 @@ void Commands::check_path(string str){
 }
 
 string Commands::get_files_path(const Configuration config){
-    //TODO: merge with cd to have a correct path
-    //base should not end with a /, check ..
-    string base = config.getBase();
     string pwd = cmd_pwd();
-    string files_path;
     pwd = pwd.substr(0,pwd.size()-1);
-    //TODO: check empty base
-    if (base == "") files_path = pwd;
-    else {
-        if (base[0]=='/') base = base.substr(1);
-        if (base[base.size()-1]=='/') base = base.substr(0,base.size()-1);
-        if (base==".") files_path = pwd;
-        else {
-            files_path = pwd + "/" + base;
-        }
-    }
-    return files_path+"/"+files_dir;
+    string base = deal_with_path(config.getBase(),pwd,pwd);
+    return base+"/"+files_dir;
 }
 
 string Commands::get_full_path(unsigned int socket){
@@ -194,12 +184,10 @@ void Commands::set_user_path(string new_path, unsigned int socket){
         auth.setUser(socket, user);
     } else {
         new_path = new_path.substr(path.size());
-        cout << new_path << endl;
         user.setPath(new_path);
         auth.setUser(socket, user);
     }
 }
-
 
 string Commands::get_relative_path(unsigned int socket){
     string full_path = get_full_path(socket);
@@ -209,13 +197,6 @@ string Commands::get_relative_path(unsigned int socket){
     }
     if (full_path==files_path) return "";
     return full_path.substr(files_path.size());
-}
-
-string Commands::absolute_to_relative(string abso){
-    if (abso.size() < path.size() || abso.compare(0,path.size(),path)){
-        throw Exception(ERR_NO_FILE_DIR);
-    }
-    return abso.substr(path.size());
 }
 
 void Commands::dir_exists(string dir, string name, string cmd){
@@ -235,6 +216,61 @@ void Commands::dir_exists(string dir, string name, string cmd){
     if (ls[index]!='d'){
         throw Exception(ERR_CD_NOT_DIR,cmd);
     }
+}
+
+string Commands::deal_with_path(string param, string curr_location, string files_path){
+    param = remove_spaces(param);
+    //the home directory is considered to be "/"
+    if (param=="") param = "/";
+    check_path(param);
+    string full_path;
+    if (param==".") return ""; // no need to do anything if 'cd .'
+    else if (param == "/") {
+        full_path = files_path;
+    } else if (param[0]=='/'){
+        full_path=files_path + param;
+    } else {
+        full_path=curr_location+"/"+param;
+    }
+    while(full_path[full_path.size()-1]=='/'){
+        full_path = full_path.substr(0, full_path.size()-1);
+    }
+    size_t divider = full_path.find_last_of("/");
+    string curr_dir = full_path.substr(0,divider);
+    string name = full_path.substr(divider+1);
+    string tmp_dir = files_path;
+    if (full_path.size()<tmp_dir.size() || full_path.compare(0,files_path.size(),files_path)){
+        throw Exception(ERR_ACCESS_DENIED);
+    }
+    string tmp_end;
+    if (full_path==tmp_dir) tmp_end = "/";
+    else tmp_end=full_path.substr(tmp_dir.size()+1)+"/";
+    while(tmp_end[0]=='/'){
+        tmp_end = tmp_end.substr(1);
+    }
+    string tmp_name;
+    int index;
+    while ((index=tmp_end.find_first_of("/"))>0){
+        while(tmp_end[0]=='/'){
+            tmp_end = tmp_end.substr(1);
+        }
+        tmp_name = "/"+tmp_end.substr(0,index);
+        tmp_end = tmp_end.substr(index+1);
+        while(tmp_end[0]=='/'){
+            tmp_end = tmp_end.substr(1);
+        }
+        if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1),param);
+
+        if (tmp_name == "/.."){
+            tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
+        } else {
+            tmp_dir = tmp_dir + tmp_name;
+        }
+        if (tmp_dir.compare(0,files_path.size(),files_path)){
+            throw Exception(ERR_ACCESS_DENIED);
+        }
+    }
+    return tmp_dir;
 }
 
 string Commands::call_cmd(const char* cmd, char * const argv[], char * const envp[]){
@@ -314,59 +350,7 @@ string Commands::cmd_ls(string cmd, unsigned int socket){
 }
 
 string Commands::cmd_cd(string cmd, unsigned int socket){
-    cmd = remove_spaces(cmd);
-    //the home directory is considered to be "/"
-    if (cmd=="") cmd = "/";
-    check_path(cmd);
-    string files_path = path;
-    string full_path;
-    if (cmd==".") return ""; // no need to do anything if 'cd .'
-    else if (cmd == "/") {
-        full_path = files_path;
-    } else if (cmd[0]=='/'){
-        full_path=files_path + cmd;
-    } else {
-        full_path=get_full_path(socket)+"/"+cmd;
-    }
-    while(full_path[full_path.size()-1]=='/'){
-        full_path = full_path.substr(0, full_path.size()-1);
-    }
-    size_t divider = full_path.find_last_of("/");
-    string curr_dir = full_path.substr(0,divider);
-    string name = full_path.substr(divider+1);
-    string tmp_dir = path;
-    if (full_path.size()<tmp_dir.size() || full_path.compare(0,files_path.size(),files_path)){
-        throw Exception(ERR_ACCESS_DENIED);
-    }
-    string tmp_end;
-    if (full_path==tmp_dir) tmp_end = "/";
-    else tmp_end=full_path.substr(tmp_dir.size()+1)+"/";
-    while(tmp_end[0]=='/'){
-        tmp_end = tmp_end.substr(1);
-    }
-    string tmp_name;
-    int index;
-    while ((index=tmp_end.find_first_of("/"))>0){
-        while(tmp_end[0]=='/'){
-            tmp_end = tmp_end.substr(1);
-        }
-        tmp_name = "/"+tmp_end.substr(0,index);
-        tmp_end = tmp_end.substr(index+1);
-        while(tmp_end[0]=='/'){
-            tmp_end = tmp_end.substr(1);
-        }
-        if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1),cmd);
-
-        if (tmp_name == "/.."){
-            tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
-        } else {
-            tmp_dir = tmp_dir + tmp_name;
-        }
-        if (tmp_dir.compare(0,files_path.size(),files_path)){
-            throw Exception(ERR_ACCESS_DENIED);
-        }
-    }
-    set_user_path(tmp_dir,socket);
+    set_user_path(deal_with_path(cmd,get_full_path(socket),path),socket);
     return "";
 }
 
@@ -407,7 +391,6 @@ string Commands::cmd_rm(string cmd, unsigned int socket){
     return ret;
 }
 
-// TODO : check correctness of parameters for get and put
 string Commands::cmd_get(string cmd, unsigned int){
     cmd = remove_front_spaces(cmd);
     require_parameters(cmd);

@@ -105,7 +105,7 @@ private:
      * @param  input         given input
      * @return               the given input without any space character
      */
-    string remove_spaces(string input);
+    static string remove_spaces(string input);
 
     /**
      * Remove the space characters (space, tab, newline, etc.) that are in front
@@ -115,7 +115,7 @@ private:
      * @return               the given input without the space characters in front
      * of the text
      */
-    string remove_front_spaces(string input);
+    static string remove_front_spaces(string input);
 
     /**
      * Verifies if the given string is empty, and throws an invalid arguments
@@ -140,7 +140,7 @@ private:
      * @method check_hostname
      * @param  str            the given hostname
      */
-    void check_hostname(string hostname);
+    static void check_hostname(string hostname);
 
     /**
      * Verify the given filename, throw an invalid argument exception if it contains
@@ -149,7 +149,7 @@ private:
      * @method check_filename
      * @param  filename       the given filename
      */
-    void check_filename(string filename);
+    static void check_filename(string filename);
 
     /**
      * Verify the given path, throw an invalid argument exception if it contains
@@ -158,7 +158,7 @@ private:
      * @method check_path
      * @param  path       the given path
      */
-    void check_path(string path);
+    static void check_path(string path);
 
     /**
      * Get the current path of the given user. Each user has its current relative
@@ -185,8 +185,6 @@ private:
      */
     string get_relative_path(unsigned int socketID);
 
-    string absolute_to_relative(string abso);
-
     /**
      * Check if the directory given by name exists in the directory given by dir,
      * return an exception with message if the directory doesn't exists
@@ -196,8 +194,9 @@ private:
      * @param  message    message containing the full path of the directory that
      * the user wants to access to throw the exception
      */
-    void dir_exists(string dir, string name, string message);
+    static void dir_exists(string dir, string name, string message);
 
+    static string deal_with_path(string param, string curr_location, string files_path);
     /**
      * Execute the command pwd to get the path to the location where the program
      * is being run
