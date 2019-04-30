@@ -47,6 +47,7 @@ public:
 Commands::Commands(const Configuration config): conf(config), auth(config) {
     try {
         path = get_files_path(config);
+        cout << path << endl;
     } catch (Exception e){
         e.print_error();
         cout << "Base directory in the config is wrong!" << endl;
@@ -224,7 +225,7 @@ string Commands::deal_with_path(string param, string curr_location, string files
     if (param=="") param = "/";
     check_path(param);
     string full_path;
-    if (param==".") return ""; // no need to do anything if 'cd .'
+    if (param==".") return files_path; // no need to do anything if 'cd .'
     else if (param == "/") {
         full_path = files_path;
     } else if (param[0]=='/'){
