@@ -1,5 +1,5 @@
 # Ass on the GRASS (aka GRep As A Service)
-By AlexDuBendo, Guissou & GaussianWhisperer
+By Alexandre Chambet (#258080), Guillaume Michel (#258066) & Xavier Pantet (#260473)
 
 ## How do I compile your project?
 - `make all`
