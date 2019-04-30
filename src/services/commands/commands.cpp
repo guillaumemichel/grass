@@ -46,21 +46,8 @@ public:
 
 Commands::Commands(const Configuration config): conf(config), auth(config) {
 
-    //TODO: merge with cd to have a correct path
-    //base should not end with a /
-    string base = config.getBase();
-    string pwd = cmd_pwd();
-    pwd = pwd.substr(0,pwd.size()-1);
-    //TODO: check empty base
-    if (base == "") path = pwd;
-    else {
-        if (base[0]=='/') base = base.substr(1);
-        if (base[base.size()-1]=='/') base = base.substr(0,base.size()-1);
-        if (base==".") path = pwd;
-        else {
-            path = pwd + "/" + base;
-        }
-    }
+    path = get_files_path(config);
+    cout << path << endl;
 }
 
 string Commands::exec(string cmd, unsigned int socket){
@@ -132,23 +119,6 @@ string Commands::remove_front_spaces(string input){
   return input.substr(i);
 }
 
-/*void Commands::set_user_path(string new_path, unsigned int socket){
-    User user = auth.getUser(socket);
-
-    string files_path = get_files_path(socket);
-    if (new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
-        throw Exception(ERR_ACCESS_DENIED);
-    }
-    if (files_path == new_path){
-        user.setPath(user.getFilesPath());
-        auth.setUser(socket, user);
-    } else {
-        new_path = new_path.substr(path.size());
-        user.setPath(new_path);
-        auth.setUser(socket, user);
-    }
-}*/
-
 void Commands::require_parameters(string cmd){
     if (cmd=="") throw Exception(ERR_INVALID_ARGS);
 }
@@ -188,27 +158,43 @@ void Commands::check_path(string str){
     }
 }
 
-string Commands::get_files_path(unsigned int socket){
-    return path + "/" + to_string(socket);
+string Commands::get_files_path(const Configuration config){
+    //TODO: merge with cd to have a correct path
+    //base should not end with a /, check ..
+    string base = config.getBase();
+    string pwd = cmd_pwd();
+    string files_path;
+    pwd = pwd.substr(0,pwd.size()-1);
+    //TODO: check empty base
+    if (base == "") files_path = pwd;
+    else {
+        if (base[0]=='/') base = base.substr(1);
+        if (base[base.size()-1]=='/') base = base.substr(0,base.size()-1);
+        if (base==".") files_path = pwd;
+        else {
+            files_path = pwd + "/" + base;
+        }
+    }
+    return files_path+"/"+files_dir;
 }
 
 string Commands::get_full_path(unsigned int socket){
-    User user = auth.getUser(socket);
-    return path + user.getPath();
+    return path + auth.getUser(socket).getPath();
 }
 
 void Commands::set_user_path(string new_path, unsigned int socket){
     User user = auth.getUser(socket);
 
-    string files_path = get_files_path(socket);
-    if (new_path.compare(0,files_path.size(),files_path,0,files_path.size())){
+    string files_path = path;
+    if (files_path.size() < path.size() || new_path.compare(0,files_path.size(),files_path)){
         throw Exception(ERR_ACCESS_DENIED);
     }
     if (files_path == new_path){
-        user.setPath(user.getFilesPath());
+        user.setPath("/");
         auth.setUser(socket, user);
     } else {
         new_path = new_path.substr(path.size());
+        cout << new_path << endl;
         user.setPath(new_path);
         auth.setUser(socket, user);
     }
@@ -217,12 +203,19 @@ void Commands::set_user_path(string new_path, unsigned int socket){
 
 string Commands::get_relative_path(unsigned int socket){
     string full_path = get_full_path(socket);
-    string files_path = get_files_path(socket);
-    if (full_path.compare(0,files_path.size(),files_path,0,files_path.size())){
+    string files_path = path;
+    if (full_path.compare(0,files_path.size(),files_path)){
         throw Exception(ERR_ACCESS_DENIED);
     }
     if (full_path==files_path) return "";
     return full_path.substr(files_path.size());
+}
+
+string Commands::absolute_to_relative(string abso){
+    if (abso.size() < path.size() || abso.compare(0,path.size(),path)){
+        throw Exception(ERR_NO_FILE_DIR);
+    }
+    return abso.substr(path.size());
 }
 
 void Commands::dir_exists(string dir, string name, string cmd){
@@ -325,7 +318,7 @@ string Commands::cmd_cd(string cmd, unsigned int socket){
     //the home directory is considered to be "/"
     if (cmd=="") cmd = "/";
     check_path(cmd);
-    string files_path = get_files_path(socket);
+    string files_path = path;
     string full_path;
     if (cmd==".") return ""; // no need to do anything if 'cd .'
     else if (cmd == "/") {
@@ -341,7 +334,7 @@ string Commands::cmd_cd(string cmd, unsigned int socket){
     size_t divider = full_path.find_last_of("/");
     string curr_dir = full_path.substr(0,divider);
     string name = full_path.substr(divider+1);
-    string tmp_dir = get_files_path(socket);
+    string tmp_dir = path;
     if (full_path.size()<tmp_dir.size() || full_path.compare(0,files_path.size(),files_path)){
         throw Exception(ERR_ACCESS_DENIED);
     }
@@ -373,7 +366,7 @@ string Commands::cmd_cd(string cmd, unsigned int socket){
             throw Exception(ERR_ACCESS_DENIED);
         }
     }
-    set_user_path(tmp_dir.substr(0,tmp_dir.size()),socket);
+    set_user_path(tmp_dir,socket);
     return "";
 }
 
@@ -401,11 +394,11 @@ string Commands::cmd_rm(string cmd, unsigned int socket){
     cmd = remove_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
-    string path = get_full_path(socket) + "/" + cmd;
+    string path_ = get_full_path(socket) + "/" + cmd;
 
     char command[] = "/bin/rm";
     char arg0[] = "-r";
-    char *arg1 = &path[0u];
+    char *arg1 = &path_[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
 
@@ -415,7 +408,7 @@ string Commands::cmd_rm(string cmd, unsigned int socket){
 }
 
 // TODO : check correctness of parameters for get and put
-string Commands::cmd_get(string cmd, unsigned int socket){
+string Commands::cmd_get(string cmd, unsigned int){
     cmd = remove_front_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
@@ -425,14 +418,6 @@ string Commands::cmd_get(string cmd, unsigned int socket){
 
     string filename = separator.substr(0, separator.find(" "));
 
-    // Get the current dir path of the user (i.e. if he made mkdir + cd)
-    string dirPath = auth.getUser(socket).getPath();
-
-    // Check if the user is in its basepath, otheriwe rewrite the filename to upload in the right folder
-    if (dirPath != auth.getUser(socket).getFilesPath()) {
-        filename = dirPath.substr(dirPath.find("/", 1) + 1, dirPath.size()) + "/" + filename;
-    }
-
     // Remove the last \n otherwise the filename is invalid
     return filename;
 }
@@ -440,19 +425,9 @@ string Commands::cmd_get(string cmd, unsigned int socket){
 string Commands::cmd_put(string cmd, unsigned int socket){
   cmd = remove_front_spaces(cmd);
   require_parameters(cmd);
-
   // Get the filename and checks if its correct
   string filename = cmd.substr(0, cmd.find(" "));
-
   check_filename(filename);
-
-  // Get the current dir path of the user (i.e. if he made mkdir + cd)
-  string dirPath = auth.getUser(socket).getPath();
-
-  // Check if the user is in its basepath, otheriwe rewrite the filename to upload in the right folder
-  if (dirPath != auth.getUser(socket).getFilesPath()) {
-      filename = dirPath.substr(dirPath.find("/", 1) + 1, dirPath.size()) + "/" + filename;
-  }
 
   string current_folder = get_relative_path(socket);
   if (current_folder.size() + cmd.size() > PATH_MAX_LEN){

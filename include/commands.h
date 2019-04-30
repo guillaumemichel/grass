@@ -44,9 +44,21 @@ const string str_pwd    = "pwd";
 const string str_bye    = "bye!";
 const string str_nodata = "__nodata__";
 
+const string files_dir = "files";
+
 class Commands {
 public:
     explicit Commands(const Configuration config);
+
+    /**
+     * Get the path to the home file directory of the current user. The path is
+     * given from the root of the host machine
+     * @method get_files_path
+     * @param  config         the config with informations to the files path
+     * @return                the path to the home file directory of the given user
+     */
+    static string get_files_path(const Configuration config);
+
 
     /**
      * Sanitize the given command and either execute it and returns the output
@@ -69,7 +81,6 @@ public:
      * @return          the output of the system call
      */
     static string call_cmd(const char* command, char * const * argv, char * const * envp);
-
 
 private:
 
@@ -150,15 +161,6 @@ private:
     void check_path(string path);
 
     /**
-     * Get the path to the home file directory of the current user. The path is
-     * given from the root of the host machine
-     * @method get_files_path
-     * @param  socketID       the socket identifier to identify the user
-     * @return                the path to the home file directory of the given user
-     */
-    string get_files_path(unsigned int socketID);
-
-    /**
      * Get the current path of the given user. Each user has its current relative
      * path stored and this gives back the path from the root of the host machine
      * @method get_full_path
@@ -183,6 +185,8 @@ private:
      */
     string get_relative_path(unsigned int socketID);
 
+    string absolute_to_relative(string abso);
+
     /**
      * Check if the directory given by name exists in the directory given by dir,
      * return an exception with message if the directory doesn't exists
@@ -200,7 +204,7 @@ private:
      * @method  cmd_pwd
      * @return  the output of the command pwd
      */
-    string cmd_pwd();
+    static string cmd_pwd();
 
     /**
      * Executes the login command
