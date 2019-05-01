@@ -160,8 +160,60 @@ void Commands::check_path(string str){
 string Commands::get_files_path(const Configuration config){
     string pwd = cmd_pwd();
     pwd = pwd.substr(0,pwd.size()-1);
-    string base = deal_with_path(config.getBase(),pwd,pwd,"/");
-    return base+"/"+files_dir;
+    string base = config.getBase();
+    //string base = deal_with_path(config.getBase(),pwd,pwd,"/");
+
+    base = remove_spaces(base);
+    //the home directory is considered to be "/"
+    string tmp_dir = "/";
+
+    if (base=="" or base==".") tmp_dir = pwd;
+    else if (base=="/") return "/"+files_dir;
+    else {
+        check_path(base);
+        string full_path;
+        if (base[0]=='/'){
+            full_path= base;
+        } else {
+            full_path=pwd+"/"+base;
+        }
+        while(full_path[full_path.size()-1]=='/'){
+            full_path = full_path.substr(0, full_path.size()-1);
+        }
+        size_t divider = full_path.find_last_of("/");
+        //string name = full_path.substr(1);
+        string tmp_end;
+        if (full_path==tmp_dir) tmp_end = "/";
+        else tmp_end=full_path+"/";
+        while(tmp_end!="" && tmp_end[0]=='/'){
+            tmp_end = tmp_end.substr(1);
+        }
+        string tmp_name;
+
+        int index;
+        while ((index=tmp_end.find_first_of("/"))>0){
+            while(tmp_end!="" && tmp_end[0]=='/'){
+                tmp_end = tmp_end.substr(1);
+            }
+            tmp_name = "/"+tmp_end.substr(0,index);
+            tmp_end = tmp_end.substr(index+1);
+            while(tmp_end[0]=='/'){
+                tmp_end = tmp_end.substr(1);
+            }
+            if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1),base);
+
+            if (tmp_name == "/.."){
+                tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
+            } else {
+                tmp_dir = tmp_dir + tmp_name;
+            }
+        }
+    }
+    while(tmp_dir != "" && tmp_dir[0]=='/'){
+        tmp_dir = tmp_dir.substr(1);
+    }
+
+    return "/"+tmp_dir+"/"+files_dir;
 }
 
 string Commands::get_full_path(unsigned int socket){
