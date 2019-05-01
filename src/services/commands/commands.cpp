@@ -47,7 +47,6 @@ public:
 Commands::Commands(const Configuration config): conf(config), auth(config) {
     try {
         path = get_files_path(config);
-        cout << path << endl;
     } catch (Exception e){
         e.print_error();
         cout << "Base directory in the config is wrong!" << endl;
@@ -55,20 +54,16 @@ Commands::Commands(const Configuration config): conf(config), auth(config) {
 }
 
 string Commands::exec(string cmd, unsigned int socket){
+    if (cmd==str_nodata) return cmd;
 
-    try{
-        if (cmd==str_nodata) return cmd;
+    string response = sanitize(cmd, socket);
 
-        string response = sanitize(cmd, socket);
-
-        if (response=="") {
-            return str_nodata;
-        }
-        if (response[response.size()-1]!='\n') response += '\n';
-        return response;
-    } catch(Exception& e) {
-        return e.print_error();
+    if (response=="") {
+        return str_nodata;
     }
+    if (response[response.size()-1]!='\n') response += '\n';
+
+    return response;
 }
 
 string Commands::sanitize(string full_cmd, unsigned int socket){
@@ -165,8 +160,58 @@ void Commands::check_path(string str){
 string Commands::get_files_path(const Configuration config){
     string pwd = cmd_pwd();
     pwd = pwd.substr(0,pwd.size()-1);
-    string base = deal_with_path(config.getBase(),pwd,pwd,"/");
-    return base+"/"+files_dir;
+    string base = config.getBase();
+    //string base = deal_with_path(config.getBase(),pwd,pwd,"/");
+
+    base = remove_spaces(base);
+    //the home directory is considered to be "/"
+    string tmp_dir = "/";
+
+    if (base=="" or base==".") tmp_dir = pwd;
+    else if (base=="/") return "/"+files_dir;
+    else {
+        check_path(base);
+        string full_path;
+        if (base[0]=='/'){
+            full_path= base;
+        } else {
+            full_path=pwd+"/"+base;
+        }
+        while(full_path[full_path.size()-1]=='/'){
+            full_path = full_path.substr(0, full_path.size()-1);
+        }
+        string tmp_end;
+        if (full_path==tmp_dir) tmp_end = "/";
+        else tmp_end=full_path+"/";
+        while(tmp_end!="" && tmp_end[0]=='/'){
+            tmp_end = tmp_end.substr(1);
+        }
+        string tmp_name;
+
+        int index;
+        while ((index=tmp_end.find_first_of("/"))>0){
+            while(tmp_end!="" && tmp_end[0]=='/'){
+                tmp_end = tmp_end.substr(1);
+            }
+            tmp_name = "/"+tmp_end.substr(0,index);
+            tmp_end = tmp_end.substr(index+1);
+            while(tmp_end[0]=='/'){
+                tmp_end = tmp_end.substr(1);
+            }
+            if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1),base);
+
+            if (tmp_name == "/.."){
+                tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
+            } else {
+                tmp_dir = tmp_dir + tmp_name;
+            }
+        }
+    }
+    while(tmp_dir != "" && tmp_dir[0]=='/'){
+        tmp_dir = tmp_dir.substr(1);
+    }
+
+    return "/"+tmp_dir+"/"+files_dir;
 }
 
 string Commands::get_full_path(unsigned int socket){
@@ -392,7 +437,7 @@ string Commands::cmd_rm(string cmd, unsigned int socket){
     return ret;
 }
 
-string Commands::cmd_get(string cmd, unsigned int){
+string Commands::cmd_get(string cmd, unsigned int socket){
     cmd = remove_front_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
@@ -400,15 +445,16 @@ string Commands::cmd_get(string cmd, unsigned int){
     // Get the filename
     string separator = cmd.substr(cmd.find(" ") + 1);
 
-    string filename = separator.substr(0, separator.find(" "));
+    // Extract filename and prepend basepath
+    string filename = get_full_path(socket) + "/" + separator.substr(0, separator.find(" "));
 
-    // Remove the last \n otherwise the filename is invalid
     return filename;
 }
 
 string Commands::cmd_put(string cmd, unsigned int socket){
   cmd = remove_front_spaces(cmd);
   require_parameters(cmd);
+
   // Get the filename and checks if its correct
   string filename = cmd.substr(0, cmd.find(" "));
   check_filename(filename);
@@ -417,6 +463,9 @@ string Commands::cmd_put(string cmd, unsigned int socket){
   if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
       throw Exception(ERR_PATH_TOO_LONG);
   }
+
+  // Append the base path to the filename
+  filename = get_full_path(socket) + "/" + filename;
 
   // Get the size
   int size = std::stoi(cmd.substr(cmd.find(" ") + 1));
@@ -438,7 +487,7 @@ string Commands::cmd_grep(string pattern, unsigned int socket){
     // List all possible files
     stringstream matches;
     char command[] = "/usr/bin/find";
-    string arg0 = get_full_path(socket) + "/";
+    string arg0 = get_full_path(socket);
     char arg1[] = "-type";
     char arg2[] = "f";
     char * const argv[] = {command, &arg0[0u], arg1, arg2,  NULL};
@@ -458,8 +507,8 @@ string Commands::cmd_grep(string pattern, unsigned int socket){
         fr.readFileVector(fileLines);
         for(const auto& line: fileLines)
             fileContent << line;
-        if(regex_match(fileContent.str(), re))
-            matches << file.substr(get_full_path(socket).size(), file.size()) << '\n';
+        if((fileContent.str().find(pattern) != string::npos || (regex_match(fileContent.str(), re))) && file.size()>=arg0.size())
+            matches << file.substr(arg0.size(), file.size()) << '\n';
     }
     return matches.str().substr(0, matches.str().size()-1);
 }

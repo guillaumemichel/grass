@@ -10,7 +10,6 @@
 using namespace std;
 
 void ClientLauncher::downloadFile(string filename, unsigned int size, string serverIP, unsigned int port) {
-    cout << "Starting new thread to receive the file from the server" << endl;
     ClientSocket client(serverIP, port);
 
     ClientLauncher::fileTransferConnect(&client);
@@ -23,7 +22,6 @@ void ClientLauncher::downloadFile(string filename, unsigned int size, string ser
 
 
 void ClientLauncher::uploadFile(string filename, string serverIP, unsigned int port) {
-    cout << "Starting new thread to send the file to the server" << endl;
     ClientSocket client(serverIP, port);
 
     ClientLauncher::fileTransferConnect(&client);
@@ -147,11 +145,21 @@ ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, v
 }
 
 string ClientLauncher::processCommand(ClientSocket client, string command, string serverIP) {
+    // The command without arguments
+    string cmdWithoutArgs = command.substr(0, command.find(" "));
+
     // TODO : refactor put & get command (same stuff)
     // TODO : create constant for command names
     // If a file must be upload
-    if (command.substr(0, 3) == "put") {
+    if (cmdWithoutArgs == "put") {
+        // Get the args of the command
         string removePut = command.substr(command.find(" ") + 1);
+
+        // If no args, we throw an exception
+        if (removePut == "" || removePut == "put") {
+            throw Exception(ERR_INVALID_ARGS);
+        }
+
         string filename = removePut.substr(0, removePut.find(" "));
         int size = stoi(removePut.substr(removePut.find(" ") + 1));
 
@@ -175,21 +183,30 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         // Wait for the server answer
         string read = client.readFromServer();
 
-        // Parse the port number
-        cout << read << endl;
-        int port = stoi(read.substr(read.find(":") + 2));
+        // Check if the receive string is good, otherwise there was an error on the server side
+        if (read.substr(0, 3) == "put") {
+            // Parse the port number
+            int port = stoi(read.substr(read.find(":") + 2));
 
-        // Upload the file
-        thread t1(ClientLauncher::uploadFile, filename, serverIP, port);
-        t1.join();
+            // Upload the file
+            thread t1(ClientLauncher::uploadFile, filename, serverIP, port);
+            t1.join();
+        } else {
+            // Display the error
+            cout << read;
+        }
 
         // Return empty strings for transfer operation
         return "";
-    } else if (command.substr(0, 3) == "get") {
+    } else if (cmdWithoutArgs == "get") {
+        // Get the args of the command
         string removeGet = command.substr(command.find(" ") + 1);
+
+        // If no args, throw an exception
         if (removeGet == "" || removeGet == "get") {
             throw Exception(ERR_INVALID_ARGS);
         }
+
         string filename = removeGet.substr(0, removeGet.find(" "));
 
         // Send the command to the server
@@ -198,9 +215,9 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
         // Wait for the server answer
         string read = client.readFromServer();
 
-        cout << read << endl;
         // Check if the message has the expected form
         if (read.substr(0, 3) == "get") {
+            // Not too much precaution here on the parsing because we assume the server sends the right stuff
             int port = stoi(read.substr(read.find(":") + 2));
             string withoutPort = read.substr(read.find(":") + 1);
             int size = stoi(withoutPort.substr(withoutPort.find(":") + 2));
@@ -208,6 +225,9 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
             // Download the file
             thread t1(ClientLauncher::downloadFile, filename, size, serverIP, port);
             t1.join();
+        } else {
+            // Display the error
+            cout << read;
         }
 
         // Return empty strings for transfer operation

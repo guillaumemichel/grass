@@ -37,8 +37,8 @@ string ClientSocket::readCommand() {
 
     cout << ">>> ";
     getline(cin, command);
-    if (command=="") return str_nodata;
-    else if(command==str_nodata) return "invalid";
+    if (command == "") return str_nodata;
+    else if (command == str_nodata) return "invalid";
     else return command;
 }
 
@@ -55,10 +55,10 @@ string ClientSocket::readFromServer() {
         if (-1 == valRead) {
             throw Exception(ERR_NETWORK_READ_SOCKET);
         } else {
-            if (!strncmp(buffer,(str_nodata).c_str(),str_nodata.size())){
-              return "";
+            if (!strncmp(buffer, (str_nodata).c_str(), str_nodata.size())) {
+                return "";
             }
-            size_t len = (strlen(buffer)>SOCKET_BUFFER_SIZE) ? SOCKET_BUFFER_SIZE : strlen(buffer);
+            size_t len = (strlen(buffer) > SOCKET_BUFFER_SIZE) ? SOCKET_BUFFER_SIZE : strlen(buffer);
             return string(buffer, len);
         }
     } else {
@@ -67,33 +67,35 @@ string ClientSocket::readFromServer() {
 }
 
 void ClientSocket::uploadFile(string filename) {
-    // TODO : change by conf.getPath()
-    filename = "./" + filename;
-    FileReader fileReader(filename);
+    try {
+        FileReader fileReader(filename);
 
-    // We first read the file
-    vector <string> vecOfStr;
-    fileReader.readFileVector(vecOfStr);
+        // We first read the file
+        vector <string> vecOfStr;
+        fileReader.readFileVector(vecOfStr);
 
-    // Then we send the lines 1 by 1
-    vector<string>::iterator it;
-    for (it = vecOfStr.begin(); it != vecOfStr.end(); ++it) {
+        // Then we send the lines 1 by 1
+        vector<string>::iterator it;
 
-        // Mandatory appending \n
-        string toSend = *it + "\n";
-        this->sendToServer(toSend);
+        // The big string in which we'll store the file (yes it's not efficient I know)
+        string big = "";
+
+        for (it = vecOfStr.begin(); it != vecOfStr.end(); it++) {
+            // Mandatory appending \n
+            string toSend = *it + "\n";
+            big += toSend;
+        }
+
+        this->sendToServer(big);
+
+        cout << "File uploaded!" << endl;
+    } catch (Exception &e) {
+        e.print_error();
+        cout << "The upload was stopped due to an error." << endl;
     }
-
-    cout << "File uploaded!" << endl;
 }
 
 void ClientSocket::downloadFile(string filename, unsigned int size) {
-    // Get the base path
-    Configuration conf = Configuration("grass.conf");
-
-    // Rewrite the filename to the download directory
-    filename = conf.getBase() + filename;
-
     // Create a file writer to write the file
     FileWriter fw(filename);
 
