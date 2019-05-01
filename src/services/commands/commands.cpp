@@ -509,7 +509,7 @@ string Commands::cmd_grep(string pattern, unsigned int socket){
         fr.readFileVector(fileLines);
         for(const auto& line: fileLines)
             fileContent << line;
-        if(regex_match(fileContent.str(), re) && file.size()>=arg0.size())
+        if((fileContent.str().find(pattern) != string::npos || (regex_match(fileContent.str(), re))) && file.size()>=arg0.size())
             matches << file.substr(arg0.size(), file.size()) << '\n';
     }
     return matches.str().substr(0, matches.str().size()-1);
