@@ -437,7 +437,7 @@ string Commands::cmd_rm(string cmd, unsigned int socket){
     return ret;
 }
 
-string Commands::cmd_get(string cmd, unsigned int){
+string Commands::cmd_get(string cmd, unsigned int socket){
     cmd = remove_front_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
@@ -446,7 +446,7 @@ string Commands::cmd_get(string cmd, unsigned int){
     string separator = cmd.substr(cmd.find(" ") + 1);
 
     // Extract filename and prepend basepath
-    string filename = "./" + files_dir + "/" + separator.substr(0, separator.find(" "));
+    string filename = get_full_path(socket) + "/" + separator.substr(0, separator.find(" "));
 
     return filename;
 }
@@ -465,7 +465,7 @@ string Commands::cmd_put(string cmd, unsigned int socket){
   }
 
   // Append the base path to the filename
-  filename = "./" + files_dir + "/" + filename;
+  filename = get_full_path(socket) + "/" + filename;
 
   // Get the size
   int size = std::stoi(cmd.substr(cmd.find(" ") + 1));
