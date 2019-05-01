@@ -180,8 +180,6 @@ string Commands::get_files_path(const Configuration config){
         while(full_path[full_path.size()-1]=='/'){
             full_path = full_path.substr(0, full_path.size()-1);
         }
-        size_t divider = full_path.find_last_of("/");
-        //string name = full_path.substr(1);
         string tmp_end;
         if (full_path==tmp_dir) tmp_end = "/";
         else tmp_end=full_path+"/";
