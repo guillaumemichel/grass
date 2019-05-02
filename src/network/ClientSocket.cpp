@@ -58,7 +58,6 @@ string ClientSocket::readFromServer() {
 
         do {
             bytes_read = recv(this->getSocket(), buffer, SOCKET_BUFFER_SIZE, 0);
-            cout << "-> " << bytes_read << endl;
             if (bytes_read > 0) {
                 string line(buffer, bytes_read);
                 r += line;
