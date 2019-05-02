@@ -126,5 +126,7 @@ void ClientSocket::downloadFile(string filename, unsigned int size) {
         // Finally we clean and free the buffer
         memset(buffer, 0, size);
         free(buffer);
+
+        cout << "File downloaded!" << endl;
     }
 }
