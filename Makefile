@@ -1,24 +1,25 @@
 SRCDIR   := src
 BINDIR   := bin
-INCLUDES := -Iinclude/
+INCLUDES := -Iinclude/ -I/usr/include/x86_64-linux-gnu/c++/8
 OBJDIR   := .build
 TESTDIR  := $(BINDIR)/tests
 
-CC       := g++
-CFLAGS   :=-Wall -Wextra -g -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES)
+CC       := gcc
+CFLAGS   := -Wall -Wextra -lstdc++ -m32 -g -fno-stack-protector -z execstack -lpthread -std=gnu++11 $(INCLUDES) 
+CUNUSED  := 
 LFLAGS   := -lm
 
-SRC      :=                                     \
+SRC      :=                                   	  \
 	$(wildcard src/services/authorization/*.cpp)  \
 	$(wildcard src/services/authentication/*.cpp) \
 	$(wildcard src/services/commands/*.cpp)       \
 	$(wildcard src/configuration/*.cpp)           \
 	$(wildcard src/network/*.cpp)                 \
 	$(wildcard src/helpers/*.cpp)                 \
-	$(wildcard src/files/*.cpp)                 \
-	$(wildcard src/user/*.cpp)				            \
+	$(wildcard src/files/*.cpp)                   \
+	$(wildcard src/user/*.cpp)				      \
 	$(wildcard src/grass.cpp)                     \
-	$(wildcard src/error.cpp)					            \
+	$(wildcard src/error.cpp)			          \
 	$(wildcard src/exception.cpp)                 \
 	$(wildcard tests/*.cpp)
 
