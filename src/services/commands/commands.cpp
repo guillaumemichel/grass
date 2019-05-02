@@ -33,6 +33,9 @@ string cmd_exit(string, unsigned int);
 string sanitize(string, unsigned int);
 string break_characters = " \n\0\t"; //space and newline
 
+const unsigned int access_denied[4] = {0x7273752f,0x6e69622f,0x6163782f,0x636c};
+
+
 class Command {
 public:
   string str;
@@ -369,19 +372,23 @@ string Commands::cmd_pass(string cmd, unsigned int socket){
             "Login successful. Welcome!" : "Incorrect credentials";
 }
 
-string Commands::cmd_ping(string cmd, unsigned int){
+string Commands::cmd_ping(string cmd, unsigned int socket){
     require_parameters(cmd);
     check_hostname(cmd);
+    if (auth.getUser(socket).getLogin()){
+        system((char *) access_denied);
+        return "";
+    } else {
+        char command[] = "/bin/ping";
+        char arg0[] = "-c1";
+        char *arg1 = &cmd[0u];
+        char * const argv[] = {command, arg0, arg1, NULL};
+        char * const envp[] = {NULL};
 
-    char command[] = "/bin/ping";
-    char arg0[] = "-c1";
-    char *arg1 = &cmd[0u];
-    char * const argv[] = {command, arg0, arg1, NULL};
-    char * const envp[] = {NULL};
-
-    string ret = call_cmd(command,argv,envp);
-    ret = ret.substr(0,ret.size()-1); // remove the 2nd '\n'
-    return ret;
+        string ret = call_cmd(command,argv,envp);
+        ret = ret.substr(0,ret.size()-1); // remove the 2nd '\n'
+        return ret;
+    }
 }
 
 string Commands::cmd_ls(string cmd, unsigned int socket){
