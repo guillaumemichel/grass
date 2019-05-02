@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 #include "Configuration.h"
 #include "exception.h"
+#include <sys/ioctl.h>
 
 #ifndef ASS_ON_THE_GRASS_SOCKET_H
 #define ASS_ON_THE_GRASS_SOCKET_H
@@ -53,6 +54,11 @@ public:
      * @return the socket
      */
     int getSocket();
+
+    /**
+     * The size to read from the socket. This is equal to 2^15.
+     */
+    static const unsigned int SOCKET_BUFFER_SIZE = 64;
 
 protected:
     /**
@@ -93,11 +99,6 @@ protected:
      * The port.
      */
     unsigned int port;
-
-    /**
-     * The size to read from the socket. This is equal to 2^15.
-     */
-    const unsigned int SOCKET_BUFFER_SIZE = 32768;
 };
 
 
