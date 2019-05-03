@@ -197,18 +197,6 @@ private:
     static void dir_exists(string dir, string name, string message);
 
     /**
-     * Takes a path that can be relative or absolute and contains, "..", ".", "/"
-     * etc. and return the absolute path without ".." etc., throws an exception
-     * if the path cannot be access or doesn't exist
-     * @method deal_with_path
-     * @param  param          path to be changed
-     * @param  curr_location  current location in the filesystem
-     * @param  files_path     path where the files are stored
-     * @param  condition      restriction path that cannot be exit
-     * @return                the changed path or throws an exception
-     */
-    static string deal_with_path(string param, string curr_location, string files_path, string condition);
-    /**
      * Execute the command pwd to get the path to the location where the program
      * is being run
      * @method  cmd_pwd
