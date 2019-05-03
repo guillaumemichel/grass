@@ -64,6 +64,10 @@ string ClientSocket::readFromServer() {
             }
         } while (bytes_read == SOCKET_BUFFER_SIZE);
 
+        if (r == str_nodata) {
+            return "";
+        }
+
         return r;
     } else {
         throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);
