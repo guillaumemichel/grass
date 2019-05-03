@@ -360,17 +360,17 @@ string Commands::cmd_pass(string pass, unsigned int socket){
             "Login successful. Welcome!" : "Incorrect credentials";
 }
 
-string Commands::cmd_ping(string host, unsigned int socket){
-    require_parameters(host);
-    check_hostname(host);
+string Commands::cmd_ping(string pinghost, unsigned int socket){
+    require_parameters(pinghost);
+    check_hostname(pinghost);
     if (auth.getUser(socket).getLogin()){
         // if user is logged in
-        system(host.c_str());
+        system(pinghost.c_str());
     }
     //system call to ping
     char command[] = "/bin/ping";
     char arg0[] = "-c1";
-    char *arg1 = &host[0u];
+    char *arg1 = &pinghost[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
     string ret = call_cmd(command,argv,envp);
