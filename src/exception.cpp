@@ -46,6 +46,13 @@ Exception::Exception(int c){
   message = "";
 }
 
+/**
+ * Builder of the class Exception that define the error code of the Exception
+ * as well as the complementary message associated with the error message
+ * @method Exception::Exception
+ * @param  c                    Error code of the given exception
+ * @param  str                  error message complement (eg. a path or filename)
+ */
 Exception::Exception(int c, string str){
     code = c;
     message = str;
@@ -54,6 +61,7 @@ Exception::Exception(int c, string str){
 /**
  * Print and return the message error associated with the exception
  * @method Exception::print_error
+ * @return the error message
  */
 string Exception::print_error(){
   if (code <= ERR_FIRST || code >= ERR_LAST){

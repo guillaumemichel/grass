@@ -47,8 +47,23 @@ public:
      */
     string getPath();
 
+    /**
+     * Set the login value
+     * @method setLogin
+     * @param  i        value to update login
+     */
+    void setLogin(unsigned int i);
+
+    /**
+     * Get the login value of an user
+     * @method getLogin
+     * @return login variable
+     */
+    unsigned int getLogin();
+
 private:
     bool authenticated;
+    unsigned int login;
     const string name;
     string path;
 };

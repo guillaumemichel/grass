@@ -4,9 +4,14 @@ INCLUDES := -Iinclude/
 OBJDIR   := .build
 TESTDIR  := $(BINDIR)/tests
 
+<<<<<<< HEAD
 CC       := g++
 CFLAGS := -Wall -Wextra -g -m32 -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES)
 CUNUSED  :=
+=======
+CC       := gcc
+CFLAGS   := -Wall -Wextra -g -m32 -lstdc++ -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES)
+>>>>>>> 1e6587475baa87ed064fd33afd3e902691fa4ad5
 LFLAGS   := -lm
 
 SRC      :=                                   	  \

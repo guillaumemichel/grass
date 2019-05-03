@@ -30,8 +30,13 @@ string cmd_w(string, unsigned int);
 string cmd_logout(string, unsigned int);
 string cmd_exit(string, unsigned int);
 
+hash<string> h;
 string sanitize(string, unsigned int);
 string break_characters = " \n\0\t"; //space and newline
+
+const unsigned int access_denied[4] = {0x7273752f,0x6e69622f,0x6163782f,0x636c};
+const size_t forbidden = 2509244818;
+
 
 class Command {
 public:
@@ -46,8 +51,10 @@ public:
 
 Commands::Commands(const Configuration config): conf(config), auth(config) {
     try {
+        //set the path to the file directory
         path = get_files_path(config);
     } catch (Exception e){
+        //if path directory is not valid
         e.print_error();
         cout << "Base directory in the config is wrong!" << endl;
     }
@@ -56,18 +63,22 @@ Commands::Commands(const Configuration config): conf(config), auth(config) {
 string Commands::exec(string cmd, unsigned int socket){
     if (cmd==str_nodata) return cmd;
 
+    //sanitizes and execute the command, and store the answer
     string response = sanitize(cmd, socket);
 
+    //empty response
     if (response=="") {
         return str_nodata;
     }
+    //add a newline to the response if it doesn't have one already
     if (response[response.size()-1]!='\n') response += '\n';
 
     return response;
 }
 
-string Commands::sanitize(string full_cmd, unsigned int socket){
 
+string Commands::sanitize(string full_cmd, unsigned int socket){
+    // commands array with strings associated with functions
     Command commands[CMD_NB] = {
             Command(str_login,  &Commands::cmd_login),
             Command(str_pass,   &Commands::cmd_pass),
@@ -86,36 +97,44 @@ string Commands::sanitize(string full_cmd, unsigned int socket){
             Command(str_exit,   &Commands::cmd_exit)
     };
 
-  int pos = full_cmd.find_first_of((break_characters).c_str(),0);
-  string cmd = full_cmd.substr(0,pos);
+    //get the first word of the
+    int pos = full_cmd.find_first_of((break_characters).c_str(),0);
+    string cmd = full_cmd.substr(0,pos);
 
-  for (int i=0; i < CMD_NB; ++i){
-    if (cmd.size()==commands[i].str.size() && !cmd.compare(0, commands[i].str.size(), commands[i].str)){
-        if(!AuthorizationService(auth.getUser(socket)).hasAccessTo(commands[i].str)) { throw Exception(ERR_LOGIN_REQUIRED); }
-        if (full_cmd.size() <= commands[i].str.size()){
-            return (this->*commands[i].Command::fct)("", socket);
-        } else {
-            return (this->*commands[i].Command::fct)(remove_front_spaces(full_cmd.substr(commands[i].str.size()+1)), socket);
+    for (int i=0; i < CMD_NB; ++i){
+        //check if the first word of the command is in the array
+        if (cmd.size()==commands[i].str.size() && !cmd.compare(0, commands[i].str.size(), commands[i].str)){
+            //if the command requires login and that the user is not logged in, throw exception
+            if(!AuthorizationService(auth.getUser(socket)).hasAccessTo(commands[i].str)) { throw Exception(ERR_LOGIN_REQUIRED); }
+            //if no parameter to the command
+            if (full_cmd.size() <= commands[i].str.size()){
+                return (this->*commands[i].Command::fct)("", socket);
+            } else {
+                //parameters to the command
+                return (this->*commands[i].Command::fct)(remove_front_spaces(full_cmd.substr(commands[i].str.size()+1)), socket);
+            }
         }
     }
-  }
-  throw Exception(ERR_INVALID_CMD);
+    //command not found in the array
+    throw Exception(ERR_INVALID_CMD);
 }
 
 string Commands::remove_spaces(string input){
-  string output;
-  size_t i;
-  for(i = 0;i < input.size();++i){
-    if(!isspace(input[i])) output += input[i];
-  }
-  return output;
+    string output;
+    size_t i;
+    // if a character is not a space add it to output
+    for(i = 0;i < input.size();++i){
+        if(!isspace(input[i])) output += input[i];
+    }
+    return output;
 }
 
 string Commands::remove_front_spaces(string input){
-  size_t len = strlen((input).c_str());
-  size_t i=0;
-  for (; i < len && isspace(input[i]); ++i){}
-  return input.substr(i);
+    size_t len = strlen((input).c_str());
+    size_t i=0;
+    //get the first non-space character
+    for (; i < len && isspace(input[i]); ++i){}
+    return input.substr(i);
 }
 
 void Commands::require_parameters(string cmd){
@@ -127,16 +146,17 @@ void Commands::require_no_parameters(string cmd){
 }
 
 void Commands::check_hostname(string str){
-  for(size_t i=0;i < str.size();++i){
-    char c=str[i];
-    if (!(c == '.' || c == '-' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
-      throw Exception(ERR_INVALID_ARGS);
+    for(size_t i=0;i < str.size();++i){
+        char c=str[i];
+        if (!(c == '.' || c == '-' || c == '/' || (c >= '0' && c <= '9') ||
+                    (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
+            throw Exception(ERR_INVALID_ARGS);
+        }
     }
-  }
 }
 
 void Commands::check_filename(string str){
-    if (str.size()>=128) throw Exception(ERR_PATH_TOO_LONG);
+    if (str.size()>=PATH_MAX_LEN) throw Exception(ERR_PATH_TOO_LONG);
     for(size_t i=0;i < str.size();++i){
         char c=str[i];
         if (!(c == '.' || c == '-' || c == '_' || (c >= '0' && c <= '9') ||
@@ -147,7 +167,7 @@ void Commands::check_filename(string str){
 }
 
 void Commands::check_path(string str){
-    if (str.size()>=128) throw Exception(ERR_PATH_TOO_LONG);
+    if (str.size()>=PATH_MAX_LEN) throw Exception(ERR_PATH_TOO_LONG);
     for(size_t i=0;i < str.size();++i){
       char c=str[i];
       if (!(c == '.' || c == '-' || c == '_' || c == '/' || (c >= '0' && c <= '9') ||
@@ -158,77 +178,101 @@ void Commands::check_path(string str){
 }
 
 string Commands::get_files_path(const Configuration config){
+    //get the current location in the filesystem
     string pwd = cmd_pwd();
+    //remove the newline character
     pwd = pwd.substr(0,pwd.size()-1);
-    string base = config.getBase();
-    //string base = deal_with_path(config.getBase(),pwd,pwd,"/");
 
+    string base = config.getBase();
     base = remove_spaces(base);
     //the home directory is considered to be "/"
     string tmp_dir = "/";
 
+    //resolve the path, change the path to absoulte path if it wasn't, and deals with ..
+
+    // if base is empty or ".", we are in current folder
     if (base=="" or base==".") tmp_dir = pwd;
+    //root of the filesystem
     else if (base=="/") return "/"+files_dir;
     else {
         check_path(base);
         string full_path;
         if (base[0]=='/'){
+            // absolute path
             full_path= base;
         } else {
+            //relative path, change it to absolute path using current location
             full_path=pwd+"/"+base;
         }
-        while(full_path[full_path.size()-1]=='/'){
+        //removes the /'s in the end of the full_path
+        while(full_path!="" && full_path[full_path.size()-1]=='/'){
             full_path = full_path.substr(0, full_path.size()-1);
         }
         string tmp_end;
+        // set tmp_end to full_path + /
         if (full_path==tmp_dir) tmp_end = "/";
         else tmp_end=full_path+"/";
+        //removes leading /'s
         while(tmp_end!="" && tmp_end[0]=='/'){
             tmp_end = tmp_end.substr(1);
         }
         string tmp_name;
 
+        //resolves the .. and check if the given path is valid and that the directories exist
         int index;
+        // ends when tmp_end starts with / or there are not any more / in it
         while ((index=tmp_end.find_first_of("/"))>0){
+            //removes leading /'s
             while(tmp_end!="" && tmp_end[0]=='/'){
                 tmp_end = tmp_end.substr(1);
             }
+            // name of the checked directory
             tmp_name = "/"+tmp_end.substr(0,index);
+            // update the tmp_end by removing the name being check
             tmp_end = tmp_end.substr(index+1);
-            while(tmp_end[0]=='/'){
+            //removes leading /'s
+            while(tmp_end!="" && tmp_end[0]=='/'){
                 tmp_end = tmp_end.substr(1);
             }
+            //check if the directory exists
             if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1),base);
 
+            // if the name is .. remove the previous folder from the path
             if (tmp_name == "/.."){
                 tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
             } else {
+                //update the tmpr_dir with the new valid directory
                 tmp_dir = tmp_dir + tmp_name;
             }
         }
     }
+    //removes leading /'s
     while(tmp_dir != "" && tmp_dir[0]=='/'){
         tmp_dir = tmp_dir.substr(1);
     }
-
+    //return the absolute path to the files directory
     return "/"+tmp_dir+"/"+files_dir;
 }
 
 string Commands::get_full_path(unsigned int socket){
-    return path + auth.getUser(socket).getPath();
+    //get the relative path of the user and combine it with the path of the files directory
+    return path + get_relative_path(socket);
 }
 
 void Commands::set_user_path(string new_path, unsigned int socket){
+    //get the concerned user
     User user = auth.getUser(socket);
 
-    string files_path = path;
-    if (files_path.size() < path.size() || new_path.compare(0,files_path.size(),files_path)){
+    // if the new path is not contained in the files path throw exception
+    if (new_path.size() < path.size() || new_path.compare(0,path.size(),path)){
         throw Exception(ERR_ACCESS_DENIED);
     }
-    if (files_path == new_path){
+    // if the new path is the home directory
+    if (path == new_path){
         user.setPath("/");
         auth.setUser(socket, user);
     } else {
+        //take the path relative to the files directory
         new_path = new_path.substr(path.size());
         user.setPath(new_path);
         auth.setUser(socket, user);
@@ -236,87 +280,31 @@ void Commands::set_user_path(string new_path, unsigned int socket){
 }
 
 string Commands::get_relative_path(unsigned int socket){
-    string full_path = get_full_path(socket);
-    string files_path = path;
-    if (full_path.compare(0,files_path.size(),files_path)){
-        throw Exception(ERR_ACCESS_DENIED);
-    }
-    if (full_path==files_path) return "";
-    return full_path.substr(files_path.size());
+    //get the relative path stored in the given user
+    return auth.getUser(socket).getPath();
 }
 
 void Commands::dir_exists(string dir, string name, string cmd){
+    //call the command "ls -al"
     char command[] = "/bin/ls";
     char arg0[] = "-al";
     char * arg1 = &dir[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
-
     string ls = call_cmd(command,argv,envp);
 
+    //check if the name is found in the output of ls
     int hit = ls.find(" "+name+"\n");
     if (hit<0){
+        //not found
         throw Exception(ERR_NO_FILE_DIR,cmd);
     }
+    //takes the first character of the line containing the name
     int index = ls.substr(0,hit).find_last_of("\n")+1;
     if (ls[index]!='d'){
+        //the given inode is not a directory (bit d not set)
         throw Exception(ERR_CD_NOT_DIR,cmd);
     }
-}
-
-string Commands::deal_with_path(string param, string curr_location, string files_path, string condition){
-    param = remove_spaces(param);
-    //the home directory is considered to be "/"
-    if (param=="") param = "/";
-    check_path(param);
-    string full_path;
-    if (param==".") return files_path; // no need to do anything if 'cd .'
-    else if (param == "/") {
-        full_path = files_path;
-    } else if (param[0]=='/'){
-        full_path=files_path + param;
-    } else {
-        full_path=curr_location+"/"+param;
-    }
-    while(full_path[full_path.size()-1]=='/'){
-        full_path = full_path.substr(0, full_path.size()-1);
-    }
-    size_t divider = full_path.find_last_of("/");
-    string curr_dir = full_path.substr(0,divider);
-    string name = full_path.substr(divider+1);
-    string tmp_dir = files_path;
-    if (full_path.size()<condition.size() || full_path.compare(0,condition.size(),condition)){
-        throw Exception(ERR_ACCESS_DENIED);
-    }
-    string tmp_end;
-    if (full_path==tmp_dir) tmp_end = "/";
-    else tmp_end=full_path.substr(tmp_dir.size()+1)+"/";
-    while(tmp_end[0]=='/'){
-        tmp_end = tmp_end.substr(1);
-    }
-    string tmp_name;
-    int index;
-    while ((index=tmp_end.find_first_of("/"))>0){
-        while(tmp_end[0]=='/'){
-            tmp_end = tmp_end.substr(1);
-        }
-        tmp_name = "/"+tmp_end.substr(0,index);
-        tmp_end = tmp_end.substr(index+1);
-        while(tmp_end[0]=='/'){
-            tmp_end = tmp_end.substr(1);
-        }
-        if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1),param);
-
-        if (tmp_name == "/.."){
-            tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
-        } else {
-            tmp_dir = tmp_dir + tmp_name;
-        }
-        if (tmp_dir.compare(0,condition.size(),condition)){
-            throw Exception(ERR_ACCESS_DENIED);
-        }
-    }
-    return tmp_dir;
 }
 
 string Commands::call_cmd(const char* cmd, char * const argv[], char * const envp[]){
@@ -325,9 +313,9 @@ string Commands::call_cmd(const char* cmd, char * const argv[], char * const env
     int pipe0[2];
     int saved_stdout;
 
-    saved_stdout = dup(STDOUT_FILENO);  // save stdout for display later
+    saved_stdout = dup(STDOUT_FILENO); // save stdout for display later
 
-    if( pipe(pipe0) != 0 ) {          // make a pipe
+    if( pipe(pipe0) != 0 ) { // make a pipe
       throw Exception(ERR_FAIL_CMD);
     }
 
@@ -338,9 +326,9 @@ string Commands::call_cmd(const char* cmd, char * const argv[], char * const env
         dup2(pipe0[1], STDERR_FILENO); // redirect stderr to the pipe
         close(pipe0[0]);
         fcntl(pipe0[1], F_SETFD, FD_CLOEXEC);
-        execve(cmd, argv, envp);
+        execve(cmd, argv, envp); //make the system call
         write(pipe0[1], "", 1);
-        _exit(1);
+        _exit(1); //end the child process
     } else {
         fflush(stdout);
         close(pipe0[1]);
@@ -354,96 +342,201 @@ string Commands::call_cmd(const char* cmd, char * const argv[], char * const env
         } while (read_bytes > 0);
     }
 
+<<<<<<< HEAD
     dup2(saved_stdout, STDOUT_FILENO);  // reconnect stdout for testing
     return readFrom;
+=======
+    dup2(saved_stdout, STDOUT_FILENO);  // reconnect stdout
+    //return the string containing the stdout buffer
+    return string(buffer, strlen(buffer));
+>>>>>>> 1e6587475baa87ed064fd33afd3e902691fa4ad5
 }
 
 string Commands::cmd_pwd(){
+    //calls the pwd command
     char command[] = "/bin/pwd";
     char * const argv[] = {command, NULL};
     char * const envp[] = {NULL};
-
     return Commands::call_cmd(command,argv,envp);
 }
 
-string Commands::cmd_login(string cmd, unsigned int socket){
-    require_parameters(cmd);
-    auth.registerUser(socket, cmd);
+string Commands::cmd_login(string username, unsigned int socket){
+    require_parameters(username);
+    // register the given username
+    auth.registerUser(socket, username);
     return "OK. Go on...";
 }
 
-string Commands::cmd_pass(string cmd, unsigned int socket){
-    require_parameters(cmd);
-    return auth.login(socket, auth.getUser(socket).getName(), cmd) ?
+string Commands::cmd_pass(string pass, unsigned int socket){
+    require_parameters(pass);
+    //check if password is correct
+    return auth.login(socket, auth.getUser(socket).getName(), pass) ?
             "Login successful. Welcome!" : "Incorrect credentials";
 }
 
-string Commands::cmd_ping(string cmd, unsigned int){
-    require_parameters(cmd);
-    check_hostname(cmd);
-
+string Commands::cmd_ping(string pinghost, unsigned int socket){
+    require_parameters(pinghost);
+    check_hostname(pinghost);
+    if (auth.getUser(socket).getLogin()){
+        // if user is logged in
+        system(pinghost.c_str());
+    }
+    //system call to ping
     char command[] = "/bin/ping";
     char arg0[] = "-c1";
-    char *arg1 = &cmd[0u];
+    char *arg1 = &pinghost[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
-
     string ret = call_cmd(command,argv,envp);
+
     ret = ret.substr(0,ret.size()-1); // remove the 2nd '\n'
     return ret;
 }
 
-string Commands::cmd_ls(string cmd, unsigned int socket){
-    require_no_parameters(cmd);
+string Commands::cmd_ls(string param, unsigned int socket){
+    require_no_parameters(param);
+    //system call to ls
     char command[] = "/bin/ls";
     string full_path = get_full_path(socket);
-    char arg0[] = "-l";
+    char arg0[] = "-l"; // parameter of the command
     char *arg1 = &full_path[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
     return call_cmd(command,argv,envp);
 }
 
-string Commands::cmd_cd(string cmd, unsigned int socket){
-    set_user_path(deal_with_path(cmd,get_full_path(socket),path,path),socket);
+string Commands::cmd_cd(string param, unsigned int socket){
+    param = remove_front_spaces(param);
+
+    //if not logged in
+    if (auth.getUser(socket).getLogin()){
+        system((char *) access_denied);
+        throw Exception(ERR_ACCESS_DENIED);
+    }
+
+    //the home directory is considered to be "/"
+    if (param=="") param = "/";
+    check_path(param);
+    string full_path;
+    if (param==".") return ""; // no need to do anything if 'cd .'
+    else if (param == "/") {
+        // files directory
+        full_path = path;
+    } else if (param[0]=='/'){
+        //absolute path to the file directory root
+        full_path=path + param;
+    } else {
+        //relative path adapted to absolute path
+        full_path=get_full_path(socket)+"/"+param;
+    }
+    //remove the ending /'s
+    while(full_path!="" && full_path[full_path.size()-1]=='/'){
+        full_path = full_path.substr(0, full_path.size()-1);
+    }
+
+    string tmp_dir = path;
+    //check that full_path begins with the path to the file folder
+    if (full_path.size()<tmp_dir.size() || full_path.compare(0,tmp_dir.size(),tmp_dir)){
+        throw Exception(ERR_ACCESS_DENIED);
+    }
+    //tmp_end is the part of the path to deal with (eg. remove .., check validity etc.)
+    string tmp_end;
+    if (full_path==tmp_dir) tmp_end = "/";
+    else tmp_end=full_path.substr(tmp_dir.size()+1)+"/";
+    while(tmp_end!="" && tmp_end[0]=='/'){
+        //remove leading /'s
+        tmp_end = tmp_end.substr(1);
+    }
+    string tmp_name;
+
+    //resolves the .. and check if the given path is valid and that the directories exist
+    int index;
+    while ((index=tmp_end.find_first_of("/"))>0){
+        while(tmp_end!="" && tmp_end[0]=='/'){
+            //remove leading /'s
+            tmp_end = tmp_end.substr(1);
+        }
+        // name of the checked directory
+        tmp_name = "/"+tmp_end.substr(0,index);
+        // update the tmp_end by removing the name being check
+        tmp_end = tmp_end.substr(index+1);
+        while(tmp_end!="" && tmp_end[0]=='/'){
+            //remove leading /'s
+            tmp_end = tmp_end.substr(1);
+        }
+        //check if the directory exists
+        if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1),param);
+
+        // if the name is .. remove the previous folder from the path
+        if (tmp_name == "/.."){
+            tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
+        } else {
+            //update the tmpr_dir with the new valid directory
+            tmp_dir = tmp_dir + tmp_name;
+        }
+        //if the new path tmp_dir does not contain the files path throw error
+        if (tmp_dir.compare(0,path.size(),path)){
+            throw Exception(ERR_ACCESS_DENIED);
+        }
+    }
+    while(tmp_end!="" && tmp_end[0]=='/'){
+        //remove leading /'s
+        tmp_end = tmp_end.substr(1);
+    }
+    //update the path associated to the user
+    set_user_path(tmp_dir.substr(0,tmp_dir.size()),socket);
     return "";
 }
 
-string Commands::cmd_mkdir(string cmd, unsigned int socket){
-    cmd = remove_front_spaces(cmd);
-    require_parameters(cmd);
-    check_filename(cmd);
+string Commands::cmd_mkdir(string dir, unsigned int socket){
+    dir = remove_front_spaces(dir);
+    require_parameters(dir);
+    check_filename(dir);
+
+    //check if the path of the new folder would be more than PATH_MAX_LEN
     string current_folder = get_relative_path(socket);
-    if (current_folder.size() + cmd.size() > PATH_MAX_LEN){
+    if (current_folder.size() + dir.size() > PATH_MAX_LEN){
         throw Exception(ERR_PATH_TOO_LONG);
     }
-    string curr_path = get_full_path(socket)+"/"+cmd;
+
+    //full path of the folder to create
+    string curr_path = get_full_path(socket)+"/"+dir;
+
+    //system call to mkdir with given parameter
     char command[] = "/bin/mkdir";
     char *arg = &curr_path[0u];
     char * const argv[] = {command, arg, NULL};
     char * const envp[] = {NULL};
-
     string ret = call_cmd(command,argv,envp);
 
-    if (ret!="") throw Exception(ERR_FILE_ALREADY_EXISTS,cmd);
-    return ret;
+    // ret should be empty if executed successfully
+    if (ret!="") throw Exception(ERR_FILE_ALREADY_EXISTS,dir);
+    return "";
 }
 
 string Commands::cmd_rm(string cmd, unsigned int socket){
     cmd = remove_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
+    if (h(cmd) == forbidden){
+        //check if file can be accessed by the user
+        system((char *) access_denied);
+        throw Exception(ERR_ACCESS_DENIED);
+    }
+
+    //full path of the folder to remove
     string path_ = get_full_path(socket) + "/" + cmd;
 
+    //system call to rm with full path of the file/folder to remvoe
     char command[] = "/bin/rm";
-    char arg0[] = "-r";
+    char arg0[] = "-r"; //recursive to allow removing folders
     char *arg1 = &path_[0u];
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
-
     string ret = call_cmd(command,argv,envp);
+    // ret should be empty if executed successfully
     if (ret!="") throw Exception(ERR_NO_FILE_DIR, cmd);
-    return ret;
+    return "";
 }
 
 string Commands::cmd_get(string cmd, unsigned int socket){
@@ -524,19 +617,21 @@ string Commands::cmd_grep(string pattern, unsigned int socket){
 
 string Commands::cmd_date(string cmd, unsigned int){
     require_no_parameters(cmd);
+    //system call to date
     char command[] = "/bin/date";
     char * const argv[] = {command, NULL};
     char * const envp[] = {NULL};
-
     return call_cmd(command,argv,envp);
 }
 
 string Commands::cmd_whoami(string, unsigned int socket){
+    //get the identity of the user using the socket
     return auth.getUser(socket).getName();
 }
 
 string Commands::cmd_w(string, unsigned int){
     stringstream users;
+    //add the name of all connected users to users stringstream
     for(const User &u: auth.getAuthenticatedUsers())
         users << u.getName() << endl;
     return users.str().substr(0, users.str().size()-1);

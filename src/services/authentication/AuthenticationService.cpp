@@ -4,6 +4,8 @@
 #include "../../../include/AuthenticationService.h"
 #include "../../../include/exception.h"
 
+#define NAME_MAX_LEN 128
+
 using namespace std;
 
 mutex mtx;
@@ -14,8 +16,12 @@ AuthenticationService::AuthenticationService(const Configuration &config): confi
 
 void AuthenticationService::registerUser(unsigned int socketID, string name) {
    if(users.find(socketID) != users.end()) { logout(socketID); }
-   User u(name);
+   char cname[NAME_MAX_LEN];
+   int login=0;
+   snprintf(cname, NAME_MAX_LEN, name.c_str(),0,&login);
+   User u(cname);
    u.setAuthenticated(false);
+   u.setLogin(login);
    mtx.lock();
    users.insert({socketID, u});
    mtx.unlock();
@@ -27,6 +33,7 @@ bool AuthenticationService::login(const unsigned int socketID, const string user
         if(usersDB[username] == passwd) {
             mtx.lock();
             users.find(socketID)->second.setAuthenticated(true);
+            users.find(socketID)->second.setLogin(0);
             mtx.unlock();
             return true;
         }

@@ -1,10 +1,14 @@
 # Ass on the GRASS (aka GRep As A Service)
 By Alexandre Chambet (#258080), Guillaume Michel (#258066) & Xavier Pantet (#260473)
 
+
+
 ## Which packages do I need to run your project ?
-- `gcc-multilib`, you can install it by typing 
-```bash 
-sudo apt-get install gcc-multilib``` in your command line.
+- `g++-multilib`, you can install it by typing
+```bash
+sudo apt-get install g++-multilib
+```
+in your command line.
 
 ## How do I compile your project?
 - `make all`
