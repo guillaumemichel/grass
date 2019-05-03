@@ -1,12 +1,12 @@
 SRCDIR   := src
 BINDIR   := bin
-INCLUDES := -Iinclude/ -I/usr/include/x86_64-linux-gnu/c++/8
+INCLUDES := -Iinclude/
 OBJDIR   := .build
 TESTDIR  := $(BINDIR)/tests
 
-CC       := gcc
-CFLAGS   := -Wall -Wextra -lstdc++ -m32 -g -fno-stack-protector -z execstack -lpthread -std=gnu++11 $(INCLUDES) 
-CUNUSED  := 
+CC       := g++
+CFLAGS := -Wall -Wextra -g -m32 -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES)
+CUNUSED  :=
 LFLAGS   := -lm
 
 SRC      :=                                   	  \
