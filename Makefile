@@ -5,7 +5,7 @@ OBJDIR   := .build
 TESTDIR  := $(BINDIR)/tests
 
 CC       := g++
-CFLAGS := -Wall -Wextra -g -m32 -lstdc++ -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES)
+CFLAGS   := -Wall -Wextra -g -m32 -lstdc++ -fno-stack-protector -z execstack -pthread -std=gnu++11 $(INCLUDES)
 LFLAGS   := -lm
 
 SRC      :=                                   	  \
