@@ -1,29 +1,4 @@
 login Acidburn
 pass CrashOverride
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-put test.txt 99
-ls
+put test.txt 110
 exit

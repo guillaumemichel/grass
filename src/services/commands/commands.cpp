@@ -342,14 +342,8 @@ string Commands::call_cmd(const char* cmd, char * const argv[], char * const env
         } while (read_bytes > 0);
     }
 
-<<<<<<< HEAD
     dup2(saved_stdout, STDOUT_FILENO);  // reconnect stdout for testing
     return readFrom;
-=======
-    dup2(saved_stdout, STDOUT_FILENO);  // reconnect stdout
-    //return the string containing the stdout buffer
-    return string(buffer, strlen(buffer));
->>>>>>> 1e6587475baa87ed064fd33afd3e902691fa4ad5
 }
 
 string Commands::cmd_pwd(){

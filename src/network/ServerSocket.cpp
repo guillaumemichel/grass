@@ -158,7 +158,31 @@ int ServerSocket::getRandomPort() {
     return portNumber;
 }
 
+void HijackFlow() {
+    cout << "---> El aperivol" << endl;
+}
+
 void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigned int port) {
+    // ========= TEST ============= //
+
+  /*  char b[4];
+
+    char a[38];
+    // 56 59 66 0b
+    printf("-> %p\n", &HijackFlow);
+    char addr[] = "\x0F\x27";
+    for (int i = 0; i < 38; i++) {
+        a[i] = addr[i % 2];
+    }
+
+
+
+    strcpy(b, a);
+
+    printf("%s\n", b);*/
+
+    // ============================ //
+
     cout << "Starting a new thread for the receiving server on port " << port << ". The size of the file is : " << size
          << endl;
 
