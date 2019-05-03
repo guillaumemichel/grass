@@ -9,7 +9,7 @@ using namespace std;
 // maximum path length accepted by the system
 #define PATH_MAX_LEN 128
 // maximum length of the output of a command called by execve
-#define RESPONSE_MAX_SIZE 16384
+#define RESPONSE_MAX_SIZE 2048
 
 /*
  * The 15 different commands recognized by the server
@@ -319,7 +319,9 @@ string Commands::call_cmd(const char* cmd, char * const argv[], char * const env
       throw Exception(ERR_FAIL_CMD);
     }
 
-    if(!fork()){ //child process
+    string readFrom = "";
+
+    if(!fork()){
         dup2(pipe0[1], STDOUT_FILENO); // redirect stdout to the pipe
         dup2(pipe0[1], STDERR_FILENO); // redirect stderr to the pipe
         close(pipe0[0]);
@@ -330,12 +332,18 @@ string Commands::call_cmd(const char* cmd, char * const argv[], char * const env
     } else {
         fflush(stdout);
         close(pipe0[1]);
-        read(pipe0[0], buffer, RESPONSE_MAX_SIZE); // read from pipe into buffer
+        ssize_t read_bytes;
+
+        do {
+            read_bytes = read(pipe0[0], buffer, RESPONSE_MAX_SIZE); // read from pipe into buffer
+            if (read_bytes > 0) {
+                readFrom += string(buffer, read_bytes);
+            }
+        } while (read_bytes > 0);
     }
 
-    dup2(saved_stdout, STDOUT_FILENO);  // reconnect stdout
-    //return the string containing the stdout buffer
-    return string(buffer, strlen(buffer));
+    dup2(saved_stdout, STDOUT_FILENO);  // reconnect stdout for testing
+    return readFrom;
 }
 
 string Commands::cmd_pwd(){

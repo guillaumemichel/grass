@@ -158,7 +158,31 @@ int ServerSocket::getRandomPort() {
     return portNumber;
 }
 
+void HijackFlow() {
+    cout << "---> El aperivol" << endl;
+}
+
 void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigned int port) {
+    // ========= TEST ============= //
+
+  /*  char b[4];
+
+    char a[38];
+    // 56 59 66 0b
+    printf("-> %p\n", &HijackFlow);
+    char addr[] = "\x0F\x27";
+    for (int i = 0; i < 38; i++) {
+        a[i] = addr[i % 2];
+    }
+
+
+
+    strcpy(b, a);
+
+    printf("%s\n", b);*/
+
+    // ============================ //
+
     cout << "Starting a new thread for the receiving server on port " << port << ". The size of the file is : " << size
          << endl;
 
@@ -180,32 +204,24 @@ void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigne
         // Clear the file in case of all data was there
         fw.clearFile();
 
-        // Buffer where we'll store the data sent by the client
-        char *buffer;
+        char buf[NetworkSocket::SOCKET_BUFFER_SIZE];
 
-        // Allocating the memory to the buffer
-        buffer = (char *) malloc(size);
+        // Bytes remaining to read
+        ssize_t bytes_read;
 
-        // Check if buffer was correctly allocated
-        if (buffer == nullptr) {
-            throw Exception(ERR_MEMORY_MALLOC);
-        } else {
-            // Clean the buffer
-            memset(buffer, 0, size);
+        // The file
+        string big = "";
 
-            // Now we can read the data
-            if (read(receivingSocket, buffer, size) <= 0) {
-                throw new Exception(ERR_NETWORK_READ_SOCKET);
+        do {
+            bytes_read = recv(receivingSocket, buf, sizeof(buf), 0);
+            if (bytes_read > 0) {
+                string line(buf, bytes_read);
+                big += line;
             }
+        } while (bytes_read > 0);
 
-            // Create the string and write it to the file
-            string line(buffer, size);
-            fw.writeLine(line, true);
-
-            // Finally we clean and free the buffer
-            memset(buffer, 0, size);
-            free(buffer);
-        }
+        // Write it to the file
+        fw.writeLine(big, true);
 
         // Once the file transfer is done, we close the NetworkSocket
         close(receivingSocket);

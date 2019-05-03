@@ -42,7 +42,6 @@ void ClientLauncher::fileTransferConnect(ClientSocket *client) {
             client->initiateConnection();
             connected = true;
         } catch (exception &e) {
-            cout << "Cannot connect to the server... Attempting again..." << endl;
             maxTries--;
             // Wait an exponential amount of time until the server is ready
             usleep(100 * (10 - maxTries));

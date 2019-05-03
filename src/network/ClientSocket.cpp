@@ -50,17 +50,25 @@ string ClientSocket::readFromServer() {
     if (this->isSocketInitiated()) {
         char buffer[ClientSocket::SOCKET_BUFFER_SIZE] = {0};
 
-        // Read data from the server
-        ssize_t valRead = read(this->getSocket(), buffer, ClientSocket::SOCKET_BUFFER_SIZE);
-        if (-1 == valRead) {
-            throw Exception(ERR_NETWORK_READ_SOCKET);
-        } else {
-            if (!strncmp(buffer, (str_nodata).c_str(), str_nodata.size())) {
-                return "";
+        // Bytes read
+        ssize_t bytes_read;
+
+        // The stuff we read
+        string r = "";
+
+        do {
+            bytes_read = recv(this->getSocket(), buffer, SOCKET_BUFFER_SIZE, 0);
+            if (bytes_read > 0) {
+                string line(buffer, bytes_read);
+                r += line;
             }
-            size_t len = (strlen(buffer) > SOCKET_BUFFER_SIZE) ? SOCKET_BUFFER_SIZE : strlen(buffer);
-            return string(buffer, len);
+        } while (bytes_read == SOCKET_BUFFER_SIZE);
+
+        if (r == str_nodata) {
+            return "";
         }
+
+        return r;
     } else {
         throw Exception(ERR_NETWORK_SOCKET_NOT_CREATED);
     }
@@ -102,29 +110,27 @@ void ClientSocket::downloadFile(string filename, unsigned int size) {
     // Clear the file in case of all data was there
     fw.clearFile();
 
-    // Buffer where we'll store the data sent by the ClientSocket
-    char *buffer;
+    char buf[NetworkSocket::SOCKET_BUFFER_SIZE];
 
-    // Allocating the memory to the buffer
-    buffer = (char *) malloc(size);
+    // Bytes remaining to read
+    ssize_t bytes_read;
 
-    // Check if buffer was correctly allocated
-    if (buffer == nullptr) {
-        throw Exception(ERR_MEMORY_MALLOC);
-    } else {
-        memset(buffer, 0, size);
-        // Now we can read the data
-        // TODO : check if read does not return 0 or -1
-        if (read(this->sock, buffer, size) > 0) {
-            // Create the string and write it to the file
-            string line(buffer, size);
-            fw.writeLine(line, true);
-        } else {
-            throw Exception(ERR_NETWORK_READ_SOCKET);
+    // The file
+    string big = "";
+
+    int sum = 0;
+
+    do {
+        bytes_read = recv(this->sock, buf, sizeof(buf), 0);
+        sum += bytes_read;
+        if (bytes_read > 0) {
+            string line(buf, bytes_read);
+            big += line;
         }
+    } while (sum != size && bytes_read > 0);
 
-        // Finally we clean and free the buffer
-        memset(buffer, 0, size);
-        free(buffer);
-    }
+    // Write it to the file
+    fw.writeLine(big, true);
+
+    cout << "File downloaded!" << endl;
 }
