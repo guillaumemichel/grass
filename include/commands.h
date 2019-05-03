@@ -135,7 +135,7 @@ private:
 
     /**
      * Verify the given hostname, throw an invalid argument exception if it contains
-     * characters other that "A-Z", "a-z", "0-9", '-' and '.'.
+     * characters other that "A-Z", "a-z", "0-9", '-', '.' and '/'.
      *
      * @method check_hostname
      * @param  str            the given hostname
