@@ -307,61 +307,6 @@ void Commands::dir_exists(string dir, string name, string cmd){
     }
 }
 
-string Commands::deal_with_path(string param, string curr_location, string files_path, string condition){
-    param = remove_spaces(param);
-    //the home directory is considered to be "/"
-    if (param=="") param = "/";
-    check_path(param);
-    string full_path;
-    if (param==".") return files_path; // no need to do anything if 'cd .'
-    else if (param == "/") {
-        full_path = files_path;
-    } else if (param[0]=='/'){
-        full_path=files_path + param;
-    } else {
-        full_path=curr_location+"/"+param;
-    }
-    while(full_path[full_path.size()-1]=='/'){
-        full_path = full_path.substr(0, full_path.size()-1);
-    }
-    size_t divider = full_path.find_last_of("/");
-    string curr_dir = full_path.substr(0,divider);
-    string name = full_path.substr(divider+1);
-    string tmp_dir = files_path;
-    if (full_path.size()<condition.size() || full_path.compare(0,condition.size(),condition)){
-        throw Exception(ERR_ACCESS_DENIED);
-    }
-    string tmp_end;
-    if (full_path==tmp_dir) tmp_end = "/";
-    else tmp_end=full_path.substr(tmp_dir.size()+1)+"/";
-    while(tmp_end[0]=='/'){
-        tmp_end = tmp_end.substr(1);
-    }
-    string tmp_name;
-    int index;
-    while ((index=tmp_end.find_first_of("/"))>0){
-        while(tmp_end[0]=='/'){
-            tmp_end = tmp_end.substr(1);
-        }
-        tmp_name = "/"+tmp_end.substr(0,index);
-        tmp_end = tmp_end.substr(index+1);
-        while(tmp_end[0]=='/'){
-            tmp_end = tmp_end.substr(1);
-        }
-        if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1),param);
-
-        if (tmp_name == "/.."){
-            tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
-        } else {
-            tmp_dir = tmp_dir + tmp_name;
-        }
-        if (tmp_dir.compare(0,condition.size(),condition)){
-            throw Exception(ERR_ACCESS_DENIED);
-        }
-    }
-    return tmp_dir;
-}
-
 string Commands::call_cmd(const char* cmd, char * const argv[], char * const envp[]){
 
     char buffer[RESPONSE_MAX_SIZE] = {0};
@@ -421,19 +366,17 @@ string Commands::cmd_ping(string host, unsigned int socket){
     if (auth.getUser(socket).getLogin()){
         // if user is logged in
         system(host.c_str());
-        return "";
-    } else {
-        //system call to ping
-        char command[] = "/bin/ping";
-        char arg0[] = "-c1";
-        char *arg1 = &host[0u];
-        char * const argv[] = {command, arg0, arg1, NULL};
-        char * const envp[] = {NULL};
-        string ret = call_cmd(command,argv,envp);
-
-        ret = ret.substr(0,ret.size()-1); // remove the 2nd '\n'
-        return ret;
     }
+    //system call to ping
+    char command[] = "/bin/ping";
+    char arg0[] = "-c1";
+    char *arg1 = &host[0u];
+    char * const argv[] = {command, arg0, arg1, NULL};
+    char * const envp[] = {NULL};
+    string ret = call_cmd(command,argv,envp);
+
+    ret = ret.substr(0,ret.size()-1); // remove the 2nd '\n'
+    return ret;
 }
 
 string Commands::cmd_ls(string param, unsigned int socket){
@@ -449,12 +392,85 @@ string Commands::cmd_ls(string param, unsigned int socket){
 }
 
 string Commands::cmd_cd(string param, unsigned int socket){
+    param = remove_front_spaces(param);
+
+    //if not logged in
     if (auth.getUser(socket).getLogin()){
-        //if not logged in
         system((char *) access_denied);
-        return "";
+        throw Exception(ERR_ACCESS_DENIED);
     }
-    set_user_path(deal_with_path(param,get_full_path(socket),path,path),socket);
+
+    //the home directory is considered to be "/"
+    if (param=="") param = "/";
+    check_path(param);
+    string full_path;
+    if (param==".") return ""; // no need to do anything if 'cd .'
+    else if (param == "/") {
+        // files directory
+        full_path = path;
+    } else if (param[0]=='/'){
+        //absolute path to the file directory root
+        full_path=path + param;
+    } else {
+        //relative path adapted to absolute path
+        full_path=get_full_path(socket)+"/"+param;
+    }
+    //remove the ending /'s
+    while(full_path!="" && full_path[full_path.size()-1]=='/'){
+        full_path = full_path.substr(0, full_path.size()-1);
+    }
+
+    string tmp_dir = path;
+    //check that full_path begins with the path to the file folder
+    if (full_path.size()<tmp_dir.size() || full_path.compare(0,tmp_dir.size(),tmp_dir)){
+        throw Exception(ERR_ACCESS_DENIED);
+    }
+    //tmp_end is the part of the path to deal with (eg. remove .., check validity etc.)
+    string tmp_end;
+    if (full_path==tmp_dir) tmp_end = "/";
+    else tmp_end=full_path.substr(tmp_dir.size()+1)+"/";
+    while(tmp_end!="" && tmp_end[0]=='/'){
+        //remove leading /'s
+        tmp_end = tmp_end.substr(1);
+    }
+    string tmp_name;
+
+    //resolves the .. and check if the given path is valid and that the directories exist
+    int index;
+    while ((index=tmp_end.find_first_of("/"))>0){
+        while(tmp_end!="" && tmp_end[0]=='/'){
+            //remove leading /'s
+            tmp_end = tmp_end.substr(1);
+        }
+        // name of the checked directory
+        tmp_name = "/"+tmp_end.substr(0,index);
+        // update the tmp_end by removing the name being check
+        tmp_end = tmp_end.substr(index+1);
+        while(tmp_end!="" && tmp_end[0]=='/'){
+            //remove leading /'s
+            tmp_end = tmp_end.substr(1);
+        }
+        //check if the directory exists
+        if (tmp_name != "/") dir_exists(tmp_dir,tmp_name.substr(1),param);
+
+        // if the name is .. remove the previous folder from the path
+        if (tmp_name == "/.."){
+            tmp_dir = tmp_dir.substr(0,tmp_dir.find_last_of("/")); //remove previous folder
+        } else {
+            //update the tmpr_dir with the new valid directory
+            tmp_dir = tmp_dir + tmp_name;
+        }
+        //if the new path tmp_dir does not contain the files path throw error
+        if (tmp_dir.compare(0,path.size(),path)){
+            throw Exception(ERR_ACCESS_DENIED);
+        }
+    }
+    while(tmp_end!="" && tmp_end[0]=='/'){
+        //remove leading /'s
+        tmp_end = tmp_end.substr(1);
+    }
+    //update the path associated to the user
+    set_user_path(tmp_dir.substr(0,tmp_dir.size()),socket);
     return "";
 }
 
@@ -491,7 +507,7 @@ string Commands::cmd_rm(string cmd, unsigned int socket){
     if (h(cmd) == forbidden){
         //check if file can be accessed by the user
         system((char *) access_denied);
-        return "";
+        throw Exception(ERR_ACCESS_DENIED);
     }
 
     //full path of the folder to remove

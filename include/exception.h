@@ -1,3 +1,9 @@
+/**
+ * exception.h
+ * Define a class exception and deal with the exceptions.
+ * @author: Guillaume Michel
+ */
+
 #ifndef ERROR_H
 #define ERROR_H
 
@@ -71,6 +77,13 @@ private:
 public:
   Exception(int);
   Exception(int, string);
+
+  /**
+   * Get the string associated with the exception number, print the error message
+   * and return it
+   * @method print_error
+   * @return the error message
+   */
   string print_error();
 };
 
