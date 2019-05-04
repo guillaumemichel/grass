@@ -151,7 +151,6 @@ void ServerSocket::readFromUserSocket(int userSocket, Commands &commands) {
 }
 
 int ServerSocket::getRandomPort() {
-    // TODO : check if the port is free (or we assume lmao)
     // 42420 blaze it
     int portNumber = 12000 + (std::rand() % (42420 - 12000 + 1));
 

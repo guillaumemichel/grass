@@ -12,7 +12,6 @@ using namespace std;
 
 
 ClientSocket::ClientSocket(string serverIP, unsigned int dstPort) : NetworkSocket(dstPort) {
-    // TODO : check if IP is correct ?
     this->serverIP = serverIP;
 }
 
