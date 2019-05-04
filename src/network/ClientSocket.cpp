@@ -12,7 +12,6 @@ using namespace std;
 
 
 ClientSocket::ClientSocket(string serverIP, unsigned int dstPort) : NetworkSocket(dstPort) {
-    // TODO : check if IP is correct ?
     this->serverIP = serverIP;
 }
 
@@ -118,7 +117,7 @@ void ClientSocket::downloadFile(string filename, unsigned int size) {
     // The file
     string big = "";
 
-    int sum = 0;
+    unsigned int sum = 0;
 
     do {
         bytes_read = recv(this->sock, buf, sizeof(buf), 0);

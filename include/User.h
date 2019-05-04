@@ -4,7 +4,7 @@
  * @author: Xavier Pantet
  */
 
-#include "commands.h"
+#include "Commands.h"
 
 #ifndef USER
 #define USER

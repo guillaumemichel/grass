@@ -7,8 +7,12 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <iostream>
+
 #include "FileReader.h"
-#include "commands.h"
+#include "Commands.h"
+#include "Exception.h"
 
 #ifndef ASS_ON_THE_GRASS_CONFIGURATION_H
 #define ASS_ON_THE_GRASS_CONFIGURATION_H

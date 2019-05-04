@@ -13,13 +13,13 @@ SRC      :=                                   	  \
 	$(wildcard src/services/authentication/*.cpp) \
 	$(wildcard src/services/commands/*.cpp)       \
 	$(wildcard src/configuration/*.cpp)           \
+	$(wildcard src/commands/*.cpp)				  \
 	$(wildcard src/network/*.cpp)                 \
 	$(wildcard src/helpers/*.cpp)                 \
 	$(wildcard src/files/*.cpp)                   \
 	$(wildcard src/user/*.cpp)				      \
 	$(wildcard src/grass.cpp)                     \
-	$(wildcard src/error.cpp)			          \
-	$(wildcard src/exception.cpp)                 \
+	$(wildcard src/Exception.cpp)                 \
 	$(wildcard tests/*.cpp)
 
 OBJECTS := $(SRC:%.cpp=$(OBJDIR)/%.o)

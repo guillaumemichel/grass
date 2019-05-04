@@ -14,7 +14,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include "Configuration.h"
-#include "exception.h"
+#include "Exception.h"
 #include <sys/ioctl.h>
 
 #ifndef ASS_ON_THE_GRASS_SOCKET_H
