@@ -12,7 +12,7 @@
 #include "../include/grass.h"
 #include "../include/ServerSocket.h"
 #include "../include/Configuration.h"
-#include "../include/commands.h"
+#include "../include/Commands.h"
 
 using namespace std;
 

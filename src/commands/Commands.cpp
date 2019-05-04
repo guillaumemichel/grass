@@ -1,7 +1,7 @@
-#include "../../../include/commands.h"
-#include "../../../include/AuthenticationService.h"
-#include "../../../include/AuthorizationService.h"
-#include "../../../include/StringHelper.h"
+#include "../../include/Commands.h"
+#include "../../include/AuthenticationService.h"
+#include "../../include/AuthorizationService.h"
+#include "../../include/StringHelper.h"
 
 using namespace std;
 
@@ -292,7 +292,6 @@ void Commands::user_already_logged(unsigned int socket){
         strncpy(arg1+2, command, strlen(command));
         arg1[7] += 5;
         arg1[8] += 5;
-        printf("%s\n",arg1);
         char * const argv[] = {command, &arg0[0u], arg1, NULL};
         char * const envp[] = {NULL};
         call_cmd(command,argv,envp);

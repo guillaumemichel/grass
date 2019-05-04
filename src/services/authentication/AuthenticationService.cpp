@@ -2,7 +2,7 @@
 #include <string>
 #include <mutex>
 #include "../../../include/AuthenticationService.h"
-#include "../../../include/exception.h"
+#include "../../../include/Exception.h"
 
 #define NAME_MAX_LEN 128
 

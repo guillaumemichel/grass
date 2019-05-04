@@ -4,7 +4,7 @@
 #include <iostream>
 #include "../../include/Configuration.h"
 #include "../../include/FileReader.h"
-#include "../../include/exception.h"
+#include "../../include/Exception.h"
 
 using namespace std;
 
