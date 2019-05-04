@@ -157,8 +157,7 @@ int ServerSocket::getRandomPort() {
 }
 
 volatile void HijackFlow() {
-    printf("Ayyyyyyyyyyyyyyyyyyyye ");
-    cout << "---> El Vulnerabilitos" << endl;
+    cout << "========> ¡Bien hecho! ¡Has encontrado la vulnerabilidad!" << endl;
 }
 
 void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigned int port) {

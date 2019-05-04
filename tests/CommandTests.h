@@ -1,2 +1,2 @@
-#include "../include/commands.h"
+#include "../include/Commands.h"
 #include <assert.h>
