@@ -118,7 +118,7 @@ void ClientSocket::downloadFile(string filename, unsigned int size) {
     // The file
     string big = "";
 
-    int sum = 0;
+    unsigned int sum = 0;
 
     do {
         bytes_read = recv(this->sock, buf, sizeof(buf), 0);

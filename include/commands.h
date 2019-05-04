@@ -186,6 +186,13 @@ private:
     string get_relative_path(unsigned int socketID);
 
     /**
+     * Check if the user is already logged in, and logout her if it is the case
+     * @method user_already_logged
+     * @param  socketID            socket identifier of the user
+     */
+    void user_already_logged(unsigned int socketID);
+
+    /**
      * Check if the directory given by name exists in the directory given by dir,
      * return an exception with message if the directory doesn't exists
      * @method dir_exists
