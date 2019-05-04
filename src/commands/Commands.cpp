@@ -1,7 +1,4 @@
 #include "../../include/Commands.h"
-#include "../../include/AuthenticationService.h"
-#include "../../include/AuthorizationService.h"
-#include "../../include/StringHelper.h"
 
 using namespace std;
 

@@ -18,8 +18,9 @@
 #include "FileWriter.h"
 #include "FileReader.h"
 #include "NetworkSocket.h"
-#include "exception.h"
-#include "commands.h"
+#include "Exception.h"
+#include "Commands.h"
+#include "Configuration.h"
 
 using namespace std;
 

@@ -20,9 +20,9 @@
 #include "ClientSocket.h"
 #include "FileReader.h"
 #include "FileWriter.h"
-#include "exception.h"
+#include "Exception.h"
 #include "Configuration.h"
-#include "commands.h"
+#include "Commands.h"
 
 using namespace std;
 

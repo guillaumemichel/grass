@@ -1,11 +1,11 @@
 /**
- * exception.h
+ * Exception.h
  * Define a class exception and deal with the exceptions.
  * @author: Guillaume Michel
  */
 
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef EXCEPTION
+#define EXCEPTION
 
 #include <iostream>
 #include <exception>

@@ -5,6 +5,7 @@
  */
 #include <string>
 #include <vector>
+#include <sstream>
 
 #ifndef ASS_ON_THE_GRASS_STRINGHELPER_H
 #define ASS_ON_THE_GRASS_STRINGHELPER_H

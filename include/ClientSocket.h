@@ -20,8 +20,8 @@
 #include "FileReader.h"
 #include "FileWriter.h"
 #include "NetworkSocket.h"
-#include "exception.h"
-#include "commands.h"
+#include "Exception.h"
+#include "Commands.h"
 
 using namespace std;
 

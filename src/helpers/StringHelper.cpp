@@ -1,5 +1,4 @@
 #include "../../include/StringHelper.h"
-#include <sstream>
 
 using namespace std;
 

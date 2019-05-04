@@ -1,4 +1,3 @@
-#include <string>
 #include "../../include/User.h"
 
 using namespace std;

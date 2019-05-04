@@ -15,6 +15,9 @@
 
 using namespace std;
 
+#ifndef AUTHORIZATION_SERVICE
+#define AUTHORIZATION_SERVICE
+
 /**
  * Creates a map that associates a policy level to every resource.
  * @return Policy level - Resource association for every resource of the system.
@@ -40,3 +43,4 @@ class AuthorizationService {
          */
         bool hasAccessTo(const string resource);
 };
+#endif

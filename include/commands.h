@@ -1,5 +1,5 @@
 /**
- * commands.h
+ * Commands.h
  * Handle the sanitization and commands on the server.
  * @author: Guillaume Michel
  */
@@ -19,9 +19,14 @@
 #include <fcntl.h>
 #include <regex>
 
-#include "exception.h"
+#include "Exception.h"
 #include "Configuration.h"
 #include "AuthenticationService.h"
+#include "StringHelper.h"
+
+#ifndef AUTHORIZATION_SERVICE
+#include "AuthorizationService.h"
+#endif
 
 using namespace std;
 

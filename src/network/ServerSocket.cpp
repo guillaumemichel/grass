@@ -9,7 +9,6 @@
 using namespace std;
 
 #include "../../include/ServerSocket.h"
-#include "../../include/Configuration.h"
 
 ServerSocket::ServerSocket(unsigned int port) : NetworkSocket(port) {}
 
