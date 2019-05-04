@@ -5,7 +5,11 @@
  */
 
 #include <map>
+#include <string>
+#include <mutex>
+
 #include "Configuration.h"
+#include "Exception.h"
 
 #ifndef USER
 #include "User.h"

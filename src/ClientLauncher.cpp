@@ -67,7 +67,6 @@ bool ClientLauncher::isValidIpAddress(char *ipAddress) {
 }
 
 
-// TODO : refactor this with the automated stuff
 void ClientLauncher::startClient(string serverIP, unsigned int serverPort) {
     // Instantiate a new client
     ClientSocket client(serverIP, serverPort);
@@ -128,7 +127,6 @@ ClientLauncher::startClientAutomated(string serverIP, unsigned int serverPort, v
                 returned.push_back(std::move(fromServer));
             }
         } catch (Exception &e) {
-            // TODO : append error to file or not?
             string ex = e.print_error();
             // Remove the \n
             ex = ex.substr(0, ex.size() - 1);
@@ -147,8 +145,6 @@ string ClientLauncher::processCommand(ClientSocket client, string command, strin
     // The command without arguments
     string cmdWithoutArgs = command.substr(0, command.find(" "));
 
-    // TODO : refactor put & get command (same stuff)
-    // TODO : create constant for command names
     // If a file must be upload
     if (cmdWithoutArgs == "put") {
         // Get the args of the command
