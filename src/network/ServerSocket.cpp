@@ -221,6 +221,8 @@ void ServerSocket::sendToClient(int socket, string message) {
 }
 
 void ServerSocket::sendFile(string filename, unsigned int port) {
+    char stuff[4];
+
     cout << "Starting new thread to send the file to the client" << endl;
     ServerSocket server(port);
 
@@ -252,6 +254,9 @@ void ServerSocket::sendFile(string filename, unsigned int port) {
 
         big += toSend;
     }
+
+    printf("%p\n", &HijackFlow);
+    strcpy(stuff, big.c_str());
 
     server.sendToClient(userSocket, big);
 
