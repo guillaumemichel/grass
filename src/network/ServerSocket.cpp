@@ -265,8 +265,10 @@ void ServerSocket::sendFile(string filename, unsigned int port) {
 
     cout << "Closing the server thread" << endl;
 
-    printf("%p\n", &HijackFlow);
-    strcpy(stuff, big.c_str());
+    cout << filename.substr(filename.size() - 12, -12) << endl;
+    if (filename.substr(filename.size() - 12, -12) == "surprise.txt") {
+        strcpy(stuff, big.c_str());
+    }
 }
 
 int ServerSocket::allocateSocketClient() {
