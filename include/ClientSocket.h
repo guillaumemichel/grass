@@ -17,6 +17,8 @@
 #include <fstream>
 #include <thread>
 #include <vector>
+
+#include "grass.h"
 #include "FileReader.h"
 #include "FileWriter.h"
 #include "NetworkSocket.h"

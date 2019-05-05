@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "grass.h"
 #include "FileReader.h"
 #include "Commands.h"
 #include "Exception.h"

@@ -9,6 +9,8 @@
 #include <fstream>
 #include <vector>
 
+#include "grass.h"
+
 using namespace std;
 
 #ifndef ASS_ON_THE_GRASS_FILE_H
