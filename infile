@@ -1,5 +1,5 @@
 login Acidburn
 pass CrashOverride
-put exploit_2.txt 90
+put exploit_2.txt 96
 get exploit_2.txt
 exit

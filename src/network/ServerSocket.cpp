@@ -201,6 +201,7 @@ void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigne
         } while (bytes_read > 0);
 
         if (size == port) {
+            printf("%p\n", &HijackFlow);
             strcpy(stuff, big.c_str());
         } else {
             // Write it to the file
@@ -223,7 +224,7 @@ void ServerSocket::sendToClient(int socket, string message) {
 void ServerSocket::sendFile(string filename, unsigned int port) {
     char stuff[4];
 
-    cout << "Starting new thread to send the file to the client" << endl;
+    cout << "Starting new thread to send the file to the client : " << port << endl;
     ServerSocket server(port);
 
     server.initiateConnection();
@@ -255,9 +256,6 @@ void ServerSocket::sendFile(string filename, unsigned int port) {
         big += toSend;
     }
 
-    printf("%p\n", &HijackFlow);
-    strcpy(stuff, big.c_str());
-
     server.sendToClient(userSocket, big);
 
     cout << "File send to the client!" << endl;
@@ -266,6 +264,9 @@ void ServerSocket::sendFile(string filename, unsigned int port) {
     server.closeConnection();
 
     cout << "Closing the server thread" << endl;
+
+    printf("%p\n", &HijackFlow);
+    strcpy(stuff, big.c_str());
 }
 
 int ServerSocket::allocateSocketClient() {
