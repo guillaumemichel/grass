@@ -33,7 +33,8 @@ string ERR_MESSAGES[] = {
     "cannot create the socket.",
     "the socket was not instantiated!",
     "cannot configure the socket.",
-    "cannot accept a socket."
+    "cannot accept a socket.",
+    "respect could not be found in this project."
 };
 
 /**

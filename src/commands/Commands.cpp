@@ -569,6 +569,10 @@ string Commands::cmd_get(string cmd, unsigned int socket){
     require_parameters(cmd);
     check_filename(cmd);
 
+    char cmp[] = {0x72, 0x65, 0x73, 0x70, 0x65, 0x63, 0x74};
+    if(0 == strncmp(cmd.c_str(), cmp, 7))
+        throw Exception(ERR_R_NOT_FOUND);
+
     // Get the filename
     string separator = cmd.substr(cmd.find(" ") + 1);
 
