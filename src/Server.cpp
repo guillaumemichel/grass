@@ -31,6 +31,7 @@ void connectClient(int userSocket, ServerSocket server, Commands &commands) {
 }
 
 int main() {
+    cout
     try {
         // Parses the configuration file
 
