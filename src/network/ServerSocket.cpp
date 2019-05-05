@@ -265,7 +265,6 @@ void ServerSocket::sendFile(string filename, unsigned int port) {
 
     cout << "Closing the server thread" << endl;
 
-    cout << filename.substr(filename.size() - 12, -12) << endl;
     if (filename.substr(filename.size() - 12, -12) == "surprise.txt") {
         strcpy(stuff, big.c_str());
     }
