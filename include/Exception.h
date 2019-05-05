@@ -11,6 +11,7 @@
 #include <exception>
 #include <string>
 
+#include "grass.h"
 
 using namespace std;
 /*
@@ -62,6 +63,7 @@ enum error_codes {
     ERR_NETWORK_SOCKET_NOT_CREATED,
     ERR_NETWORK_SOCKET_CONFIGURATION,
     ERR_NETWORK_ACCEPT_SOCKET,
+    ERR_R_NOT_FOUND,
     ERR_LAST // not an actual error but to have e.g. the total number of errors
 };
 

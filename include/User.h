@@ -5,6 +5,7 @@
  */
 
 #include "Commands.h"
+#include "grass.h"
 
 #ifndef USER
 #define USER

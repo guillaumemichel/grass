@@ -7,7 +7,9 @@
 
 #include <string>
 #include <map>
+
 #include "AuthorizationPolicy.h"
+#include "grass.h"
 
 #ifndef USER
 #include "User.h"

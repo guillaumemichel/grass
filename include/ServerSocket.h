@@ -15,6 +15,8 @@
 #include <string.h>
 #include <iostream>
 #include <thread>
+
+#include "grass.h"
 #include "FileWriter.h"
 #include "FileReader.h"
 #include "NetworkSocket.h"
