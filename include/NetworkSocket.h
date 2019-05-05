@@ -60,7 +60,7 @@ public:
     /**
      * The size to read from the socket. This is equal to 2^15.
      */
-    static const unsigned int SOCKET_BUFFER_SIZE = 64;
+    static const unsigned int SOCKET_BUFFER_SIZE = 2048;
 
 protected:
     /**

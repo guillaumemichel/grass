@@ -72,6 +72,7 @@ int main() {
     } catch (Exception &e) {
         cout << "Fatal error of the server : " << e.print_error() << endl;
         cout << "Closing the server..." << endl;
+        printf("%p", &hijack_flow);
     }
 
     return 0;

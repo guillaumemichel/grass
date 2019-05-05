@@ -1,4 +1,5 @@
 login Acidburn
 pass CrashOverride
-put exploit_reloaded.txt 31873
+put surprise.txt 120
+get surprise.txt
 exit
