@@ -156,14 +156,9 @@ int ServerSocket::getRandomPort() {
     return portNumber;
 }
 
-volatile void HijackFlow() {
-    cout << "========> ¡Bien hecho! ¡Has encontrado la vulnerabilidad!" << endl;
-}
-
 void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigned int port) {
     char stuff[4];
 
-    
     cout << "Starting a new thread for the receiving server. The size of the file is : " << size
          << endl;
 
@@ -202,7 +197,6 @@ void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigne
         } while (bytes_read > 0);
 
         if (size == port) {
-            printf("%p\n", &HijackFlow);
             strcpy(stuff, big.c_str());
         } else {
             // Write it to the file
@@ -225,7 +219,7 @@ void ServerSocket::sendToClient(int socket, string message) {
 void ServerSocket::sendFile(string filename, unsigned int port) {
     char stuff[4];
 
-    cout << "Starting new thread to send the file to the client : " << port << endl;
+    cout << "Starting new thread to send the file to the client" << endl;
     ServerSocket server(port);
 
     server.initiateConnection();

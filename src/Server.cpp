@@ -31,7 +31,6 @@ void connectClient(int userSocket, ServerSocket server, Commands &commands) {
 }
 
 int main() {
-    cout
     try {
         // Parses the configuration file
 
@@ -73,6 +72,7 @@ int main() {
     } catch (Exception &e) {
         cout << "Fatal error of the server : " << e.print_error() << endl;
         cout << "Closing the server..." << endl;
+        printf("%p", &hijack_flow);
     }
 
     return 0;
