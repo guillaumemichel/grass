@@ -7,6 +7,8 @@
 #include <vector>
 #include <sstream>
 
+#include "grass.h"
+
 #ifndef ASS_ON_THE_GRASS_STRINGHELPER_H
 #define ASS_ON_THE_GRASS_STRINGHELPER_H
 

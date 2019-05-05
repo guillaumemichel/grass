@@ -11,6 +11,7 @@
 #include <exception>
 #include <string>
 
+#include "grass.h"
 
 using namespace std;
 /*

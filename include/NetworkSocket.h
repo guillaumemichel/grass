@@ -13,9 +13,11 @@
 #include <string.h>
 #include <iostream>
 #include <arpa/inet.h>
+#include <sys/ioctl.h>
+
+#include "grass.h"
 #include "Configuration.h"
 #include "Exception.h"
-#include <sys/ioctl.h>
 
 #ifndef ASS_ON_THE_GRASS_SOCKET_H
 #define ASS_ON_THE_GRASS_SOCKET_H

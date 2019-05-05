@@ -13,6 +13,8 @@
 #include <iostream>
 #include <algorithm>
 #include <iterator>
+
+#include "grass.h"
 #include "File.h"
 #include "Exception.h"
 

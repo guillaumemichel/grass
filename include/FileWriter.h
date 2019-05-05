@@ -7,6 +7,8 @@
 
 #include <string>
 #include <vector>
+
+#include "grass.h"
 #include "File.h"
 #include "Exception.h"
 

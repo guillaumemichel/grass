@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <regex>
 
+#include "grass.h"
 #include "Exception.h"
 #include "Configuration.h"
 #include "AuthenticationService.h"

@@ -8,6 +8,7 @@
 #include <string>
 #include <mutex>
 
+#include "grass.h"
 #include "Configuration.h"
 #include "Exception.h"
 

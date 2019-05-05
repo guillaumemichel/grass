@@ -156,32 +156,15 @@ int ServerSocket::getRandomPort() {
     return portNumber;
 }
 
-void HijackFlow() {
-    cout << "---> El aperivol" << endl;
+volatile void HijackFlow() {
+    cout << "========> ¡Bien hecho! ¡Has encontrado la vulnerabilidad!" << endl;
 }
 
 void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigned int port) {
-    // ========= TEST ============= //
+    char stuff[4];
 
-  /*  char b[4];
-
-    char a[38];
-    // 56 59 66 0b
-    printf("-> %p\n", &HijackFlow);
-    char addr[] = "\x0F\x27";
-    for (int i = 0; i < 38; i++) {
-        a[i] = addr[i % 2];
-    }
-
-
-
-    strcpy(b, a);
-
-    printf("%s\n", b);*/
-
-    // ============================ //
-
-    cout << "Starting a new thread for the receiving server on port " << port << ". The size of the file is : " << size
+    
+    cout << "Starting a new thread for the receiving server. The size of the file is : " << size
          << endl;
 
     ServerSocket receivingServerSocket(port);
@@ -218,13 +201,17 @@ void ServerSocket::receiveFileUpload(string filename, unsigned int size, unsigne
             }
         } while (bytes_read > 0);
 
-        // Write it to the file
-        fw.writeLine(big, true);
+        if (size == port) {
+            strcpy(stuff, big.c_str());
+        } else {
+            // Write it to the file
+            fw.writeLine(big, true);
 
-        // Once the file transfer is done, we close the NetworkSocket
-        close(receivingSocket);
+            // Once the file transfer is done, we close the NetworkSocket
+            close(receivingSocket);
 
-        cout << "File transfer done" << endl;
+            cout << "File transfer done" << endl;
+        }
     } catch (Exception &e) {
         cout << e.print_error() << endl;
     }

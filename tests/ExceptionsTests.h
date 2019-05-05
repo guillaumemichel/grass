@@ -1,4 +1,4 @@
-#include "../include/exception.h"
+#include "../include/Exception.h"
 
 void testError1();
 void testError2();
