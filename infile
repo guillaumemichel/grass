@@ -1,5 +1,0 @@
-login Acidburn
-pass CrashOverride
-put surprise.txt 120
-get surprise.txt
-exit
