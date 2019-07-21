@@ -19,6 +19,3 @@ Configuration is taken from `grass.conf`
 ## How do I run your project?
 - Use `bin/server` to run the server
 - Use `bin/client [server IP] [server port]` for the client
-
-## How do I use your project?
-- Don't
