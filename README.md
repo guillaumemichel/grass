@@ -1,6 +1,5 @@
-# Ass on the GRASS (aka GRep As A Service)
-By Alexandre Chambet (#258080), Guillaume Michel (#258066) & Xavier Pantet (#260473)
-
+# GRASS (GRep As A Service)
+By Alexandre Chambet, Guillaume Michel & Xavier Pantet
 
 
 ## Which packages do I need to run your project ?
